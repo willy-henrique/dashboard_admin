@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/components/auth-provider"
 import { Loader2, Mail, Lock } from "lucide-react"
 
 export function LoginForm() {

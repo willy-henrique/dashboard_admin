@@ -1,52 +1,161 @@
 "use client"
 
-import { Search, Bell, User, LogOut } from "lucide-react"
+import { useState } from "react"
+import { Menu, Search, Bell, User, Moon, Sun, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useAuth } from "@/hooks/use-auth"
+import { useTheme } from "next-themes"
+import { useAuth } from "@/components/auth-provider"
+import { signOut } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
-export function Topbar() {
-  const { user, logout } = useAuth()
+interface TopbarProps {
+  onMenuClick: () => void
+}
+
+export function Topbar({ onMenuClick }: TopbarProps) {
+  const { theme, setTheme } = useTheme()
+  const { user } = useAuth()
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error)
+    }
+  }
 
   return (
-    <div className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1 max-w-md">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input placeholder="Busca rápida..." className="pl-10" />
+    <header style={{ 
+      backgroundColor: 'var(--card)', 
+      borderBottom: '1px solid var(--border)' 
+    }}>
+      <div className="flex items-center justify-between px-4 sm:px-6 py-4">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onMenuClick}
+            className="lg:hidden"
+            style={{ color: 'var(--foreground)' }}
+            aria-label="Abrir menu lateral"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          
+          {/* Campo de Busca */}
+          <div className="relative hidden md:block">
+            <Search 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none" 
+              style={{ color: 'var(--muted-foreground)' }}
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              placeholder="Buscar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-80 h-9 text-sm"
+              style={{
+                backgroundColor: 'var(--background)',
+                color: 'var(--foreground)',
+                borderColor: 'var(--border)'
+              }}
+              aria-label="Buscar no sistema"
+            />
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm">
-            <Bell className="h-4 w-4" />
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            style={{ color: 'var(--foreground)' }}
+            aria-label={`Alternar para tema ${theme === "light" ? "escuro" : "claro"}`}
+          >
+            {theme === "light" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
           </Button>
 
+          {/* Notifications */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="relative" 
+            style={{ color: 'var(--foreground)' }}
+            aria-label="Notificações"
+          >
+            <Bell className="h-5 w-5" />
+            <span 
+              className="absolute -top-1 -right-1 h-3 w-3 rounded-full" 
+              style={{ backgroundColor: 'var(--primary)' }}
+              aria-label="3 notificações não lidas"
+            />
+          </Button>
+
+          {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>{user?.nome?.charAt(0) || "A"}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium">{user?.nome}</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center space-x-2" 
+                style={{ color: 'var(--foreground)' }}
+                aria-label="Menu do usuário"
+              >
+                <User className="h-5 w-5" />
+                <span className="hidden sm:block text-sm">
+                  {user?.displayName || user?.email || "Usuário"}
+                </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56" 
+              style={{
+                backgroundColor: 'var(--popover)',
+                color: 'var(--popover-foreground)',
+                borderColor: 'var(--border)'
+              }}
+            >
+              <DropdownMenuLabel className="font-medium">
+                Minha Conta
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                style={{ color: 'var(--popover-foreground)' }}
+                className="cursor-pointer"
+              >
                 <User className="mr-2 h-4 w-4" />
                 Perfil
               </DropdownMenuItem>
+              <DropdownMenuItem 
+                style={{ color: 'var(--popover-foreground)' }}
+                className="cursor-pointer"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                Notificações
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
+              <DropdownMenuItem 
+                onClick={handleLogout} 
+                style={{ color: 'var(--popover-foreground)' }}
+                className="cursor-pointer"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </DropdownMenuItem>
@@ -54,6 +163,6 @@ export function Topbar() {
           </DropdownMenu>
         </div>
       </div>
-    </div>
+    </header>
   )
 }

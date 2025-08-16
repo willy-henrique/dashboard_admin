@@ -4,180 +4,291 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { LayoutDashboard, Wrench, Shield, DollarSign, Settings, BarChart3, Menu, X, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
+import {
+  LayoutDashboard,
+  Users,
+  UserCheck,
+  ShoppingCart,
+  DollarSign,
+  BarChart3,
+  Settings,
+  Shield,
+  FileText,
+  MessageSquare,
+  MapPin,
+  Calendar,
+  TrendingUp,
+  Activity,
+  Bell,
+  Database,
+  Key,
+  LogOut,
+  X,
+  ChevronRight,
+  ChevronDown,
+  Clock,
+  CheckCircle,
+  Star,
+  ClipboardList,
+  MousePointer,
+  Smartphone,
+  Wifi,
+  Route,
+  XCircle,
+  Package,
+  Truck,
+  Download,
+  Building,
+  Wrench,
+} from "lucide-react"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+  },
   {
     name: "Serviços",
-    href: "/services",
-    icon: Wrench,
-    submenu: [
-      { name: "Painel Logístico", href: "/services/logistics" },
-      { name: "Visualizar", href: "/services/view" },
-      { name: "Orçamento", href: "/services/budget" },
-    ],
+    href: "/dashboard/servicos",
+    icon: ClipboardList,
   },
   {
     name: "Controle",
-    href: "/control",
-    icon: Shield,
-    submenu: [
-      { name: "AutEM Mobile", href: "/control/mobile" },
-      { name: "Danos", href: "/control/damages" },
-      { name: "Estoque", href: "/control/inventory" },
-      { name: "Frota", href: "/control/fleet" },
-      { name: "Notificações", href: "/control/notifications" },
-      { name: "Remunerações", href: "/control/payments" },
-      { name: "Usuários", href: "/control/users" },
+    icon: MousePointer,
+    children: [
+      { name: "AutEM Mobile", href: "/dashboard/controle/autem-mobile", icon: Smartphone },
+      { name: "Estoque", href: "/dashboard/controle/estoque", icon: Package },
+      { name: "Frota", href: "/dashboard/controle/frota", icon: Truck },
+    ],
+  },
+  {
+    name: "Gestão de Usuários",
+    icon: Users,
+    children: [
+      { name: "Clientes", href: "/users/clients", icon: Users },
+      { name: "Prestadores", href: "/users/providers", icon: UserCheck },
+      { name: "Verificações", href: "/users/verifications", icon: Shield },
+    ],
+  },
+  {
+    name: "Gestão de Pedidos",
+    icon: ShoppingCart,
+    children: [
+      { name: "Todos os Pedidos", href: "/orders", icon: ShoppingCart },
+      { name: "Pedidos Pendentes", href: "/orders/pending", icon: Clock },
+      { name: "Pedidos Ativos", href: "/orders/active", icon: Activity },
+      { name: "Pedidos Concluídos", href: "/orders/completed", icon: CheckCircle },
+      { name: "Chat de Suporte", href: "/orders/chat", icon: MessageSquare },
     ],
   },
   {
     name: "Financeiro",
-    href: "/financial",
     icon: DollarSign,
-    submenu: [
-      { name: "Contas", href: "/financial/accounts" },
-      { name: "Faturamento", href: "/financial/billing" },
-      { name: "Fechamento", href: "/financial/closing" },
-      { name: "Folha de Pagamento", href: "/financial/payroll" },
-      { name: "Movimento de Caixa", href: "/financial/cashflow" },
+    children: [
+      { name: "Dashboard", href: "/dashboard/financeiro", icon: BarChart3 },
+      { name: "Contas", href: "/dashboard/financeiro/contas", icon: DollarSign },
+      { name: "Faturamento", href: "/dashboard/financeiro/faturamento", icon: FileText },
+      { name: "Movimento de Caixa", href: "/dashboard/financeiro/movimento-caixa", icon: TrendingUp },
+      { name: "Folha de Pagamento", href: "/dashboard/financeiro/folha-pagamento", icon: Users },
+      { name: "Fechamento", href: "/dashboard/financeiro/fechamento", icon: Calendar },
+      { name: "Relatórios", href: "/dashboard/financeiro/relatorios", icon: BarChart3 },
+    ],
+  },
+  {
+    name: "Relatórios",
+    icon: BarChart3,
+    children: [
+      { name: "Dashboard Analytics", href: "/reports/analytics", icon: BarChart3 },
+      { name: "Performance", href: "/reports/performance", icon: TrendingUp },
+      { name: "Satisfação", href: "/reports/satisfaction", icon: Star },
+      { name: "Geográfico", href: "/reports/geographic", icon: MapPin },
+      { name: "Tempo de Atendimento", href: "/reports/response-time", icon: Clock },
     ],
   },
   {
     name: "Configurações",
-    href: "/settings",
     icon: Settings,
-    submenu: [
-      { name: "Checklists", href: "/settings/checklists" },
-      { name: "Checklists Viaturas", href: "/settings/vehicle-checklists" },
-      { name: "Clientes e Fornecedores", href: "/settings/clients-suppliers" },
-      { name: "Equipes", href: "/settings/teams" },
-      { name: "Estoque", href: "/settings/inventory" },
-      { name: "Exportador", href: "/settings/exporter" },
-      { name: "Filiais", href: "/settings/branches" },
-      { name: "Financeiro", href: "/settings/financial" },
-      { name: "Manutenção", href: "/settings/maintenance" },
+    children: [
+      { name: "Dashboard", href: "/dashboard/configuracoes", icon: BarChart3 },
+      { name: "Checklists", href: "/dashboard/configuracoes/checklists", icon: ClipboardList },
+      { name: "Checklist Viatura", href: "/dashboard/configuracoes/checklist-viatura", icon: Truck },
+      { name: "Clientes e Fornecedores", href: "/dashboard/configuracoes/clientes-fornecedores", icon: Users },
+      { name: "Equipes", href: "/dashboard/configuracoes/equipes", icon: UserCheck },
+      { name: "Estoque", href: "/dashboard/configuracoes/estoque", icon: Package },
+      { name: "Exportador", href: "/dashboard/configuracoes/exportador", icon: Download },
+      { name: "Filiais", href: "/dashboard/configuracoes/filiais", icon: Building },
+      { name: "Manutenção", href: "/dashboard/configuracoes/manutencao", icon: Wrench },
+      { name: "Sistema", href: "/dashboard/configuracoes/sistema", icon: Settings },
     ],
   },
-  { name: "Relatórios", href: "/reports", icon: BarChart3 },
 ]
 
-export function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const pathname = usePathname()
+interface SidebarProps {
+  open: boolean
+  setOpen: (open: boolean) => void
+}
 
-  const toggleExpanded = (itemName: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(itemName) ? prev.filter((name) => name !== itemName) : [...prev, itemName],
+export function Sidebar({ open, setOpen }: SidebarProps) {
+  const pathname = usePathname()
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
+
+  const toggleExpanded = (name: string) => {
+    setExpandedItems(prev =>
+      prev.includes(name)
+        ? prev.filter(item => item !== name)
+        : [...prev, name]
     )
   }
 
-  return (
-    <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-md bg-white shadow-md">
-          {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
-      </div>
+  const isActive = (href: string) => pathname === href
 
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0", // Dark background to match AutEM
-          isOpen ? "translate-x-0" : "-translate-x-full",
-        )}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-center h-16 px-4 border-b border-gray-700">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-                <span className="text-gray-900 font-bold text-lg">A</span> {/* AutEM logo */}
-              </div>
-              <h1 className="text-xl font-bold text-white">AutEM</h1>
-            </div>
+  const SidebarContent = () => (
+    <div className="flex h-full flex-col" style={{ 
+      background: 'linear-gradient(to bottom, var(--sidebar), var(--sidebar-accent))',
+      color: 'var(--sidebar-foreground)'
+    }}>
+      <div className="flex h-16 items-center justify-between px-6">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--sidebar-primary)', color: 'var(--sidebar-primary-foreground)' }}>
+            <span className="font-bold text-lg">A</span>
           </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
-              const isExpanded = expandedItems.includes(item.name)
-              const hasSubmenu = item.submenu && item.submenu.length > 0
-
-              return (
-                <div key={item.name}>
-                  <div
+          <h1 className="text-xl font-bold">AppServiço</h1>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setOpen(false)}
+          className="lg:hidden"
+          style={{ color: 'var(--sidebar-foreground)' }}
+          aria-label="Fechar menu lateral"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      <ScrollArea className="flex-1 px-3">
+        <nav className="space-y-2" role="navigation" aria-label="Navegação principal">
+          {navigation.map((item) => (
+            <div key={item.name}>
+              {item.children ? (
+                <div>
+                  <Button
+                    variant="ghost"
                     className={cn(
-                      "flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer",
-                      isActive
-                        ? "bg-orange-500 text-white" // Orange active state to match AutEM
-                        : "text-gray-300 hover:bg-gray-800 hover:text-white",
+                      "w-full justify-between transition-colors",
+                      expandedItems.includes(item.name) && "opacity-80"
                     )}
-                    onClick={() => {
-                      if (hasSubmenu) {
-                        toggleExpanded(item.name)
-                      } else {
-                        setIsOpen(false)
-                      }
+                    style={{ 
+                      color: 'var(--sidebar-foreground)',
+                      backgroundColor: expandedItems.includes(item.name) ? 'var(--sidebar-accent)' : 'transparent'
                     }}
+                    onClick={() => toggleExpanded(item.name)}
+                    aria-expanded={expandedItems.includes(item.name)}
+                    aria-controls={`submenu-${item.name}`}
+                    aria-label={`${item.name}, ${expandedItems.includes(item.name) ? 'recolher' : 'expandir'} submenu`}
                   >
-                    <Link
-                      href={item.href}
-                      className="flex items-center flex-1"
-                      onClick={(e) => {
-                        if (hasSubmenu) {
-                          e.preventDefault()
-                        } else {
-                          setIsOpen(false)
-                        }
-                      }}
-                    >
-                      <item.icon className="mr-3 h-5 w-5" />
-                      {item.name}
-                    </Link>
-                    {hasSubmenu && (
-                      <ChevronRight className={cn("h-4 w-4 transition-transform", isExpanded ? "rotate-90" : "")} />
+                    <div className="flex items-center space-x-3">
+                      <item.icon className="h-4 w-4" aria-hidden="true" />
+                      <span>{item.name}</span>
+                    </div>
+                    {expandedItems.includes(item.name) ? (
+                      <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" aria-hidden="true" />
                     )}
-                  </div>
-
-                  {/* Submenu */}
-                  {hasSubmenu && isExpanded && (
-                    <div className="ml-6 mt-1 space-y-1">
-                      {item.submenu?.map((subItem) => {
-                        const isSubActive = pathname === subItem.href
-                        return (
-                          <Link
-                            key={subItem.name}
-                            href={subItem.href}
-                            className={cn(
-                              "block px-3 py-2 rounded-lg text-sm transition-colors",
-                              isSubActive
-                                ? "bg-orange-500 text-white"
-                                : "text-gray-400 hover:bg-gray-800 hover:text-white",
-                            )}
-                            onClick={() => setIsOpen(false)}
-                          >
-                            {subItem.name}
-                          </Link>
-                        )
-                      })}
+                  </Button>
+                  {expandedItems.includes(item.name) && (
+                    <div 
+                      className="ml-6 mt-2 space-y-1"
+                      id={`submenu-${item.name}`}
+                      role="region"
+                      aria-label={`Submenu de ${item.name}`}
+                    >
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          href={child.href}
+                          className={cn(
+                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                            isActive(child.href) && "opacity-100"
+                          )}
+                          style={{ 
+                            color: isActive(child.href) ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
+                            backgroundColor: isActive(child.href) ? 'var(--sidebar-primary)' : 'transparent'
+                          }}
+                          onClick={() => setOpen(false)}
+                          aria-current={isActive(child.href) ? 'page' : undefined}
+                        >
+                          <child.icon className="h-4 w-4" aria-hidden="true" />
+                          <span>{child.name}</span>
+                        </Link>
+                      ))}
                     </div>
                   )}
                 </div>
-              )
-            })}
-          </nav>
+              ) : (
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                    isActive(item.href) && "opacity-100"
+                  )}
+                  style={{ 
+                    color: isActive(item.href) ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
+                    backgroundColor: isActive(item.href) ? 'var(--sidebar-primary)' : 'transparent'
+                  }}
+                  onClick={() => setOpen(false)}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                >
+                  <item.icon className="h-4 w-4" aria-hidden="true" />
+                  <span>{item.name}</span>
+                </Link>
+              )}
+            </div>
+          ))}
+        </nav>
+      </ScrollArea>
+
+      {/* Footer da Sidebar */}
+      <div className="border-t p-4" style={{ borderColor: 'var(--sidebar-border)' }}>
+        <div className="flex items-center space-x-3" style={{ color: 'var(--sidebar-foreground)' }}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--sidebar-primary)' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--sidebar-primary-foreground)' }}>A</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">Admin</p>
+            <p className="text-xs" style={{ color: 'var(--sidebar-accent-foreground)' }}>admin@appservico.com</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            style={{ color: 'var(--sidebar-foreground)' }}
+            aria-label="Sair do sistema"
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+          </Button>
         </div>
       </div>
+    </div>
+  )
 
-      {/* Overlay */}
-      {isOpen && (
-        <div className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden" onClick={() => setIsOpen(false)} />
-      )}
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col" role="complementary" aria-label="Menu lateral">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="left" className="p-0 w-64" role="dialog" aria-label="Menu lateral móvel">
+          <SidebarContent />
+        </SheetContent>
+      </Sheet>
     </>
   )
 }

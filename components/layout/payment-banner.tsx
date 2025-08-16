@@ -1,26 +1,46 @@
 "use client"
 
-import { AlertTriangle, Eye } from "lucide-react"
+import { useState } from "react"
+import { AlertTriangle, X, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function PaymentBanner() {
+  const [isVisible, setIsVisible] = useState(true)
+
+  if (!isVisible) return null
+
   return (
-    <div className="bg-orange-500 text-white px-4 py-3 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <AlertTriangle className="h-5 w-5" />
-        <div>
-          <h3 className="font-semibold">Pagamento em aberto!</h3>
-          <p className="text-sm">
-            Prezado cliente, consta(m) em nosso sistema fatura(s) em aberto de sua empresa. Regularize o(s) débito(s) o
-            mais rápido possível pra evitar a suspensão do sistema. Se já efetuou o pagamento, envie o comprovante para{" "}
-            <span className="font-semibold">financeiro@satellitus.com</span> e entre em contato para solicitar a baixa.
-          </p>
+    <div className="bg-orange-500 text-white px-4 py-3 relative">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+          <div className="flex items-center space-x-4">
+            <span className="font-medium">Pagamento em aberto!</span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-orange-600 hover:bg-orange-700 border-orange-400 text-white"
+            >
+              Visualizar Faturas
+            </Button>
+            <a
+              href="mailto:financeiro@satellitus.com"
+              className="flex items-center space-x-1 text-orange-100 hover:text-white transition-colors"
+            >
+              <Mail className="h-4 w-4" />
+              <span>financeiro@satellitus.com</span>
+            </a>
+          </div>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setIsVisible(false)}
+          className="text-orange-100 hover:text-white hover:bg-orange-600"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
-      <Button variant="secondary" size="sm" className="bg-white text-orange-600 hover:bg-gray-100">
-        <Eye className="h-4 w-4 mr-2" />
-        VISUALIZAR FATURAS...
-      </Button>
     </div>
   )
 }

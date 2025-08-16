@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/components/auth-provider"
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
 import { useEffect } from "react"
@@ -35,7 +35,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="lg:pl-64">
         <Header />

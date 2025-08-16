@@ -1,128 +1,357 @@
 "use client"
 
-import { AppShell } from "@/components/layout/app-shell"
-import { KPICard } from "@/components/kpi-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ServiceChart } from "@/components/charts/service-chart"
-import { FinancialChart } from "@/components/charts/financial-chart"
-import { ServiceMap } from "@/components/map/service-map"
-import { RecentActivity } from "@/components/dashboard/recent-activity"
+import { Button } from "@/components/ui/button"
+import {
+  Users,
+  DollarSign,
+  ShoppingCart,
+  BarChart3,
+  CheckCircle,
+  Eye,
+  Settings,
+  TrendingUp,
+  UserCheck,
+  MessageSquare,
+  MapPin,
+  Clock,
+  Navigation,
+  Wifi,
+  Battery,
+  Star,
+} from "lucide-react"
+import { ProviderMap } from "@/components/dashboard/provider-map"
+import { ProviderStatusCard } from "@/components/dashboard/provider-status-card"
 
 export default function DashboardPage() {
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <main className="space-y-6" role="main" aria-label="Dashboard principal">
+      {/* Header */}
+      <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600">autem.com.br › dashboard</p>
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
+            Dashboard
+          </h1>
+          <p style={{ color: 'var(--muted-foreground)' }}>
+            Visão geral do sistema de prestação de serviços
+          </p>
         </div>
-
-        {/* KPI Cards Grid - matching AutEM design exactly */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <KPICard title="TME do mês" subtitle="" value="41 min." icon="timer" color="blue" />
-          <KPICard title="TMC do mês" subtitle="" value="75 min." icon="clock" color="blue" />
-          <KPICard title="Percorridos hoje" subtitle="" value="2 km" icon="map" color="blue" />
-          <KPICard title="Serviços" subtitle="Cadastrados" value="3" icon="wrench" color="blue" />
-          <KPICard title="Serviços" subtitle="Concluídos" value="0" icon="check" color="green" />
-          <KPICard title="Serviços" subtitle="Em andamento" value="3" icon="clock" color="orange" />
-          <KPICard title="TMC do dia" subtitle="" value="0 min." icon="timer" color="blue" />
-          <KPICard title="Jocimar" subtitle="Melhor TMC do mês" value="65 min." icon="trophy" color="blue" />
-          <KPICard title="Serviços" subtitle="Deste mês" value="60" icon="calendar" color="blue" />
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            style={{
+              borderColor: 'var(--border)',
+              color: 'var(--foreground)'
+            }}
+            aria-label="Ver relatórios detalhados"
+          >
+            <Eye className="h-4 w-4 mr-2" aria-hidden="true" />
+            Ver Relatórios
+          </Button>
+          <Button 
+            size="sm" 
+            style={{
+              backgroundColor: 'var(--primary)',
+              color: 'var(--primary-foreground)'
+            }}
+            aria-label="Abrir configurações do sistema"
+          >
+            <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
+            Configurações
+          </Button>
         </div>
+      </header>
 
-        {/* Additional Metrics Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <KPICard
-            title="Rafael - Pior TMC do mês"
-            subtitle=""
-            value="93 min."
-            icon="user-x"
-            color="red"
-            className="lg:col-span-1"
-          />
-          <Card className="bg-blue-500 text-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-4xl font-bold">R$ 2.013,90</div>
-                  <div className="text-blue-100 text-sm mt-2">
-                    de serviços do mês (receita hoje R$ 0,00, previsto no mês R$ 5.202,58 e faturado até hoje R$ 0,00)
-                  </div>
-                </div>
-                <div className="w-16 h-16 bg-blue-400 rounded-full flex items-center justify-center opacity-50">
-                  <div className="w-8 h-8 bg-blue-300 rounded-full"></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts and Map Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Service Map */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-                  <span className="text-xs">📍</span>
-                </div>
-                Mapa de Calor
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ServiceMap />
-            </CardContent>
-          </Card>
-
-          {/* Financial Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-                  <span className="text-xs">💾</span>
-                </div>
-                Resumo Financeiro
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <FinancialChart />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Service Report Chart */}
-        <Card>
+      {/* Mapa de Rastreamento em Tempo Real */}
+      <section aria-labelledby="tracking-title">
+        <Card style={{
+          backgroundColor: 'var(--card)',
+          color: 'var(--card-foreground)',
+          borderColor: 'var(--border)'
+        }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
-                <span className="text-xs">📊</span>
-              </div>
-              Relatório de Serviços
+            <CardTitle id="tracking-title" className="flex items-center space-x-2">
+              <Navigation className="h-5 w-5" style={{ color: 'var(--primary)' }} aria-hidden="true" />
+              <span>Rastreamento em Tempo Real</span>
             </CardTitle>
+            <p style={{ color: 'var(--muted-foreground)' }}>
+              Localização atual dos prestadores de serviço ativos
+            </p>
           </CardHeader>
           <CardContent>
-            <ServiceChart />
+            <div 
+              className="h-96 rounded-lg overflow-hidden border" 
+              style={{ borderColor: 'var(--border)' }}
+              role="application"
+              aria-label="Mapa de rastreamento dos prestadores de serviço"
+            >
+              <ProviderMap />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Status dos Prestadores */}
+      <section aria-labelledby="provider-status-title">
+        <ProviderStatusCard />
+      </section>
+
+      {/* Cards Principais */}
+      <section aria-labelledby="main-metrics-title">
+        <h2 id="main-metrics-title" className="sr-only">Métricas principais do sistema</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Usuários */}
+          <Card className="hover:shadow-lg transition-shadow" style={{
+            backgroundColor: 'var(--card)',
+            color: 'var(--card-foreground)',
+            borderColor: 'var(--border)'
+          }}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Usuários</CardTitle>
+              <Users className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} aria-hidden="true" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>2,847</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                +156 este mês
+              </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Clientes Ativos</span>
+                  <span className="font-medium" style={{ color: 'var(--foreground)' }}>1,623</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Prestadores</span>
+                  <span className="font-medium" style={{ color: 'var(--foreground)' }}>1,224</span>
+                </div>
+              </div>
+              <Button 
+                className="w-full mt-4" 
+                size="sm" 
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)'
+                }}
+                aria-label="Gerenciar usuários do sistema"
+              >
+                Gerenciar Usuários
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Financeiro */}
+          <Card className="hover:shadow-lg transition-shadow" style={{
+            backgroundColor: 'var(--card)',
+            color: 'var(--card-foreground)',
+            borderColor: 'var(--border)'
+          }}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Financeiro</CardTitle>
+              <DollarSign className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} aria-hidden="true" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>R$ 45.230</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                +12% vs mês anterior
+              </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Receitas</span>
+                  <span className="font-medium" style={{ color: '#10b981' }}>R$ 45.230</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Despesas</span>
+                  <span className="font-medium" style={{ color: '#ef4444' }}>R$ 12.450</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Lucro</span>
+                  <span className="font-medium" style={{ color: '#3b82f6' }}>R$ 32.780</span>
+                </div>
+              </div>
+              <Button 
+                className="w-full mt-4" 
+                size="sm" 
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)'
+                }}
+                aria-label="Ver relatórios financeiros"
+              >
+                Ver Relatórios
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Pedidos */}
+          <Card className="hover:shadow-lg transition-shadow" style={{
+            backgroundColor: 'var(--card)',
+            color: 'var(--card-foreground)',
+            borderColor: 'var(--border)'
+          }}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pedidos</CardTitle>
+              <ShoppingCart className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} aria-hidden="true" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>1,234</div>
+              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                +89 este mês
+              </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Pendentes</span>
+                  <span className="font-medium" style={{ color: '#f59e0b' }}>45</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Em Andamento</span>
+                  <span className="font-medium" style={{ color: '#3b82f6' }}>123</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span style={{ color: 'var(--foreground)' }}>Concluídos</span>
+                  <span className="font-medium" style={{ color: '#10b981' }}>1,066</span>
+                </div>
+              </div>
+              <Button 
+                className="w-full mt-4" 
+                size="sm" 
+                style={{
+                  backgroundColor: 'var(--primary)',
+                  color: 'var(--primary-foreground)'
+                }}
+                aria-label="Ver todos os pedidos"
+              >
+                Ver Pedidos
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Métricas Detalhadas */}
+      <section aria-labelledby="detailed-metrics-title">
+        <h2 id="detailed-metrics-title" className="sr-only">Métricas detalhadas do sistema</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <UserCheck className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Prestadores Ativos</p>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>1,224</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="h-4 w-4 text-green-600" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Serviços Concluídos</p>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>1,066</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-yellow-600" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Tempo Médio</p>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>24min</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Star className="h-4 w-4 text-purple-600" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>Avaliação Média</p>
+                  <p className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>4.8</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Gráficos e Relatórios */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Atividade Recente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Novo pedido criado</p>
+                  <p className="text-xs text-gray-500">Pedido #1234 - Limpeza residencial</p>
+                </div>
+                <span className="text-xs text-gray-500">2min atrás</span>
+              </div>
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Prestador verificado</p>
+                  <p className="text-xs text-gray-500">João Silva foi aprovado</p>
+                </div>
+                <span className="text-xs text-gray-500">15min atrás</span>
+              </div>
+              <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Serviço concluído</p>
+                  <p className="text-xs text-gray-500">Pedido #1233 - Manutenção elétrica</p>
+                </div>
+                <span className="text-xs text-gray-500">1h atrás</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Recent Activity */}
-        <RecentActivity />
-
-        {/* Chat Widget */}
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="bg-blue-600 text-white p-3 rounded-lg shadow-lg max-w-sm">
-            <div className="flex items-center space-x-2 mb-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold">A</span>
-              </div>
-              <div>
-                <div className="font-semibold text-sm">No momento estamos com uma lista de...</div>
-                <div className="text-xs opacity-75">Ana • Agora</div>
-              </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Relatórios</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <Button variant="outline" className="w-full justify-start">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Relatório de Performance
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Análise de Receita
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <Users className="h-4 w-4 mr-2" />
+                Relatório de Usuários
+              </Button>
+              <Button variant="outline" className="w-full justify-start">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Satisfação do Cliente
+              </Button>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
-    </AppShell>
+    </main>
   )
 }
