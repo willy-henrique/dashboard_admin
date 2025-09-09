@@ -9,9 +9,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: 'export',
-  trailingSlash: true,
-  distDir: 'out',
+  // Removido output: 'export' para permitir APIs no Vercel
+  // Removido trailingSlash: true
+  // Removido distDir: 'out'
+  serverExternalPackages: ['firebase-admin']
 }
 
 export default nextConfig

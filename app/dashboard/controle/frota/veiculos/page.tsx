@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { 
   Truck, 
   Car,
-  Motorcycle,
+  Bike,
   Plus, 
   Search, 
   Filter, 
@@ -192,7 +192,7 @@ export default function VeiculosPage() {
       case "Caminhão":
         return <Truck className="h-4 w-4" />
       case "Moto":
-        return <Motorcycle className="h-4 w-4" />
+        return <Bike className="h-4 w-4" />
       default:
         return <Car className="h-4 w-4" />
     }

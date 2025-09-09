@@ -265,7 +265,6 @@ export default function ContasPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   )
 }
