@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { FirebaseProvidersService, FirebaseProvider } from '@/lib/services/firebase-providers'
 
 export interface Provider {
   id: string
@@ -47,29 +48,55 @@ export function useProviders(options?: {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Converter FirebaseProvider para Provider
+  const convertFirebaseProvider = (fbProvider: FirebaseProvider): Provider => ({
+    id: fbProvider.id,
+    nome: fbProvider.nome,
+    telefone: fbProvider.telefone,
+    email: fbProvider.email,
+    status: fbProvider.status,
+    localizacao: fbProvider.localizacao,
+    ultimaAtualizacao: fbProvider.ultimaAtualizacao?.toDate?.()?.toISOString() || new Date().toISOString(),
+    servicoAtual: fbProvider.servicoAtual,
+    especialidades: fbProvider.especialidades,
+    avaliacao: fbProvider.avaliacao,
+    totalServicos: fbProvider.totalServicos
+  })
+
+  // Calcular estatísticas
+  const calculateStats = (providersList: Provider[]): ProvidersStats => {
+    return {
+      total: providersList.length,
+      disponivel: providersList.filter(p => p.status === 'disponivel').length,
+      ocupado: providersList.filter(p => p.status === 'ocupado').length,
+      online: providersList.filter(p => p.status === 'online').length,
+      offline: providersList.filter(p => p.status === 'offline').length
+    }
+  }
+
   const fetchProviders = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const params = new URLSearchParams()
-      if (options?.status) params.append('status', options.status)
-      if (options?.ativo !== undefined) params.append('ativo', options.ativo.toString())
-      if (options?.lat) params.append('lat', options.lat.toString())
-      if (options?.lng) params.append('lng', options.lng.toString())
-      if (options?.raio) params.append('raio', options.raio.toString())
-
-      const response = await fetch(`/api/providers?${params.toString()}`)
-      const data = await response.json()
-
-      if (data.success) {
-        setProviders(data.data)
-        setStats(data.stats)
+      let firebaseProviders: FirebaseProvider[]
+      
+      if (options?.ativo) {
+        firebaseProviders = await FirebaseProvidersService.getActiveProviders()
       } else {
-        setError(data.error || 'Erro ao carregar prestadores')
+        firebaseProviders = await FirebaseProvidersService.getProviders()
       }
+
+      // Filtrar por status se especificado
+      if (options?.status) {
+        firebaseProviders = firebaseProviders.filter(p => p.status === options.status)
+      }
+
+      const convertedProviders = firebaseProviders.map(convertFirebaseProvider)
+      setProviders(convertedProviders)
+      setStats(calculateStats(convertedProviders))
     } catch (err) {
-      setError('Erro de conexão')
+      setError('Erro ao carregar prestadores')
       console.error('Erro ao buscar prestadores:', err)
     } finally {
       setLoading(false)
@@ -77,15 +104,33 @@ export function useProviders(options?: {
   }
 
   useEffect(() => {
-    fetchProviders()
-  }, [options?.status, options?.ativo, options?.lat, options?.lng, options?.raio])
+    if (options?.autoRefresh) {
+      // Usar listener em tempo real do Firebase
+      const unsubscribe = FirebaseProvidersService.listenToActiveProviders((firebaseProviders) => {
+        try {
+          let filteredProviders = firebaseProviders
+          
+          if (options?.status) {
+            filteredProviders = filteredProviders.filter(p => p.status === options.status)
+          }
 
-  useEffect(() => {
-    if (options?.autoRefresh && options?.refreshInterval) {
-      const interval = setInterval(fetchProviders, options.refreshInterval)
-      return () => clearInterval(interval)
+          const convertedProviders = filteredProviders.map(convertFirebaseProvider)
+          setProviders(convertedProviders)
+          setStats(calculateStats(convertedProviders))
+          setLoading(false)
+          setError(null)
+        } catch (err) {
+          setError('Erro ao carregar prestadores')
+          console.error('Erro ao processar prestadores:', err)
+        }
+      })
+
+      return unsubscribe
+    } else {
+      // Buscar uma vez
+      fetchProviders()
     }
-  }, [options?.autoRefresh, options?.refreshInterval])
+  }, [options?.status, options?.ativo, options?.autoRefresh])
 
   return {
     providers,

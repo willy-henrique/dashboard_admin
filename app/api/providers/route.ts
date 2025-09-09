@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { FirebaseProvidersService } from '@/lib/services/firebase-providers'
 
-// Mock data dos prestadores
-const providers = [
+// Mock data dos prestadores (fallback)
+const mockProviders = [
   {
     id: "1",
     nome: "João Silva",
@@ -90,6 +91,20 @@ export async function GET(request: NextRequest) {
     const lat = searchParams.get('lat')
     const lng = searchParams.get('lng')
     const raio = searchParams.get('raio') || '10' // km
+
+    let providers
+
+    // Tentar buscar do Firebase primeiro
+    try {
+      if (ativo === 'true') {
+        providers = await FirebaseProvidersService.getActiveProviders()
+      } else {
+        providers = await FirebaseProvidersService.getProviders()
+      }
+    } catch (firebaseError) {
+      console.warn('Erro ao buscar do Firebase, usando dados mock:', firebaseError)
+      providers = mockProviders
+    }
 
     let filteredProviders = [...providers]
 

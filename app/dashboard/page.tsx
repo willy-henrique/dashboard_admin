@@ -81,7 +81,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div 
-              className="h-96 rounded-lg overflow-hidden border" 
+              className="h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden border" 
               style={{ borderColor: 'var(--border)' }}
               role="application"
               aria-label="Mapa de rastreamento dos prestadores de serviço"

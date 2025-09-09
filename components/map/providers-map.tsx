@@ -114,20 +114,20 @@ export function ProvidersMap() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-orange-500" />
-                Rastreamento em Tempo Real
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                <span className="truncate">Rastreamento em Tempo Real</span>
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Localização atual dos prestadores de serviço ativos
               </p>
             </div>
             <button
               onClick={refetch}
               disabled={loading}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors self-start sm:self-auto"
               title="Atualizar localizações"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -137,21 +137,21 @@ export function ProvidersMap() {
         <CardContent>
           {/* Estatísticas */}
           {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">{stats.disponivel}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
+              <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
+                <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.disponivel}</div>
                 <div className="text-xs text-green-700">Disponíveis</div>
               </div>
-              <div className="text-center p-3 bg-orange-50 rounded-lg">
-                <div className="text-2xl font-bold text-orange-600">{stats.ocupado}</div>
+              <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg">
+                <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.ocupado}</div>
                 <div className="text-xs text-orange-700">Ocupados</div>
               </div>
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{stats.online}</div>
+              <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+                <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.online}</div>
                 <div className="text-xs text-blue-700">Online</div>
               </div>
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
-                <div className="text-2xl font-bold text-gray-600">{stats.total}</div>
+              <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
+                <div className="text-lg sm:text-2xl font-bold text-gray-600">{stats.total}</div>
                 <div className="text-xs text-gray-700">Total</div>
               </div>
             </div>
@@ -161,8 +161,8 @@ export function ProvidersMap() {
           <div className="relative">
             <div 
               ref={mapRef} 
-              className="w-full h-96 rounded-lg border"
-              style={{ minHeight: '400px' }}
+              className="w-full h-64 sm:h-80 md:h-96 rounded-lg border"
+              style={{ minHeight: '300px' }}
             />
             
             {/* Loading overlay */}
@@ -197,7 +197,7 @@ export function ProvidersMap() {
           {/* Legenda */}
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium mb-2">Status dos Prestadores</h4>
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {Object.entries(statusConfig).map(([status, config]) => (
                 <div key={status} className="flex items-center gap-2">
                   <div className={`w-3 h-3 rounded-full ${config.color}`}></div>
@@ -213,21 +213,21 @@ export function ProvidersMap() {
       {selectedProvider && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <User className="h-4 w-4" />
-              {selectedProvider.nome}
+              <span className="truncate">{selectedProvider.nome}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-gray-500" />
-                <span className="text-sm">{selectedProvider.telefone}</span>
+                <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                <span className="text-sm truncate">{selectedProvider.telefone}</span>
               </div>
               
               <div className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${statusConfig[selectedProvider.status].color}`}></div>
-                <Badge className={statusConfig[selectedProvider.status].textColor}>
+                <div className={`w-3 h-3 rounded-full ${statusConfig[selectedProvider.status].color} flex-shrink-0`}></div>
+                <Badge className={`${statusConfig[selectedProvider.status].textColor} text-xs`}>
                   {statusConfig[selectedProvider.status].label}
                 </Badge>
               </div>
@@ -235,15 +235,28 @@ export function ProvidersMap() {
               {selectedProvider.servicoAtual && (
                 <div>
                   <p className="text-sm font-medium text-gray-700">Serviço Atual:</p>
-                  <p className="text-sm text-gray-600">{selectedProvider.servicoAtual}</p>
+                  <p className="text-sm text-gray-600 break-words">{selectedProvider.servicoAtual}</p>
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  Última atualização: {new Date(selectedProvider.ultimaAtualizacao).toLocaleString()}
-                </span>
+              <div className="flex items-start gap-2">
+                <Clock className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-gray-600">
+                  <p className="font-medium">Última atualização:</p>
+                  <p className="text-xs">{new Date(selectedProvider.ultimaAtualizacao).toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Informações adicionais para mobile */}
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200">
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Avaliação</p>
+                  <p className="text-sm font-semibold">{selectedProvider.avaliacao}/5</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-gray-500">Serviços</p>
+                  <p className="text-sm font-semibold">{selectedProvider.totalServicos}</p>
+                </div>
               </div>
             </div>
           </CardContent>
