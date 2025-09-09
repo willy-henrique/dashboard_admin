@@ -20,6 +20,11 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abcdef
 ```
 
+#### Google Maps (Obrigatória para o mapa)
+```
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+```
+
 #### Core (Obrigatórias)
 ```
 APP_ENV=production

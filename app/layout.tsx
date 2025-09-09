@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { QueryProvider } from "@/components/query-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,6 +37,7 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
+              <GoogleMapsLoader />
               <div className="min-h-screen bg-background">
                 {children}
                 <Toaster />

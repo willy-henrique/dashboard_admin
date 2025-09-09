@@ -20,7 +20,7 @@ import {
   Battery,
   Star,
 } from "lucide-react"
-import { ProviderMap } from "@/components/dashboard/provider-map"
+import { ProvidersMap } from "@/components/map/providers-map"
 import { ProviderStatusCard } from "@/components/dashboard/provider-status-card"
 
 export default function DashboardPage() {
@@ -86,7 +86,7 @@ export default function DashboardPage() {
               role="application"
               aria-label="Mapa de rastreamento dos prestadores de serviço"
             >
-              <ProviderMap />
+              <ProvidersMap />
             </div>
           </CardContent>
         </Card>
