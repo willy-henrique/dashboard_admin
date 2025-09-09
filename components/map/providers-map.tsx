@@ -33,7 +33,7 @@ export function ProvidersMap() {
 
     const initMap = () => {
       // Verificar se o Google Maps está disponível
-      if (typeof window !== 'undefined' && window.google) {
+      if (typeof window !== 'undefined' && window.google && window.google.maps) {
         const map = new window.google.maps.Map(mapRef.current!, {
           center: { lat: -20.3155, lng: -40.3128 }, // Vitória, ES
           zoom: 12,
@@ -49,65 +49,145 @@ export function ProvidersMap() {
         setMapInstance(map)
         setMapLoaded(true)
       } else {
-        // Fallback se Google Maps não estiver carregado
-        setTimeout(initMap, 100)
+        // Fallback: criar mapa mock mais realista
+        createMockMap()
+        setMapLoaded(true)
       }
     }
 
-    initMap()
+    // Tentar carregar Google Maps primeiro
+    if (typeof window !== 'undefined' && window.google && window.google.maps) {
+      initMap()
+    } else {
+      // Aguardar um pouco para o Google Maps carregar
+      const timer = setTimeout(() => {
+        if (typeof window !== 'undefined' && window.google && window.google.maps) {
+          initMap()
+        } else {
+          createMockMap()
+          setMapLoaded(true)
+        }
+      }, 2000)
+
+      return () => clearTimeout(timer)
+    }
   }, [mapLoaded])
+
+  // Criar mapa mock quando Google Maps não estiver disponível
+  const createMockMap = () => {
+    if (!mapRef.current) return
+
+    const mapContainer = mapRef.current
+    mapContainer.innerHTML = `
+      <div class="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 relative overflow-hidden rounded-lg">
+        <!-- Grid pattern -->
+        <div class="absolute inset-0 opacity-20">
+          <div class="grid grid-cols-12 grid-rows-8 h-full">
+            ${Array.from({ length: 96 }, (_, i) => 
+              `<div class="border border-gray-300"></div>`
+            ).join('')}
+          </div>
+        </div>
+        
+        <!-- Mock markers for providers -->
+        ${providers.map((provider, index) => {
+          const colors = {
+            disponivel: '#10b981',
+            ocupado: '#f59e0b', 
+            online: '#3b82f6',
+            offline: '#6b7280'
+          }
+          const color = colors[provider.status] || '#6b7280'
+          
+          return `
+            <div 
+              class="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
+              style="
+                background-color: ${color};
+                left: ${20 + (index * 15) % 60}%;
+                top: ${30 + (index * 20) % 40}%;
+                z-index: 10;
+              "
+              title="${provider.nome} - ${provider.status}"
+              onclick="alert('${provider.nome}\\nStatus: ${provider.status}\\nTelefone: ${provider.telefone}')"
+            ></div>
+          `
+        }).join('')}
+        
+        <!-- Map info -->
+        <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+          <div class="text-sm font-medium text-gray-700">Vitória, ES</div>
+          <div class="text-xs text-gray-500">${providers.length} prestadores ativos</div>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+          <div class="flex items-center gap-2 text-xs text-gray-600">
+            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span>Online</span>
+          </div>
+        </div>
+      </div>
+    `
+  }
 
   // Atualizar marcadores quando os prestadores mudarem
   useEffect(() => {
-    if (!mapInstance || !providers.length) return
+    if (!providers.length) return
 
-    // Limpar marcadores existentes
-    markers.forEach(marker => marker.setMap(null))
-    setMarkers([])
+    if (mapInstance && window.google && window.google.maps) {
+      // Google Maps está disponível
+      // Limpar marcadores existentes
+      markers.forEach(marker => marker.setMap(null))
+      setMarkers([])
 
-    // Adicionar novos marcadores
-    const newMarkers: google.maps.Marker[] = []
-    
-    providers.forEach(provider => {
-      const marker = new window.google.maps.Marker({
-        position: provider.localizacao,
-        map: mapInstance,
-        title: provider.nome,
-        icon: {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: statusConfig[provider.status].color.replace('bg-', '#').replace('-500', ''),
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 2
-        }
-      })
+      // Adicionar novos marcadores
+      const newMarkers: google.maps.Marker[] = []
+      
+      providers.forEach(provider => {
+        const marker = new window.google.maps.Marker({
+          position: provider.localizacao,
+          map: mapInstance,
+          title: provider.nome,
+          icon: {
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: statusConfig[provider.status].color.replace('bg-', '#').replace('-500', ''),
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          }
+        })
 
-      // Info window para cada marcador
-      const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div class="p-3 min-w-[200px]">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-3 h-3 rounded-full ${statusConfig[provider.status].color}"></div>
-              <h3 class="font-semibold text-sm">${provider.nome}</h3>
+        // Info window para cada marcador
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `
+            <div class="p-3 min-w-[200px]">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-3 h-3 rounded-full ${statusConfig[provider.status].color}"></div>
+                <h3 class="font-semibold text-sm">${provider.nome}</h3>
+              </div>
+              <p class="text-xs text-gray-600 mb-1">${provider.telefone}</p>
+              <p class="text-xs ${statusConfig[provider.status].textColor} font-medium">${statusConfig[provider.status].label}</p>
+              ${provider.servicoAtual ? `<p class="text-xs text-gray-500 mt-1">Serviço: ${provider.servicoAtual}</p>` : ''}
+              <p class="text-xs text-gray-400 mt-1">Atualizado: ${new Date(provider.ultimaAtualizacao).toLocaleTimeString()}</p>
             </div>
-            <p class="text-xs text-gray-600 mb-1">${provider.telefone}</p>
-            <p class="text-xs ${statusConfig[provider.status].textColor} font-medium">${statusConfig[provider.status].label}</p>
-            ${provider.servicoAtual ? `<p class="text-xs text-gray-500 mt-1">Serviço: ${provider.servicoAtual}</p>` : ''}
-            <p class="text-xs text-gray-400 mt-1">Atualizado: ${new Date(provider.ultimaAtualizacao).toLocaleTimeString()}</p>
-          </div>
-        `
+          `
+        })
+
+        marker.addListener('click', () => {
+          setSelectedProvider(provider)
+          infoWindow.open(mapInstance, marker)
+        })
+
+        newMarkers.push(marker)
       })
 
-      marker.addListener('click', () => {
-        setSelectedProvider(provider)
-        infoWindow.open(mapInstance, marker)
-      })
-
-      newMarkers.push(marker)
-    })
-
-    setMarkers(newMarkers)
+      setMarkers(newMarkers)
+    } else {
+      // Usar mapa mock - recriar com novos dados
+      createMockMap()
+    }
   }, [mapInstance, providers])
 
   return (
