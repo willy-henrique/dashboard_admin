@@ -12,6 +12,9 @@ import {
 } from "lucide-react"
 import { ProvidersMap } from "@/components/map/providers-map"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
+import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics"
+import { RecentActivity } from "@/components/dashboard/recent-activity"
+import { DashboardCharts } from "@/components/dashboard/dashboard-charts"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { useEffect } from "react"
 
@@ -84,7 +87,15 @@ export default function DashboardPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="mt-6 space-y-6">
+        <TabsContent value="overview" className="mt-6 space-y-8">
+          {/* Métricas do Dashboard */}
+          <section aria-labelledby="metrics-title">
+            <h2 id="metrics-title" className="text-2xl font-bold text-gray-900 mb-6">
+              Métricas Principais
+            </h2>
+            <DashboardMetrics />
+          </section>
+
           {/* Mapa de Rastreamento em Tempo Real */}
           <section aria-labelledby="tracking-title">
             <Card className="bg-card border border-gray-200 shadow-sm rounded-2xl">
@@ -121,6 +132,23 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </section>
+
+          {/* Gráficos e Atividades */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <section aria-labelledby="charts-title">
+              <h2 id="charts-title" className="text-2xl font-bold text-gray-900 mb-6">
+                Análise de Serviços
+              </h2>
+              <DashboardCharts />
+            </section>
+
+            <section aria-labelledby="activity-title">
+              <h2 id="activity-title" className="text-2xl font-bold text-gray-900 mb-6">
+                Atividades Recentes
+              </h2>
+              <RecentActivity />
+            </section>
+          </div>
         </TabsContent>
 
         <TabsContent value="analytics" className="mt-6">

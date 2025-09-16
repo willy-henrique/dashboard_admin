@@ -108,22 +108,22 @@ const activities = [
 
 export function RecentActivity() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {activities.map((activity) => {
         const Icon = activity.icon
         return (
-          <div key={activity.id} className="flex items-start space-x-4 p-4 rounded-lg border hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          <div key={activity.id} className="flex items-start space-x-4 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm">
             <div className={`p-2 rounded-full ${activity.bgColor}`}>
               <Icon className={`h-4 w-4 ${activity.color}`} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <p className="text-sm font-semibold text-gray-900">
                   {activity.title}
                 </p>
-                <p className="text-xs text-gray-500">{activity.time}</p>
+                <p className="text-xs text-gray-500 font-medium">{activity.time}</p>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-600 mt-1">
                 {activity.description}
               </p>
             </div>
@@ -132,7 +132,7 @@ export function RecentActivity() {
       })}
       
       <div className="text-center pt-4">
-        <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+        <button className="text-sm text-orange-600 hover:text-orange-700 font-semibold px-4 py-2 rounded-lg hover:bg-orange-50 transition-colors">
           Ver todas as atividades
         </button>
       </div>

@@ -96,14 +96,20 @@ export function DashboardMetrics() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {metrics.map((metric) => (
-        <Card key={metric.title}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">{metric.title}</CardTitle>
-            <metric.icon className="h-4 w-4 text-gray-400" />
+        <Card key={metric.title} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-3 text-lg font-bold">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                  <metric.icon className="h-4 w-4" aria-hidden="true" />
+                </span>
+                <span>{metric.title}</span>
+              </CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
-            <div className="flex items-center space-x-2 text-xs">
+            <div className="text-3xl font-bold text-gray-900 mb-2">{metric.value}</div>
+            <div className="flex items-center space-x-2 text-sm">
               <span className={`font-medium ${metric.changeType === "positive" ? "text-green-600" : "text-red-600"}`}>
                 {metric.change}
               </span>
