@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,82 +13,88 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bell, LogOut, User, Settings, LayoutDashboard } from "lucide-react" // Fixed import to use LayoutDashboard from lucide-react
+import { Bell, LogOut, User, Settings, Search, Menu, Moon, Sun } from "lucide-react"
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth()
+  const [isDarkMode, setIsDarkMode] = useState(false)
 
   return (
     <>
-      {/* Payment Alert Banner - matching AutEM design */}
-      <div className="bg-orange-500 text-white px-6 py-3">
-        <div className="flex items-center space-x-3">
-          <div className="bg-white bg-opacity-20 rounded-full p-2">
-            <Bell className="h-5 w-5" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-semibold">Pagamento em aberto!</h3>
-            <p className="text-sm opacity-90">
-              Prezado cliente, consta(m) em nosso sistema fatura(s) em aberto de sua empresa. Regularize o(s) débito(s)
-              o mais rápido possível pra evitar a suspensão do sistema. Se já efetuou o pagamento, envie o comprovante
-              para <span className="font-semibold">financeiro@satellitus.com</span> e entre em contato para solicitar a
-              baixa.
-            </p>
+      {/* Payment Alert Banner */}
+      <div className="bg-orange-500 text-white px-4 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Bell className="h-4 w-4" />
+            <span className="text-sm font-medium">Pagamento em aberto!</span>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="bg-white bg-opacity-20 border-white border-opacity-30 text-white hover:bg-white hover:bg-opacity-30"
+            className="bg-white bg-opacity-20 border-white border-opacity-30 text-white hover:bg-white hover:bg-opacity-30 text-xs"
           >
-            VISUALIZAR FATURAS...
+            VISUALIZAR
           </Button>
         </div>
       </div>
 
       {/* Main Header */}
-      <header className="bg-gray-900 shadow-sm border-b border-gray-700">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Navigation Links */}
-            <div className="flex items-center space-x-8">
+            {/* Left side - Logo and Menu */}
+            <div className="flex items-center space-x-4">
+              {/* Mobile menu button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onMenuClick}
+                className="lg:hidden"
+                aria-label="Abrir menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+
+              {/* Logo */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-                  <span className="text-gray-900 font-bold text-lg">A</span>
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">A</span>
                 </div>
+                <span className="text-xl font-bold text-gray-900 hidden sm:block">AppServiço</span>
               </div>
-              <nav className="flex space-x-6">
-                <a
-                  href="/dashboard"
-                  className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium flex items-center"
-                >
-                  <LayoutDashboard className="h-4 w-4 mr-2" />
-                  Dashboard
-                </a>
-                <a href="/services" className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
-                  Serviços
-                </a>
-                <a href="/control" className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
-                  Controle
-                </a>
-                <a href="/financial" className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
-                  Financeiro
-                </a>
-                <a href="/settings" className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
-                  Configurações
-                </a>
-                <a href="/reports" className="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium">
-                  Relatórios
-                </a>
-              </nav>
             </div>
 
-            <div className="flex items-center space-x-4">
-              {/* Telli Button */}
-              <Button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">telli</Button>
+            {/* Center - Search */}
+            <div className="flex-1 max-w-lg mx-4 hidden md:block">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Buscar..."
+                  className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Right side - Actions */}
+            <div className="flex items-center space-x-2">
+              {/* Dark mode toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="hidden sm:flex"
+                aria-label="Alternar tema"
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
 
               {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative text-gray-300 hover:text-white">
-                <Bell className="h-5 w-5" />
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="h-5 w-5 text-gray-600" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
                   1
                 </span>
@@ -106,8 +114,10 @@ export function Header() {
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                      <p className="text-sm font-medium leading-none">{user?.name || "Admin"}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email || "admin@appservico.com"}
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />

@@ -147,13 +147,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const isActive = (href: string) => pathname === href
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col" style={{ 
-      background: 'linear-gradient(to bottom, var(--sidebar), var(--sidebar-accent))',
-      color: 'var(--sidebar-foreground)'
-    }}>
+    <div className="flex h-full flex-col bg-gradient-to-b from-orange-500 to-orange-600 text-white">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--sidebar-primary)', color: 'var(--sidebar-primary-foreground)' }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white text-orange-500">
             <span className="font-bold text-lg">A</span>
           </div>
           <h1 className="text-xl font-bold">AppServiço</h1>
@@ -162,8 +159,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           variant="ghost"
           size="sm"
           onClick={() => setOpen(false)}
-          className="lg:hidden"
-          style={{ color: 'var(--sidebar-foreground)' }}
+          className="lg:hidden text-white hover:bg-white hover:bg-opacity-20"
           aria-label="Fechar menu lateral"
         >
           <X className="h-4 w-4" />
@@ -179,13 +175,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-between transition-colors",
-                      expandedItems.includes(item.name) && "opacity-80"
+                      "w-full justify-between transition-colors text-white hover:bg-white hover:bg-opacity-20",
+                      expandedItems.includes(item.name) && "bg-white bg-opacity-20"
                     )}
-                    style={{ 
-                      color: 'var(--sidebar-foreground)',
-                      backgroundColor: expandedItems.includes(item.name) ? 'var(--sidebar-accent)' : 'transparent'
-                    }}
                     onClick={() => toggleExpanded(item.name)}
                     aria-expanded={expandedItems.includes(item.name)}
                     aria-controls={`submenu-${item.name}`}
@@ -213,13 +205,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                           key={child.href}
                           href={child.href}
                           className={cn(
-                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                            isActive(child.href) && "opacity-100"
+                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-white hover:bg-white hover:bg-opacity-20",
+                            isActive(child.href) && "bg-white bg-opacity-30 text-orange-600"
                           )}
-                          style={{ 
-                            color: isActive(child.href) ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
-                            backgroundColor: isActive(child.href) ? 'var(--sidebar-primary)' : 'transparent'
-                          }}
                           onClick={() => setOpen(false)}
                           aria-current={isActive(child.href) ? 'page' : undefined}
                         >
@@ -234,13 +222,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                    isActive(item.href) && "opacity-100"
+                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-white hover:bg-white hover:bg-opacity-20",
+                    isActive(item.href) && "bg-white bg-opacity-30 text-orange-600"
                   )}
-                  style={{ 
-                    color: isActive(item.href) ? 'var(--sidebar-primary-foreground)' : 'var(--sidebar-foreground)',
-                    backgroundColor: isActive(item.href) ? 'var(--sidebar-primary)' : 'transparent'
-                  }}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? 'page' : undefined}
                 >
@@ -254,19 +238,19 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       </ScrollArea>
 
       {/* Footer da Sidebar */}
-      <div className="border-t p-4" style={{ borderColor: 'var(--sidebar-border)' }}>
-        <div className="flex items-center space-x-3" style={{ color: 'var(--sidebar-foreground)' }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--sidebar-primary)' }}>
-            <span className="text-sm font-medium" style={{ color: 'var(--sidebar-primary-foreground)' }}>A</span>
+      <div className="border-t border-white border-opacity-20 p-4">
+        <div className="flex items-center space-x-3 text-white">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-orange-500">
+            <span className="text-sm font-medium">A</span>
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs" style={{ color: 'var(--sidebar-accent-foreground)' }}>admin@appservico.com</p>
+            <p className="text-xs text-white text-opacity-80">admin@appservico.com</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            style={{ color: 'var(--sidebar-foreground)' }}
+            className="text-white hover:bg-white hover:bg-opacity-20"
             aria-label="Sair do sistema"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -279,7 +263,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-50" role="complementary" aria-label="Menu lateral">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-30" role="complementary" aria-label="Menu lateral">
         <SidebarContent />
       </aside>
 
