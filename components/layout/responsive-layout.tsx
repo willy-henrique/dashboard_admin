@@ -30,17 +30,17 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   }, [isMobile])
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="lg:ml-64">
         {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
         
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="min-h-screen">
           <div className="px-4 sm:px-6 lg:px-8 py-6">
             {children}
           </div>

@@ -35,11 +35,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header style={{ 
+    <header className="sticky top-0 z-40" style={{ 
       backgroundColor: 'var(--card)', 
-      borderBottom: '1px solid var(--border)' 
+      borderBottom: '1px solid var(--border)'
     }}>
-      <div className="flex items-center justify-between px-4 sm:px-6 py-4">
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"

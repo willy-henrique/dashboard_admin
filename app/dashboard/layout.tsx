@@ -12,18 +12,20 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex h-screen" style={{ backgroundColor: 'var(--background)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       {/* Sidebar */}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="lg:ml-64">
         {/* Topbar */}
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
         
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
-          {children}
+        <main className="min-h-screen">
+          <div className="px-4 sm:px-6 lg:px-8 py-6" style={{ color: 'var(--foreground)' }}>
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -33,20 +33,20 @@ export default function DashboardPage() {
   return (
     <div className="w-full" role="main" aria-label="Dashboard principal">
       {/* Header */}
-      <header className="flex items-center justify-between mb-6">
+      <header className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Dashboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-lg text-gray-700">
             Visão geral do sistema de prestação de serviços
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
           <Button 
             variant="outline" 
             size="sm" 
-            className="border-orange-400 text-orange-600 hover:bg-orange-50"
+            className="border-orange-500 text-orange-600 hover:bg-orange-50 font-medium px-4 py-2"
             aria-label="Ver relatórios detalhados"
             onClick={handleViewReports}
           >
@@ -55,7 +55,7 @@ export default function DashboardPage() {
           </Button>
           <Button 
             size="sm" 
-            className="bg-orange-400 hover:bg-orange-500 text-white"
+            className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-4 py-2"
             aria-label="Abrir configurações do sistema"
             onClick={handleSettings}
           >
@@ -67,13 +67,19 @@ export default function DashboardPage() {
 
       {/* Tabs para diferentes visualizações */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <Navigation className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
+          <TabsTrigger 
+            value="overview" 
+            className="flex items-center gap-2 font-medium text-base py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+          >
+            <Navigation className="h-5 w-5" />
             Visão Geral
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+          <TabsTrigger 
+            value="analytics" 
+            className="flex items-center gap-2 font-medium text-base py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+          >
+            <Settings className="h-5 w-5" />
             Analytics Detalhado
           </TabsTrigger>
         </TabsList>
@@ -81,19 +87,19 @@ export default function DashboardPage() {
         <TabsContent value="overview" className="mt-6 space-y-6">
           {/* Mapa de Rastreamento em Tempo Real */}
           <section aria-labelledby="tracking-title">
-            <Card className="bg-white border border-gray-200">
-              <CardHeader>
-                <CardTitle id="tracking-title" className="flex items-center space-x-2 text-gray-900">
-                  <Navigation className="h-5 w-5 text-orange-400" aria-hidden="true" />
+            <Card className="bg-white border-2 border-gray-200 shadow-lg">
+              <CardHeader className="pb-4">
+                <CardTitle id="tracking-title" className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                  <Navigation className="h-6 w-6 text-orange-500" aria-hidden="true" />
                   <span>Rastreamento em Tempo Real</span>
                 </CardTitle>
-                <p className="text-gray-600">
+                <p className="text-lg text-gray-700 mt-2">
                   Localização atual dos prestadores de serviço ativos
                 </p>
               </CardHeader>
               <CardContent>
                 <div 
-                  className="h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center" 
+                  className="h-80 sm:h-96 md:h-[28rem] rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center" 
                   role="application"
                   aria-label="Mapa de rastreamento dos prestadores de serviço"
                 >
@@ -105,36 +111,37 @@ export default function DashboardPage() {
 
           {/* Segundo Card de Rastreamento */}
           <section aria-labelledby="tracking-title-2">
-            <Card className="bg-white border border-gray-200">
-              <CardHeader>
+            <Card className="bg-white border-2 border-gray-200 shadow-lg">
+              <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle id="tracking-title-2" className="flex items-center space-x-2 text-gray-900">
-                      <MapPin className="h-5 w-5 text-orange-400" aria-hidden="true" />
+                    <CardTitle id="tracking-title-2" className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
+                      <MapPin className="h-6 w-6 text-orange-500" aria-hidden="true" />
                       <span>Rastreamento em Tempo Real</span>
                     </CardTitle>
-                    <p className="text-gray-600">
+                    <p className="text-lg text-gray-700 mt-2">
                       Localização atual dos prestadores de serviço ativos
                     </p>
                   </div>
                   <Button 
                     size="sm" 
-                    className="bg-orange-400 hover:bg-orange-500 text-white p-2"
+                    className="bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg shadow-md"
                     aria-label="Atualizar localizações"
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className="h-5 w-5" />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div 
-                  className="h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center" 
+                  className="h-80 sm:h-96 md:h-[28rem] rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center" 
                   role="application"
                   aria-label="Mapa de rastreamento dos prestadores de serviço"
                 >
-                  <div className="text-center text-gray-500">
-                    <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin" />
-                    <p>Atualizando localizações...</p>
+                  <div className="text-center text-gray-600">
+                    <RefreshCw className="h-12 w-12 mx-auto mb-4 animate-spin text-orange-500" />
+                    <p className="text-xl font-medium">Atualizando localizações...</p>
+                    <p className="text-sm text-gray-500 mt-2">Aguarde enquanto carregamos os dados mais recentes</p>
                   </div>
                 </div>
               </CardContent>
