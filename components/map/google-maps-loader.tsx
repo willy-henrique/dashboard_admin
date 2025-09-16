@@ -20,8 +20,13 @@ export function GoogleMapsLoader({ apiKey }: GoogleMapsLoaderProps) {
       return
     }
 
-    // Usar a chave da API do ambiente ou fallback
-    const key = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'demo-key'
+    // Usar a chave da API do ambiente (sem fallback em produção)
+    const isProd = process.env.NODE_ENV === 'production'
+    const key = apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (isProd && !key) {
+      console.error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ausente em produção')
+      return
+    }
     
     // Carregar o script do Google Maps
     const script = document.createElement('script')

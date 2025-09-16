@@ -3,24 +3,33 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
-// Configuração do Firebase com fallbacks para desenvolvimento
+// Configuração do Firebase — exige variáveis em produção
 const firebaseConfig = {
-  apiKey: process.env['NEXT_PUBLIC_FIREBASE_API_KEY'] || 'AIzaSyDEqhKhvclyd-qfo2Hmxg2e44f0cF621CI',
-  authDomain: process.env['NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'] || 'aplicativoservico-143c2.firebaseapp.com',
-  projectId: process.env['NEXT_PUBLIC_FIREBASE_PROJECT_ID'] || 'aplicativoservico-143c2',
-  storageBucket: process.env['NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'] || 'aplicativoservico-143c2.firebasestorage.app',
-  messagingSenderId: process.env['NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'] || '183171649633',
-  appId: process.env['NEXT_PUBLIC_FIREBASE_APP_ID'] || '1:183171649633:web:2cb40dbbdc82847cf8da20',
-  measurementId: process.env['NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID'] || 'G-TSQBJSN34S',
+  apiKey: process.env['NEXT_PUBLIC_FIREBASE_API_KEY'],
+  authDomain: process.env['NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'],
+  projectId: process.env['NEXT_PUBLIC_FIREBASE_PROJECT_ID'],
+  storageBucket: process.env['NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'],
+  messagingSenderId: process.env['NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'],
+  appId: process.env['NEXT_PUBLIC_FIREBASE_APP_ID'],
+  measurementId: process.env['NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID'],
 };
 
 // Verificar se estamos em produção e se as variáveis estão configuradas
 const isProduction = process.env.NODE_ENV === 'production';
-const hasFirebaseConfig = process.env['NEXT_PUBLIC_FIREBASE_API_KEY'] && 
-                         process.env['NEXT_PUBLIC_FIREBASE_PROJECT_ID'];
+const requiredKeys = [
+  'NEXT_PUBLIC_FIREBASE_API_KEY',
+  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  'NEXT_PUBLIC_FIREBASE_APP_ID',
+];
 
-if (isProduction && !hasFirebaseConfig) {
-  console.warn('⚠️ Firebase não configurado para produção. Configure as variáveis de ambiente no Vercel.');
+if (isProduction) {
+  const missing = requiredKeys.filter((k) => !process.env[k]);
+  if (missing.length > 0) {
+    throw new Error(`Variáveis de ambiente do Firebase ausentes em produção: ${missing.join(', ')}`);
+  }
 }
 
 // Initialize Firebase
