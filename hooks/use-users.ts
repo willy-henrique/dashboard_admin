@@ -194,8 +194,10 @@ export function useUsers(filters?: UserFilters) {
         setLoading(false)
       },
       (error) => {
-        console.error('Erro ao escutar usuários:', error)
-        setError('Erro ao carregar usuários em tempo real')
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('Erro ao escutar usuários:', error)
+        }
+        setError('Sem permissão para ler usuários')
         setLoading(false)
       }
     )

@@ -65,8 +65,8 @@ export function UsersTable({
   onEdit 
 }: UsersTableProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
+  const [roleFilter, setRoleFilter] = useState("all")
+  const [statusFilter, setStatusFilter] = useState("all")
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
@@ -75,8 +75,8 @@ export function UsersTable({
       user.telefone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.cpf?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRole = !roleFilter || user.role === roleFilter
-    const matchesStatus = !statusFilter || user.status === statusFilter
+    const matchesRole = roleFilter === "all" || user.role === roleFilter
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
   })
@@ -127,7 +127,7 @@ export function UsersTable({
                 <SelectValue placeholder="Função" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as Funções</SelectItem>
+                <SelectItem value="all">Todas as Funções</SelectItem>
                 {Object.entries(roleConfig).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
                     {config.label}
@@ -141,7 +141,7 @@ export function UsersTable({
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os Status</SelectItem>
+                <SelectItem value="all">Todos os Status</SelectItem>
                 {Object.entries(statusConfig).map(([key, config]) => (
                   <SelectItem key={key} value={key}>
                     {config.label}
@@ -154,8 +154,8 @@ export function UsersTable({
               variant="outline" 
               onClick={() => {
                 setSearchTerm("")
-                setRoleFilter("")
-                setStatusFilter("")
+                setRoleFilter("all")
+                setStatusFilter("all")
               }}
             >
               Limpar Filtros
