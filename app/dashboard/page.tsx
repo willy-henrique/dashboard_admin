@@ -7,6 +7,8 @@ import {
   Eye,
   Settings,
   Navigation,
+  MapPin,
+  RefreshCw,
 } from "lucide-react"
 import { ProvidersMap } from "@/components/map/providers-map"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
@@ -85,23 +87,36 @@ export default function DashboardPage() {
         <TabsContent value="overview" className="mt-6 space-y-6">
           {/* Mapa de Rastreamento em Tempo Real */}
           <section aria-labelledby="tracking-title">
-            <Card className="bg-white border-2 border-gray-200 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle id="tracking-title" className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
-                  <Navigation className="h-6 w-6 text-orange-500" aria-hidden="true" />
-                  <span>Rastreamento em Tempo Real</span>
-                </CardTitle>
-                <p className="text-lg text-gray-700 mt-2">
+            <Card className="bg-card border border-gray-200 shadow-sm rounded-2xl">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle id="tracking-title" className="flex items-center gap-3 text-2xl font-bold">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                      <MapPin className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <span>Rastreamento em Tempo Real</span>
+                  </CardTitle>
+                </div>
+                <p className="text-gray-600 mt-1">
                   Localização atual dos prestadores de serviço ativos
                 </p>
               </CardHeader>
               <CardContent>
-                <div 
-                  className="h-80 sm:h-96 md:h-[28rem] rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center" 
-                  role="application"
-                  aria-label="Mapa de rastreamento dos prestadores de serviço"
-                >
-                  <ProvidersMap />
+                <div className="relative">
+                  <button
+                    type="button"
+                    className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 text-orange-700 shadow-sm hover:bg-orange-200"
+                    aria-label="Atualizar localizações"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </button>
+                  <div 
+                    className="h-80 sm:h-96 md:h-[28rem] rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center" 
+                    role="application"
+                    aria-label="Mapa de rastreamento dos prestadores de serviço"
+                  >
+                    <ProvidersMap />
+                  </div>
                 </div>
               </CardContent>
             </Card>
