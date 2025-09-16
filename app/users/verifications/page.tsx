@@ -8,25 +8,23 @@ import { UsersTable } from "@/components/users/users-table"
 import { UserModal } from "@/components/users/user-modal"
 import { useUsers } from "@/hooks/use-users"
 
-export default function ClientsPage() {
+export default function VerificationsPage() {
   const [search, setSearch] = useState("")
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
-  const { users, loading, refetch, createUser, updateUser, deleteUser, toggleUserStatus, blockUser, unblockUser } = useUsers({ role: 'cliente', search })
-
-  const selectedUser = useMemo(() => users.find(u => u.id === selectedUserId) || null, [users, selectedUserId])
+  // Prestadores pendentes de verificação (status pendente ou role prestador com status inativo)
+  const { users, loading, refetch, updateUser, deleteUser, blockUser, unblockUser } = useUsers({ role: 'prestador', search })
+  const pending = useMemo(() => users.filter(u => u.status === 'inativo' || (u as any).pendente === true), [users])
+  const selectedUser = useMemo(() => pending.find(u => u.id === selectedUserId) || null, [pending, selectedUserId])
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Clientes</h1>
-          <p className="text-gray-600">Gerencie todos os clientes do aplicativo</p>
+          <h1 className="text-3xl font-bold text-gray-900">Verificações</h1>
+          <p className="text-gray-600">Aprove ou recuse cadastros de prestadores</p>
         </div>
-        <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => { setSelectedUserId(null); setModalOpen(true) }}>
-          Novo Cliente
-        </Button>
       </div>
 
       <Card>
@@ -42,12 +40,19 @@ export default function ClientsPage() {
       </Card>
 
       <UsersTable 
-        users={users}
+        users={pending}
         loading={loading}
         onView={(id) => { setSelectedUserId(id); setModalOpen(true) }}
         onEdit={(id) => { setSelectedUserId(id); setModalOpen(true) }}
         onDelete={(id) => deleteUser(id)}
-        onToggleStatus={(id, status) => toggleUserStatus(id, status)}
+        onToggleStatus={async (id, status) => {
+          // Aprovar = ativar; Recusar = bloquear
+          if (status === 'inativo') {
+            await updateUser(id, { status: 'ativo' } as any)
+          } else {
+            await blockUser(id)
+          }
+        }}
         onBlock={(id) => blockUser(id)}
         onUnblock={(id) => unblockUser(id)}
       />
@@ -59,13 +64,13 @@ export default function ClientsPage() {
         onSave={async (data) => {
           if (selectedUser) {
             await updateUser(selectedUser.id, data as any)
-          } else {
-            await createUser({ ...(data as any), role: 'cliente', status: 'ativo', nome: data.nome || '', email: data.email || '' })
           }
           setModalOpen(false)
         }}
-        mode={selectedUser ? 'edit' : 'create'}
+        mode={selectedUser ? 'edit' : 'view'}
       />
     </div>
   )
 }
+
+
