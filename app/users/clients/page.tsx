@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input"
 import { UsersTable } from "@/components/users/users-table"
 import { UserModal } from "@/components/users/user-modal"
 import { useUsers } from "@/hooks/use-users"
+import { Badge } from "@/components/ui/badge"
+import { User, UserCheck, UserX } from "lucide-react"
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("")
@@ -19,22 +21,63 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Clientes</h1>
-          <p className="text-gray-600">Gerencie todos os clientes do aplicativo</p>
+      <div className="rounded-2xl border bg-card/60 backdrop-blur p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Gestão de Clientes</h1>
+            <p className="text-muted-foreground">Gerencie todos os clientes do aplicativo</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline">Exportar</Button>
+            <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => { setSelectedUserId(null); setModalOpen(true) }}>
+              Novo Cliente
+            </Button>
+          </div>
         </div>
-        <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => { setSelectedUserId(null); setModalOpen(true) }}>
-          Novo Cliente
-        </Button>
+
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                <User className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-semibold">{users.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                <UserCheck className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-2xl font-semibold">{users.filter(u=>u.status==='ativo').length}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                <UserX className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Bloqueados</p>
+                <p className="text-2xl font-semibold">{users.filter(u=>u.status==='bloqueado').length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      <Card>
+      <Card className="border-dashed">
         <CardHeader>
-          <CardTitle>Filtros e Busca</CardTitle>
+          <CardTitle>Filtros rápidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col md:flex-row gap-3">
             <Input placeholder="Buscar por nome, email, CPF..." value={search} onChange={(e) => setSearch(e.target.value)} />
             <Button variant="outline" onClick={() => { setSearch(""); refetch() }}>Limpar</Button>
           </div>
