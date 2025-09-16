@@ -7,8 +7,6 @@ import {
   Eye,
   Settings,
   Navigation,
-  MapPin,
-  RefreshCw,
 } from "lucide-react"
 import { ProvidersMap } from "@/components/map/providers-map"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
@@ -104,45 +102,6 @@ export default function DashboardPage() {
                   aria-label="Mapa de rastreamento dos prestadores de serviço"
                 >
                   <ProvidersMap />
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Segundo Card de Rastreamento */}
-          <section aria-labelledby="tracking-title-2">
-            <Card className="bg-white border-2 border-gray-200 shadow-lg">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle id="tracking-title-2" className="flex items-center space-x-3 text-2xl font-bold text-gray-900">
-                      <MapPin className="h-6 w-6 text-orange-500" aria-hidden="true" />
-                      <span>Rastreamento em Tempo Real</span>
-                    </CardTitle>
-                    <p className="text-lg text-gray-700 mt-2">
-                      Localização atual dos prestadores de serviço ativos
-                    </p>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    className="bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg shadow-md"
-                    aria-label="Atualizar localizações"
-                  >
-                    <RefreshCw className="h-5 w-5" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div 
-                  className="h-80 sm:h-96 md:h-[28rem] rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50 flex items-center justify-center" 
-                  role="application"
-                  aria-label="Mapa de rastreamento dos prestadores de serviço"
-                >
-                  <div className="text-center text-gray-600">
-                    <RefreshCw className="h-12 w-12 mx-auto mb-4 animate-spin text-orange-500" />
-                    <p className="text-xl font-medium">Atualizando localizações...</p>
-                    <p className="text-sm text-gray-500 mt-2">Aguarde enquanto carregamos os dados mais recentes</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
