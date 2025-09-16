@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Users,
   DollarSign,
@@ -19,13 +20,43 @@ import {
   Wifi,
   Battery,
   Star,
+  Activity,
 } from "lucide-react"
 import { ProvidersMap } from "@/components/map/providers-map"
 import { ProviderStatusCard } from "@/components/dashboard/provider-status-card"
+import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
+import { useAnalytics } from "@/hooks/use-analytics"
+import { useEffect } from "react"
 
 export default function DashboardPage() {
+  const { trackPageView, trackUserAction } = useAnalytics()
+
+  useEffect(() => {
+    trackPageView('Dashboard Principal')
+  }, [trackPageView])
+
+  const handleViewReports = () => {
+    trackUserAction('ver_relatorios', 'dashboard')
+  }
+
+  const handleSettings = () => {
+    trackUserAction('abrir_configuracoes', 'dashboard')
+  }
+
+  const handleManageUsers = () => {
+    trackUserAction('gerenciar_usuarios', 'dashboard')
+  }
+
+  const handleViewFinancialReports = () => {
+    trackUserAction('ver_relatorios_financeiros', 'dashboard')
+  }
+
+  const handleViewOrders = () => {
+    trackUserAction('ver_pedidos', 'dashboard')
+  }
+
   return (
-    <main className="space-y-6" role="main" aria-label="Dashboard principal">
+    <div className="w-full" role="main" aria-label="Dashboard principal">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div>
@@ -45,6 +76,7 @@ export default function DashboardPage() {
               color: 'var(--foreground)'
             }}
             aria-label="Ver relatórios detalhados"
+            onClick={handleViewReports}
           >
             <Eye className="h-4 w-4 mr-2" aria-hidden="true" />
             Ver Relatórios
@@ -56,6 +88,7 @@ export default function DashboardPage() {
               color: 'var(--primary-foreground)'
             }}
             aria-label="Abrir configurações do sistema"
+            onClick={handleSettings}
           >
             <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
             Configurações
@@ -63,39 +96,53 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Mapa de Rastreamento em Tempo Real */}
-      <section aria-labelledby="tracking-title">
-        <Card style={{
-          backgroundColor: 'var(--card)',
-          color: 'var(--card-foreground)',
-          borderColor: 'var(--border)'
-        }}>
-          <CardHeader>
-            <CardTitle id="tracking-title" className="flex items-center space-x-2">
-              <Navigation className="h-5 w-5" style={{ color: 'var(--primary)' }} aria-hidden="true" />
-              <span>Rastreamento em Tempo Real</span>
-            </CardTitle>
-            <p style={{ color: 'var(--muted-foreground)' }}>
-              Localização atual dos prestadores de serviço ativos
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div 
-              className="h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden border" 
-              style={{ borderColor: 'var(--border)' }}
-              role="application"
-              aria-label="Mapa de rastreamento dos prestadores de serviço"
-            >
-              <ProvidersMap />
-            </div>
-          </CardContent>
-        </Card>
-      </section>
+      {/* Tabs para diferentes visualizações */}
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics Detalhado
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Status dos Prestadores */}
-      <section aria-labelledby="provider-status-title">
-        <ProviderStatusCard />
-      </section>
+        <TabsContent value="overview" className="mt-6 space-y-6">
+          {/* Mapa de Rastreamento em Tempo Real */}
+          <section aria-labelledby="tracking-title">
+            <Card style={{
+              backgroundColor: 'var(--card)',
+              color: 'var(--card-foreground)',
+              borderColor: 'var(--border)'
+            }}>
+              <CardHeader>
+                <CardTitle id="tracking-title" className="flex items-center space-x-2">
+                  <Navigation className="h-5 w-5" style={{ color: 'var(--primary)' }} aria-hidden="true" />
+                  <span>Rastreamento em Tempo Real</span>
+                </CardTitle>
+                <p style={{ color: 'var(--muted-foreground)' }}>
+                  Localização atual dos prestadores de serviço ativos
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  className="h-64 sm:h-80 md:h-96 rounded-lg overflow-hidden border" 
+                  style={{ borderColor: 'var(--border)' }}
+                  role="application"
+                  aria-label="Mapa de rastreamento dos prestadores de serviço"
+                >
+                  <ProvidersMap />
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Status dos Prestadores */}
+          <section aria-labelledby="provider-status-title">
+            <ProviderStatusCard />
+          </section>
 
       {/* Cards Principais */}
       <section aria-labelledby="main-metrics-title">
@@ -134,6 +181,7 @@ export default function DashboardPage() {
                   color: 'var(--primary-foreground)'
                 }}
                 aria-label="Gerenciar usuários do sistema"
+                onClick={handleManageUsers}
               >
                 Gerenciar Usuários
               </Button>
@@ -177,6 +225,7 @@ export default function DashboardPage() {
                   color: 'var(--primary-foreground)'
                 }}
                 aria-label="Ver relatórios financeiros"
+                onClick={handleViewFinancialReports}
               >
                 Ver Relatórios
               </Button>
@@ -220,6 +269,7 @@ export default function DashboardPage() {
                   color: 'var(--primary-foreground)'
                 }}
                 aria-label="Ver todos os pedidos"
+                onClick={handleViewOrders}
               >
                 Ver Pedidos
               </Button>
@@ -352,6 +402,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </main>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <AnalyticsDashboard />
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }

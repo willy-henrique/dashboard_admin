@@ -1,163 +1,390 @@
+"use client"
+
 import { useState, useEffect } from 'react'
-import { FirebaseOrdersService, FirebaseOrder } from '@/lib/services/firebase-orders'
+import { collection, query, orderBy, limit, getDocs, where, Timestamp, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 
 export interface Order {
   id: string
-  numero: string
-  cliente: {
-    id: string
-    nome: string
-    telefone: string
-    email: string
-  }
-  servico: {
-    id: string
-    nome: string
-    descricao: string
-    categoria: string
-  }
-  valor: number
-  status: 'pendente' | 'aceito' | 'em_andamento' | 'concluido' | 'cancelado'
-  dataCriacao: string
-  dataAgendamento: string
-  endereco: {
-    rua: string
-    numero: string
-    bairro: string
-    cidade: string
-    cep: string
-    complemento?: string
-    coordenadas?: {
-      lat: number
-      lng: number
-    }
-  }
-  prestador?: {
-    id: string
-    nome: string
-    telefone: string
-  }
-  observacoes?: string
-  avaliacao?: {
-    nota: number
-    comentario?: string
-  }
+  clientId: string
+  clientName: string
+  clientEmail: string
+  clientPhone: string
+  providerId?: string
+  providerName?: string
+  serviceCategory: string
+  description: string
+  status: "pending" | "assigned" | "in_progress" | "completed" | "cancelled"
+  priority: "low" | "medium" | "high" | "urgent"
+  budget: number
+  location: string
+  address: string
+  city: string
+  state: string
+  coordinates?: { lat: number; lng: number }
+  createdAt: Date
+  assignedAt?: Date
+  completedAt?: Date
+  rating?: number
+  notes?: string
+  estimatedDuration?: number
+  actualDuration?: number
+  paymentStatus: "pending" | "paid" | "refunded"
+  paymentMethod?: string
+  updatedAt: Date
 }
 
-export interface OrdersStats {
+interface OrderStats {
   total: number
-  pendente: number
-  aceito: number
-  em_andamento: number
-  concluido: number
-  cancelado: number
-  valorTotal: number
+  pending: number
+  assigned: number
+  inProgress: number
+  completed: number
+  cancelled: number
+  totalValue: number
+  averageRating: number
+  urgentCount: number
+  todayOrders: number
+  thisWeekOrders: number
+  thisMonthOrders: number
 }
 
-export interface UseOrdersReturn {
-  orders: Order[]
-  stats: OrdersStats | null
-  loading: boolean
-  error: string | null
-  refetch: () => void
+interface OrderFilters {
+  status?: string
+  priority?: string
+  serviceCategory?: string
+  search?: string
+  dateFrom?: Date
+  dateTo?: Date
+  providerId?: string
+  clientId?: string
 }
 
-export function useOrders(options?: {
-  status?: Order['status']
-  autoRefresh?: boolean
-}): UseOrdersReturn {
+export function useOrders(filters?: OrderFilters) {
   const [orders, setOrders] = useState<Order[]>([])
-  const [stats, setStats] = useState<OrdersStats | null>(null)
+  const [stats, setStats] = useState<OrderStats>({
+    total: 0,
+    pending: 0,
+    assigned: 0,
+    inProgress: 0,
+    completed: 0,
+    cancelled: 0,
+    totalValue: 0,
+    averageRating: 0,
+    urgentCount: 0,
+    todayOrders: 0,
+    thisWeekOrders: 0,
+    thisMonthOrders: 0
+  })
+  
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Converter FirebaseOrder para Order
-  const convertFirebaseOrder = (fbOrder: FirebaseOrder): Order => ({
-    id: fbOrder.id,
-    numero: fbOrder.numero,
-    cliente: fbOrder.cliente,
-    servico: fbOrder.servico,
-    valor: fbOrder.valor,
-    status: fbOrder.status,
-    dataCriacao: fbOrder.dataCriacao?.toDate?.()?.toISOString() || new Date().toISOString(),
-    dataAgendamento: fbOrder.dataAgendamento,
-    endereco: fbOrder.endereco,
-    prestador: fbOrder.prestador,
-    observacoes: fbOrder.observacoes,
-    avaliacao: fbOrder.avaliacao
-  })
-
-  // Calcular estatísticas
-  const calculateStats = (ordersList: Order[]): OrdersStats => {
-    return {
-      total: ordersList.length,
-      pendente: ordersList.filter(o => o.status === 'pendente').length,
-      aceito: ordersList.filter(o => o.status === 'aceito').length,
-      em_andamento: ordersList.filter(o => o.status === 'em_andamento').length,
-      concluido: ordersList.filter(o => o.status === 'concluido').length,
-      cancelado: ordersList.filter(o => o.status === 'cancelado').length,
-      valorTotal: ordersList.reduce((sum, o) => sum + o.valor, 0)
-    }
-  }
-
   const fetchOrders = async () => {
+    if (!db) {
+      setError('Firebase não inicializado')
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
 
-      let firebaseOrders: FirebaseOrder[]
-      
-      if (options?.status) {
-        firebaseOrders = await FirebaseOrdersService.getOrdersByStatus(options.status)
-      } else {
-        firebaseOrders = await FirebaseOrdersService.getOrders()
+      // Construir query base
+      let q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
+
+      // Aplicar filtros se fornecidos
+      if (filters?.status) {
+        q = query(q, where('status', '==', filters.status))
+      }
+      if (filters?.priority) {
+        q = query(q, where('priority', '==', filters.priority))
+      }
+      if (filters?.serviceCategory) {
+        q = query(q, where('serviceCategory', '==', filters.serviceCategory))
+      }
+      if (filters?.providerId) {
+        q = query(q, where('providerId', '==', filters.providerId))
+      }
+      if (filters?.clientId) {
+        q = query(q, where('clientId', '==', filters.clientId))
+      }
+      if (filters?.dateFrom) {
+        q = query(q, where('createdAt', '>=', Timestamp.fromDate(filters.dateFrom)))
+      }
+      if (filters?.dateTo) {
+        q = query(q, where('createdAt', '<=', Timestamp.fromDate(filters.dateTo)))
       }
 
-      const convertedOrders = firebaseOrders.map(convertFirebaseOrder)
-      setOrders(convertedOrders)
-      setStats(calculateStats(convertedOrders))
+      const snapshot = await getDocs(q)
+      let ordersData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+        assignedAt: doc.data().assignedAt?.toDate() || null,
+        completedAt: doc.data().completedAt?.toDate() || null,
+        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+      })) as Order[]
+
+      // Aplicar filtro de busca se fornecido
+      if (filters?.search) {
+        const searchTerm = filters.search.toLowerCase()
+        ordersData = ordersData.filter(order => 
+          order.clientName.toLowerCase().includes(searchTerm) ||
+          order.description.toLowerCase().includes(searchTerm) ||
+          order.serviceCategory.toLowerCase().includes(searchTerm) ||
+          order.location.toLowerCase().includes(searchTerm) ||
+          order.id.toLowerCase().includes(searchTerm)
+        )
+      }
+
+      setOrders(ordersData)
+      calculateStats(ordersData)
+
     } catch (err) {
-      setError('Erro ao carregar pedidos')
       console.error('Erro ao buscar pedidos:', err)
+      setError('Erro ao carregar pedidos')
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => {
-    if (options?.autoRefresh) {
-      // Usar listener em tempo real do Firebase
-      const unsubscribe = FirebaseOrdersService.listenToOrders((firebaseOrders) => {
-        try {
-          let filteredOrders = firebaseOrders
-          
-          if (options?.status) {
-            filteredOrders = filteredOrders.filter(o => o.status === options.status)
-          }
+  const calculateStats = (ordersData: Order[]) => {
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
 
-          const convertedOrders = filteredOrders.map(convertFirebaseOrder)
-          setOrders(convertedOrders)
-          setStats(calculateStats(convertedOrders))
-          setLoading(false)
-          setError(null)
-        } catch (err) {
-          setError('Erro ao carregar pedidos')
-          console.error('Erro ao processar pedidos:', err)
-        }
-      })
-
-      return unsubscribe
-    } else {
-      // Buscar uma vez
-      fetchOrders()
+    const newStats: OrderStats = {
+      total: ordersData.length,
+      pending: 0,
+      assigned: 0,
+      inProgress: 0,
+      completed: 0,
+      cancelled: 0,
+      totalValue: 0,
+      averageRating: 0,
+      urgentCount: 0,
+      todayOrders: 0,
+      thisWeekOrders: 0,
+      thisMonthOrders: 0
     }
-  }, [options?.status, options?.autoRefresh])
+
+    let totalRating = 0
+    let ratedOrders = 0
+
+    ordersData.forEach(order => {
+      // Status
+      switch (order.status) {
+        case 'pending':
+          newStats.pending++
+          break
+        case 'assigned':
+          newStats.assigned++
+          break
+        case 'in_progress':
+          newStats.inProgress++
+          break
+        case 'completed':
+          newStats.completed++
+          break
+        case 'cancelled':
+          newStats.cancelled++
+          break
+      }
+
+      // Valores
+      newStats.totalValue += order.budget
+
+      // Prioridade urgente
+      if (order.priority === 'urgent') {
+        newStats.urgentCount++
+      }
+
+      // Datas
+      if (order.createdAt >= today) {
+        newStats.todayOrders++
+      }
+      if (order.createdAt >= weekAgo) {
+        newStats.thisWeekOrders++
+      }
+      if (order.createdAt >= monthAgo) {
+        newStats.thisMonthOrders++
+      }
+
+      // Rating
+      if (order.rating && order.rating > 0) {
+        totalRating += order.rating
+        ratedOrders++
+      }
+    })
+
+    newStats.averageRating = ratedOrders > 0 ? totalRating / ratedOrders : 0
+
+    setStats(newStats)
+  }
+
+  const subscribeToOrders = () => {
+    if (!db) return
+
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
+    
+    return onSnapshot(q, 
+      (snapshot) => {
+        let ordersData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          assignedAt: doc.data().assignedAt?.toDate() || null,
+          completedAt: doc.data().completedAt?.toDate() || null,
+          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+        })) as Order[]
+
+        // Aplicar filtros se fornecidos
+        if (filters?.search) {
+          const searchTerm = filters.search.toLowerCase()
+          ordersData = ordersData.filter(order => 
+            order.clientName.toLowerCase().includes(searchTerm) ||
+            order.description.toLowerCase().includes(searchTerm) ||
+            order.serviceCategory.toLowerCase().includes(searchTerm) ||
+            order.location.toLowerCase().includes(searchTerm) ||
+            order.id.toLowerCase().includes(searchTerm)
+          )
+        }
+
+        setOrders(ordersData)
+        calculateStats(ordersData)
+        setLoading(false)
+      },
+      (error) => {
+        console.error('Erro ao escutar pedidos:', error)
+        setError('Erro ao carregar pedidos em tempo real')
+        setLoading(false)
+      }
+    )
+  }
+
+  useEffect(() => {
+    const unsubscribe = subscribeToOrders()
+    return () => {
+      if (unsubscribe) unsubscribe()
+    }
+  }, [filters])
+
+  const createOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt' | 'assignedAt' | 'completedAt'>) => {
+    if (!db) return
+
+    try {
+      const docRef = await addDoc(collection(db, 'orders'), {
+        ...orderData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        assignedAt: null,
+        completedAt: null
+      })
+      return docRef.id
+    } catch (error) {
+      console.error('Erro ao criar pedido:', error)
+      throw error
+    }
+  }
+
+  const updateOrder = async (orderId: string, orderData: Partial<Order>) => {
+    if (!db) return
+
+    try {
+      const orderRef = doc(db, 'orders', orderId)
+      await updateDoc(orderRef, {
+        ...orderData,
+        updatedAt: serverTimestamp()
+      })
+    } catch (error) {
+      console.error('Erro ao atualizar pedido:', error)
+      throw error
+    }
+  }
+
+  const deleteOrder = async (orderId: string) => {
+    if (!db) return
+
+    try {
+      await deleteDoc(doc(db, 'orders', orderId))
+    } catch (error) {
+      console.error('Erro ao deletar pedido:', error)
+      throw error
+    }
+  }
+
+  const assignProvider = async (orderId: string, providerId: string, providerName: string) => {
+    if (!db) return
+
+    try {
+      const orderRef = doc(db, 'orders', orderId)
+      await updateDoc(orderRef, {
+        providerId,
+        providerName,
+        status: 'assigned',
+        assignedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      })
+    } catch (error) {
+      console.error('Erro ao atribuir prestador:', error)
+      throw error
+    }
+  }
+
+  const updateOrderStatus = async (orderId: string, status: Order['status'], notes?: string) => {
+    if (!db) return
+
+    try {
+      const orderRef = doc(db, 'orders', orderId)
+      const updateData: any = {
+        status,
+        updatedAt: serverTimestamp()
+      }
+
+      if (status === 'completed') {
+        updateData.completedAt = serverTimestamp()
+      }
+
+      if (notes) {
+        updateData.notes = notes
+      }
+
+      await updateDoc(orderRef, updateData)
+    } catch (error) {
+      console.error('Erro ao atualizar status do pedido:', error)
+      throw error
+    }
+  }
+
+  const addRating = async (orderId: string, rating: number) => {
+    if (!db) return
+
+    try {
+      const orderRef = doc(db, 'orders', orderId)
+      await updateDoc(orderRef, {
+        rating,
+        updatedAt: serverTimestamp()
+      })
+    } catch (error) {
+      console.error('Erro ao adicionar avaliação:', error)
+      throw error
+    }
+  }
 
   return {
     orders,
     stats,
     loading,
     error,
-    refetch: fetchOrders
+    refetch: fetchOrders,
+    createOrder,
+    updateOrder,
+    deleteOrder,
+    assignProvider,
+    updateOrderStatus,
+    addRating
   }
 }

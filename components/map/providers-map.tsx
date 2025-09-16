@@ -17,8 +17,8 @@ export function ProvidersMap() {
   const mapRef = useRef<HTMLDivElement>(null)
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
   const [mapLoaded, setMapLoaded] = useState(false)
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null)
-  const [markers, setMarkers] = useState<google.maps.Marker[]>([])
+  const [mapInstance, setMapInstance] = useState<any>(null)
+  const [markers, setMarkers] = useState<any[]>([])
 
   // Usar o hook para buscar prestadores com atualização automática
   const { providers, stats, loading, error, refetch } = useProviders({
@@ -142,7 +142,7 @@ export function ProvidersMap() {
       setMarkers([])
 
       // Adicionar novos marcadores
-      const newMarkers: google.maps.Marker[] = []
+      const newMarkers: any[] = []
       
       providers.forEach(provider => {
         const marker = new window.google.maps.Marker({

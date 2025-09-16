@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { 
   ClipboardList, 
   Truck, 
@@ -13,17 +14,30 @@ import {
   MapPin,
   Users,
   Clock,
-  TrendingUp
+  TrendingUp,
+  RefreshCw,
+  AlertCircle
 } from "lucide-react"
 import Link from "next/link"
+import { useServices } from "@/hooks/use-services"
+import { useAnalytics } from "@/hooks/use-analytics"
+import { useEffect } from "react"
 
 export default function ServicosPage() {
-  const stats = {
-    total: 156,
-    pendentes: 23,
-    emAndamento: 45,
-    concluidos: 88,
-    orcamentos: 34
+  const { services, stats, loading, error, refetch } = useServices()
+  const { trackPageView, trackUserAction } = useAnalytics()
+
+  useEffect(() => {
+    trackPageView('Página de Serviços')
+  }, [trackPageView])
+
+  const handleNewService = () => {
+    trackUserAction('novo_servico', 'servicos')
+  }
+
+  const handleRefresh = () => {
+    trackUserAction('atualizar_servicos', 'servicos')
+    refetch()
   }
 
   return (
@@ -36,74 +50,119 @@ export default function ServicosPage() {
             Gerenciamento completo de serviços e logística
           </p>
         </div>
-        <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Serviço
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <span>Atualizar</span>
+          </Button>
+          <Button 
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+            onClick={handleNewService}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Serviço
+          </Button>
+        </div>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Skeleton className="h-8 w-8 rounded" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-20 mb-2" />
+                    <Skeleton className="h-8 w-12" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : error ? (
         <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <ClipboardList className="h-8 w-8 text-blue-600" />
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Total de Serviços</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
-              </div>
+          <CardContent className="p-6">
+            <div className="text-center text-red-600">
+              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+              <p>Erro ao carregar serviços: {error}</p>
+              <Button onClick={handleRefresh} className="mt-4">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Tentar Novamente
+              </Button>
             </div>
           </CardContent>
         </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <ClipboardList className="h-8 w-8 text-blue-600" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Total de Serviços</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.total}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-8 w-8 text-yellow-600" />
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Pendentes</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.pendentes}</p>
+          <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-8 w-8 text-yellow-600" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Pendentes</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.pendentes}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Truck className="h-8 w-8 text-orange-600" />
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Em Andamento</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.emAndamento}</p>
+          <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Truck className="h-8 w-8 text-orange-600" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Em Andamento</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.emAndamento}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <TrendingUp className="h-8 w-8 text-green-600" />
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Concluídos</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.concluidos}</p>
+          <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-8 w-8 text-green-600" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Concluídos</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.concluidos}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Calculator className="h-8 w-8 text-purple-600" />
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Orçamentos</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.orcamentos}</p>
+          <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-2">
+                <Calculator className="h-8 w-8 text-purple-600" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Orçamentos</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.orcamentos}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Módulos de Serviços */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -125,15 +184,15 @@ export default function ServicosPage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Agendamentos Hoje</span>
-                  <Badge variant="secondary">12</Badge>
+                  <Badge variant="secondary">{stats.agendados}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Em Trânsito</span>
-                  <Badge variant="outline" className="text-orange-600 border-orange-200">8</Badge>
+                  <Badge variant="outline" className="text-orange-600 border-orange-200">{stats.emAndamento}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Concluídos</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">4</Badge>
+                  <Badge variant="outline" className="text-green-600 border-green-200">{stats.concluidos}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -162,11 +221,13 @@ export default function ServicosPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Última Atualização</span>
-                  <span className="text-xs text-slate-500">2 min atrás</span>
+                  <span className="text-xs text-slate-500">
+                    {loading ? 'Carregando...' : 'Agora'}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Filtros Ativos</span>
-                  <Badge variant="outline">3</Badge>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Status Ativos</span>
+                  <Badge variant="outline">{Object.keys(stats).filter(key => key !== 'total' && stats[key as keyof typeof stats] > 0).length}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -195,11 +256,11 @@ export default function ServicosPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Aguardando Aprovação</span>
-                  <Badge variant="outline" className="text-yellow-600 border-yellow-200">7</Badge>
+                  <Badge variant="outline" className="text-yellow-600 border-yellow-200">{stats.aguardando}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Aprovados Hoje</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">3</Badge>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Aceitos</span>
+                  <Badge variant="outline" className="text-green-600 border-green-200">{stats.aceitos}</Badge>
                 </div>
               </div>
             </CardContent>

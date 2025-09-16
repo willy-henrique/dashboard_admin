@@ -279,7 +279,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col" role="complementary" aria-label="Menu lateral">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-50" role="complementary" aria-label="Menu lateral">
         <SidebarContent />
       </aside>
 
