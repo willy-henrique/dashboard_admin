@@ -147,10 +147,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const isActive = (href: string) => pathname === href
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gradient-to-b from-orange-500 to-orange-600 text-white">
+    <div className="flex h-full flex-col bg-gradient-to-b from-orange-300 to-orange-400 text-white">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white text-orange-500">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white text-orange-400">
             <span className="font-bold text-lg">A</span>
           </div>
           <h1 className="text-xl font-bold">AppServiço</h1>
@@ -206,7 +206,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                           href={child.href}
                           className={cn(
                             "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-white hover:bg-white hover:bg-opacity-20",
-                            isActive(child.href) && "bg-white bg-opacity-30 text-orange-600"
+                            isActive(child.href) && "bg-white bg-opacity-30 text-orange-500"
                           )}
                           onClick={() => setOpen(false)}
                           aria-current={isActive(child.href) ? 'page' : undefined}
@@ -223,7 +223,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                   href={item.href}
                   className={cn(
                     "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-white hover:bg-white hover:bg-opacity-20",
-                    isActive(item.href) && "bg-white bg-opacity-30 text-orange-600"
+                    isActive(item.href) && "bg-white bg-opacity-30 text-orange-500"
                   )}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? 'page' : undefined}
@@ -240,7 +240,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       {/* Footer da Sidebar */}
       <div className="border-t border-white border-opacity-20 p-4">
         <div className="flex items-center space-x-3 text-white">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-orange-500">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-orange-400">
             <span className="text-sm font-medium">A</span>
           </div>
           <div className="flex-1">

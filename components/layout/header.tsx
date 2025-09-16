@@ -26,7 +26,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   return (
     <>
       {/* Payment Alert Banner */}
-      <div className="bg-orange-500 text-white px-4 py-2">
+      <div className="bg-orange-400 text-white px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bell className="h-4 w-4" />
@@ -61,7 +61,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
               {/* Logo */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-orange-400 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">A</span>
                 </div>
                 <span className="text-xl font-bold text-gray-900 hidden sm:block">AppServiço</span>
@@ -105,7 +105,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-orange-500 text-white">
+                      <AvatarFallback className="bg-orange-400 text-white">
                         {user?.name?.charAt(0) || "A"}
                       </AvatarFallback>
                     </Avatar>

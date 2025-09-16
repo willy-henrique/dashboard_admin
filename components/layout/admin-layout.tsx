@@ -42,7 +42,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       {/* Main Content Area */}
-      <div className="lg:pl-64">
+      <div className="lg:ml-64">
         {/* Header */}
         <Header onMenuClick={() => setSidebarOpen(true)} />
         
