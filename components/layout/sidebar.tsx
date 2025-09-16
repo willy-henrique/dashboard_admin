@@ -147,7 +147,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const isActive = (href: string) => pathname === href
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gradient-to-b from-orange-500 to-orange-600 text-white">
+    <div className="flex h-full flex-col bg-gradient-to-b from-orange-100 to-orange-200 text-slate-900">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white text-orange-400">
@@ -159,7 +159,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           variant="ghost"
           size="sm"
           onClick={() => setOpen(false)}
-          className="lg:hidden text-white hover:bg-white hover:bg-opacity-20"
+          className="lg:hidden text-slate-900 hover:bg-black/10"
           aria-label="Fechar menu lateral"
         >
           <X className="h-4 w-4" />
@@ -175,8 +175,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-between transition-colors text-white hover:bg-white hover:bg-opacity-20",
-                      expandedItems.includes(item.name) && "bg-white bg-opacity-20"
+                      "w-full justify-between transition-colors text-slate-900 hover:bg-black/10",
+                      expandedItems.includes(item.name) && "bg-white/70"
                     )}
                     onClick={() => toggleExpanded(item.name)}
                     aria-expanded={expandedItems.includes(item.name)}
@@ -205,7 +205,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                           key={child.href}
                           href={child.href}
                           className={cn(
-                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-white hover:bg-white hover:bg-opacity-20",
+                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
                             isActive(child.href) && "bg-white text-orange-700 font-semibold"
                           )}
                           onClick={() => setOpen(false)}
@@ -222,7 +222,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-white hover:bg-white hover:bg-opacity-20",
+                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
                     isActive(item.href) && "bg-white text-orange-700 font-semibold"
                   )}
                   onClick={() => setOpen(false)}
@@ -238,19 +238,19 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       </ScrollArea>
 
       {/* Footer da Sidebar */}
-      <div className="border-t border-white border-opacity-20 p-4">
-        <div className="flex items-center space-x-3 text-white">
+      <div className="border-t border-black/10 p-4">
+        <div className="flex items-center space-x-3 text-slate-900">
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-orange-400">
             <span className="text-sm font-medium">A</span>
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs text-white text-opacity-80">admin@appservico.com</p>
+            <p className="text-xs text-slate-600">admin@appservico.com</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white hover:bg-opacity-20"
+            className="text-slate-900 hover:bg-black/10"
             aria-label="Sair do sistema"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />
