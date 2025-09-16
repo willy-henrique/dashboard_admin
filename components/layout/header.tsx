@@ -44,58 +44,58 @@ export function Header({ onMenuClick }: HeaderProps) {
 
       {/* Main Header */}
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="px-3 sm:px-4 lg:px-6">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Left side - Logo and Menu */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onMenuClick}
-                className="lg:hidden"
+                className="lg:hidden p-2"
                 aria-label="Abrir menu"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
 
               {/* Logo */}
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-orange-400 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">A</span>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-400 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm sm:text-lg">A</span>
                 </div>
-                <span className="text-xl font-bold text-gray-900 hidden sm:block">AppServiço</span>
+                <span className="text-lg sm:text-xl font-bold text-gray-900 hidden xs:block">AppServiço</span>
               </div>
             </div>
 
             {/* Center - Search */}
-            <div className="flex-1 max-w-lg mx-4 hidden md:block">
+            <div className="flex-1 max-w-md mx-2 sm:mx-4 hidden sm:block">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Buscar..."
-                  className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
+                  className="pl-10 bg-gray-50 border-gray-200 focus:bg-white text-sm"
                 />
               </div>
             </div>
 
             {/* Right side - Actions */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {/* Dark mode toggle */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsDarkMode(!isDarkMode)}
-                className="hidden sm:flex"
+                className="hidden md:flex p-2"
                 aria-label="Alternar tema"
               >
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
 
               {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-5 w-5 text-gray-600" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+              <Button variant="ghost" size="sm" className="relative p-2">
+                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
+                <span className="absolute -top-1 -right-1 h-3 w-3 sm:h-4 sm:w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
                   1
                 </span>
               </Button>
@@ -103,9 +103,9 @@ export function Header({ onMenuClick }: HeaderProps) {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="bg-orange-400 text-white">
+                  <Button variant="ghost" className="relative h-7 w-7 sm:h-8 sm:w-8 rounded-full">
+                    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+                      <AvatarFallback className="bg-orange-400 text-white text-xs sm:text-sm">
                         {user?.name?.charAt(0) || "A"}
                       </AvatarFallback>
                     </Avatar>

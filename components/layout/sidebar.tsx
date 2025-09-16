@@ -269,7 +269,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
       {/* Mobile Sidebar */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="p-0 w-64" role="dialog" aria-label="Menu lateral móvel">
+        <SheetContent side="left" className="p-0 w-80 sm:w-96" role="dialog" aria-label="Menu lateral móvel">
           <SidebarContent />
         </SheetContent>
       </Sheet>
