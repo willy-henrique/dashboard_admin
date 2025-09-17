@@ -28,27 +28,8 @@ export function DashboardMetrics() {
     fetchData()
   }, [fetchData])
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-20 sm:w-24" />
-              <Skeleton className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-2" />
-              <Skeleton className="h-3 w-16 sm:w-20" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-
   const metrics = useMemo(() => {
-    if (!firestoreData || error) return []
+    if (!firestoreData || error || loading) return []
     
     return [
       {
@@ -117,6 +98,25 @@ export function DashboardMetrics() {
       },
     ]
   }, [firestoreData, error])
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Card key={i} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Skeleton className="h-4 w-20 sm:w-24" />
+              <Skeleton className="h-4 w-4" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-2" />
+              <Skeleton className="h-3 w-16 sm:w-20" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
 
   if (error || !firestoreData) {
     return (
