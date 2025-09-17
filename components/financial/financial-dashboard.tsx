@@ -16,7 +16,7 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { useEffect, useState } from "react"
 
 const financialMetrics = [

@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useAnalytics } from "@/hooks/use-analytics"
-import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { useEffect, useState } from "react"
 
 export default function ServicosPage() {

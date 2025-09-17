@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, ClipboardList, DollarSign, Star, UserPlus, TrendingUp, BarChart3, FileText, Activity, AlertCircle, Clock, MapPin } from "lucide-react"
 import { useFirebaseAnalytics } from "@/hooks/use-firebase-analytics"
 import { Skeleton } from "@/components/ui/skeleton"
-import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { useEffect, useState } from "react"
 
 export function DashboardMetrics() {

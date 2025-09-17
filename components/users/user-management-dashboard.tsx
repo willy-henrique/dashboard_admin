@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { useEffect, useState } from "react"
 import { 
   Users, 
