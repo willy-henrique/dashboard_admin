@@ -102,15 +102,15 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
 
   // Calcular estatísticas baseadas nos dados do Firestore
   const stats = {
-    total: firestoreData.users.totalUsers,
-    ativos: firestoreData.users.activeUsers,
-    inativos: firestoreData.users.totalUsers - firestoreData.users.activeUsers,
-    clientes: Math.floor(firestoreData.users.totalUsers * 0.7), // Simulação: 70% clientes
-    prestadores: Math.floor(firestoreData.users.totalUsers * 0.25), // Simulação: 25% prestadores
-    admins: Math.floor(firestoreData.users.totalUsers * 0.05), // Simulação: 5% admins
+    total: firestoreData?.users?.totalUsers || 0,
+    ativos: firestoreData?.users?.activeUsers || 0,
+    inativos: (firestoreData?.users?.totalUsers || 0) - (firestoreData?.users?.activeUsers || 0),
+    clientes: Math.floor((firestoreData?.users?.totalUsers || 0) * 0.7), // Simulação: 70% clientes
+    prestadores: Math.floor((firestoreData?.users?.totalUsers || 0) * 0.25), // Simulação: 25% prestadores
+    admins: Math.floor((firestoreData?.users?.totalUsers || 0) * 0.05), // Simulação: 5% admins
     operadores: 0, // Simulação
-    novosHoje: firestoreData.users.newUsersLast7Days, // Usando dados de 7 dias como proxy
-    onlineHoje: firestoreData.users.usersWithRecentLogin,
+    novosHoje: firestoreData?.users?.newUsersLast7Days || 0, // Usando dados de 7 dias como proxy
+    onlineHoje: firestoreData?.users?.usersWithRecentLogin || 0,
     bloqueados: 0 // Simulação
   }
 

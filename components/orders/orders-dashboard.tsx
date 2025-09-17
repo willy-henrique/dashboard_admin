@@ -104,17 +104,17 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
 
   // Calcular estatísticas baseadas nos dados do Firestore
   const stats = {
-    total: firestoreData.orders.totalOrders,
-    pending: firestoreData.orders.totalOrders - firestoreData.orders.activeOrders - firestoreData.orders.cancelledOrders,
-    assigned: Math.floor(firestoreData.orders.activeOrders * 0.3), // Simulação: 30% atribuídos
-    inProgress: Math.floor(firestoreData.orders.activeOrders * 0.7), // Simulação: 70% em andamento
-    completed: firestoreData.orders.completedOrders || 0,
-    cancelled: firestoreData.orders.cancelledOrders,
-    urgentCount: firestoreData.orders.emergencyOrders,
-    todayOrders: firestoreData.orders.ordersToday,
-    thisWeekOrders: firestoreData.orders.ordersLast7Days,
-    thisMonthOrders: firestoreData.orders.ordersLast30Days,
-    totalValue: (firestoreData.orders.completedOrders || 0) * 150, // Valor médio por pedido
+    total: firestoreData?.orders?.totalOrders || 0,
+    pending: (firestoreData?.orders?.totalOrders || 0) - (firestoreData?.orders?.activeOrders || 0) - (firestoreData?.orders?.cancelledOrders || 0),
+    assigned: Math.floor((firestoreData?.orders?.activeOrders || 0) * 0.3), // Simulação: 30% atribuídos
+    inProgress: Math.floor((firestoreData?.orders?.activeOrders || 0) * 0.7), // Simulação: 70% em andamento
+    completed: firestoreData?.orders?.completedOrders || 0,
+    cancelled: firestoreData?.orders?.cancelledOrders || 0,
+    urgentCount: firestoreData?.orders?.emergencyOrders || 0,
+    todayOrders: firestoreData?.orders?.ordersToday || 0,
+    thisWeekOrders: firestoreData?.orders?.ordersLast7Days || 0,
+    thisMonthOrders: firestoreData?.orders?.ordersLast30Days || 0,
+    totalValue: (firestoreData?.orders?.completedOrders || 0) * 150, // Valor médio por pedido
     averageRating: 4.5 // Simulação
   }
 

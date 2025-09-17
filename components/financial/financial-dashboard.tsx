@@ -130,8 +130,8 @@ export function FinancialDashboard() {
   }
 
   // Calcular métricas financeiras baseadas nos dados do Firestore
-  const totalOrders = firestoreData.orders.totalOrders
-  const completedOrders = firestoreData.orders.completedOrders || 0
+  const totalOrders = firestoreData?.orders?.totalOrders || 0
+  const completedOrders = firestoreData?.orders?.completedOrders || 0
   const averageOrderValue = 150 // Valor médio por pedido (simulado)
   const totalRevenue = completedOrders * averageOrderValue
   const commissionRate = 0.10 // 10% de comissão

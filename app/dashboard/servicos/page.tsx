@@ -74,14 +74,14 @@ export default function ServicosPage() {
 
   // Calcular estatísticas baseadas nos dados do Firestore
   const stats = firestoreData ? {
-    total: firestoreData.orders.totalOrders,
-    pendentes: firestoreData.orders.totalOrders - firestoreData.orders.activeOrders - firestoreData.orders.cancelledOrders,
-    emAndamento: firestoreData.orders.activeOrders,
-    concluidos: firestoreData.orders.completedOrders || 0,
-    orcamentos: Math.floor(firestoreData.orders.totalOrders * 0.3), // Simulação: 30% são orçamentos
-    agendados: firestoreData.orders.ordersToday,
-    aguardando: Math.floor(firestoreData.orders.totalOrders * 0.1), // Simulação: 10% aguardando
-    aceitos: Math.floor(firestoreData.orders.totalOrders * 0.2) // Simulação: 20% aceitos
+    total: firestoreData?.orders?.totalOrders || 0,
+    pendentes: (firestoreData?.orders?.totalOrders || 0) - (firestoreData?.orders?.activeOrders || 0) - (firestoreData?.orders?.cancelledOrders || 0),
+    emAndamento: firestoreData?.orders?.activeOrders || 0,
+    concluidos: firestoreData?.orders?.completedOrders || 0,
+    orcamentos: Math.floor((firestoreData?.orders?.totalOrders || 0) * 0.3), // Simulação: 30% são orçamentos
+    agendados: firestoreData?.orders?.ordersToday || 0,
+    aguardando: Math.floor((firestoreData?.orders?.totalOrders || 0) * 0.1), // Simulação: 10% aguardando
+    aceitos: Math.floor((firestoreData?.orders?.totalOrders || 0) * 0.2) // Simulação: 20% aceitos
   } : {
     total: 0,
     pendentes: 0,

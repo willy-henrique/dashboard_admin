@@ -142,7 +142,7 @@ export function ReportsOverview() {
   const quickStats = [
     {
       title: "Crescimento de Usuários",
-      value: `+${((firestoreData.users.newUsersLast30Days / Math.max(firestoreData.users.totalUsers - firestoreData.users.newUsersLast30Days, 1)) * 100).toFixed(1)}%`,
+      value: `+${((firestoreData?.users?.newUsersLast30Days || 0) / Math.max((firestoreData?.users?.totalUsers || 1) - (firestoreData?.users?.newUsersLast30Days || 0), 1) * 100).toFixed(1)}%`,
       description: "Últimos 30 dias",
       icon: Users,
       trend: "up",
@@ -150,7 +150,7 @@ export function ReportsOverview() {
     {
       title: "Satisfação Média",
       value: "4.8/5",
-      description: `Baseado em ${firestoreData.orders.completedOrders || 0} avaliações`,
+      description: `Baseado em ${firestoreData?.orders?.completedOrders || 0} avaliações`,
       icon: Star,
       trend: "up",
     },
@@ -164,7 +164,7 @@ export function ReportsOverview() {
     {
       title: "Cobertura Geográfica",
       value: "127 cidades",
-      description: `+${firestoreData.orders.ordersLast30Days} novos pedidos`,
+      description: `+${firestoreData?.orders?.ordersLast30Days || 0} novos pedidos`,
       icon: MapPin,
       trend: "up",
     },

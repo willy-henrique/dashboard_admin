@@ -63,72 +63,76 @@ export function DashboardMetrics() {
     )
   }
 
-  const metrics = useMemo(() => [
-    {
-      title: "Total de Pedidos",
-      value: firestoreData.orders.totalOrders.toLocaleString(),
-      change: "+12%",
-      changeType: "positive" as const,
-      icon: ClipboardList,
-      description: "Todos os tempos",
-    },
-    {
-      title: "Pedidos Ativos",
-      value: firestoreData.orders.activeOrders.toLocaleString(),
-      change: "+8%",
-      changeType: "positive" as const,
-      icon: Activity,
-      description: "Em andamento",
-    },
-    {
-      title: "Usuários Ativos",
-      value: firestoreData.users.activeUsers.toLocaleString(),
-      change: "+23%",
-      changeType: "positive" as const,
-      icon: Users,
-      description: "Últimos 30 dias",
-    },
-    {
-      title: "Novos Usuários",
-      value: firestoreData.users.newUsersLast30Days.toLocaleString(),
-      change: "+15%",
-      changeType: "positive" as const,
-      icon: UserPlus,
-      description: "Últimos 30 dias",
-    },
-    {
-      title: "Pedidos de Emergência",
-      value: firestoreData.orders.emergencyOrders.toLocaleString(),
-      change: "+2%",
-      changeType: "positive" as const,
-      icon: AlertCircle,
-      description: "Urgentes",
-    },
-    {
-      title: "Pedidos Cancelados",
-      value: firestoreData.orders.cancelledOrders.toLocaleString(),
-      change: "-5%",
-      changeType: "negative" as const,
-      icon: Clock,
-      description: "Taxa de cancelamento",
-    },
-    {
-      title: "Prestadores Verificados",
-      value: firestoreData.providers.approvedVerifications.toLocaleString(),
-      change: "+18%",
-      changeType: "positive" as const,
-      icon: Star,
-      description: "Aprovados",
-    },
-    {
-      title: "Taxa de Aprovação",
-      value: `${firestoreData.providers.approvalRate.toFixed(1)}%`,
-      change: "+3%",
-      changeType: "positive" as const,
-      icon: TrendingUp,
-      description: "Eficiência",
-    },
-  ], [firestoreData])
+  const metrics = useMemo(() => {
+    if (!firestoreData) return []
+    
+    return [
+      {
+        title: "Total de Pedidos",
+        value: (firestoreData.orders?.totalOrders || 0).toLocaleString(),
+        change: "+12%",
+        changeType: "positive" as const,
+        icon: ClipboardList,
+        description: "Todos os tempos",
+      },
+      {
+        title: "Pedidos Ativos",
+        value: (firestoreData.orders?.activeOrders || 0).toLocaleString(),
+        change: "+8%",
+        changeType: "positive" as const,
+        icon: Activity,
+        description: "Em andamento",
+      },
+      {
+        title: "Usuários Ativos",
+        value: (firestoreData.users?.activeUsers || 0).toLocaleString(),
+        change: "+23%",
+        changeType: "positive" as const,
+        icon: Users,
+        description: "Últimos 30 dias",
+      },
+      {
+        title: "Novos Usuários",
+        value: (firestoreData.users?.newUsersLast30Days || 0).toLocaleString(),
+        change: "+15%",
+        changeType: "positive" as const,
+        icon: UserPlus,
+        description: "Últimos 30 dias",
+      },
+      {
+        title: "Pedidos de Emergência",
+        value: (firestoreData.orders?.emergencyOrders || 0).toLocaleString(),
+        change: "+2%",
+        changeType: "positive" as const,
+        icon: AlertCircle,
+        description: "Urgentes",
+      },
+      {
+        title: "Pedidos Cancelados",
+        value: (firestoreData.orders?.cancelledOrders || 0).toLocaleString(),
+        change: "-5%",
+        changeType: "negative" as const,
+        icon: Clock,
+        description: "Taxa de cancelamento",
+      },
+      {
+        title: "Prestadores Verificados",
+        value: (firestoreData.providers?.approvedVerifications || 0).toLocaleString(),
+        change: "+18%",
+        changeType: "positive" as const,
+        icon: Star,
+        description: "Aprovados",
+      },
+      {
+        title: "Taxa de Aprovação",
+        value: `${(firestoreData.providers?.approvalRate || 0).toFixed(1)}%`,
+        change: "+3%",
+        changeType: "positive" as const,
+        icon: TrendingUp,
+        description: "Eficiência",
+      },
+    ]
+  }, [firestoreData])
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
