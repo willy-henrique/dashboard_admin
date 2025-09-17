@@ -31,16 +31,16 @@ export function DashboardMetrics() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i}>
+          <Card key={i} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-20 sm:w-24" />
               <Skeleton className="h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
-              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-2" />
+              <Skeleton className="h-3 w-16 sm:w-20" />
             </CardContent>
           </Card>
         ))}
@@ -131,26 +131,26 @@ export function DashboardMetrics() {
   ], [firestoreData])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {metrics.map((metric) => (
-        <Card key={metric.title} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
+        <Card key={metric.title} className="bg-card border border-gray-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-3 text-lg font-bold">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600">
-                  <metric.icon className="h-4 w-4" aria-hidden="true" />
+              <CardTitle className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base lg:text-lg font-bold">
+                <span className="inline-flex h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                  <metric.icon className="h-3 w-3 sm:h-4 sm:w-4" aria-hidden="true" />
                 </span>
-                <span>{metric.title}</span>
+                <span className="truncate">{metric.title}</span>
               </CardTitle>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900 mb-2">{metric.value}</div>
-            <div className="flex items-center space-x-2 text-sm">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">{metric.value}</div>
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 text-xs sm:text-sm">
               <span className={`font-medium ${metric.changeType === "positive" ? "text-green-600" : "text-red-600"}`}>
                 {metric.change}
               </span>
-              <span className="text-gray-500">{metric.description}</span>
+              <span className="text-gray-500 truncate">{metric.description}</span>
             </div>
           </CardContent>
         </Card>

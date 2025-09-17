@@ -111,17 +111,17 @@ export function ReportsOverview() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-20 sm:w-24" />
                 <Skeleton className="h-4 w-4" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
-                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-2" />
+                <Skeleton className="h-3 w-16 sm:w-20" />
               </CardContent>
             </Card>
           ))}
@@ -171,23 +171,23 @@ export function ReportsOverview() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {quickStats.map((stat) => (
-          <Card key={stat.title}>
+          <Card key={stat.title} className="bg-card border border-gray-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
-              <stat.icon className="h-4 w-4 text-gray-400" />
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate">{stat.title}</CardTitle>
+              <stat.icon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-              <div className="flex items-center space-x-2 text-xs">
-                <Badge variant="outline" className={stat.trend === "up" ? "text-green-600" : "text-blue-600"}>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{stat.value}</div>
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 text-xs">
+                <Badge variant="outline" className={`w-fit ${stat.trend === "up" ? "text-green-600" : "text-blue-600"}`}>
                   <TrendingUp className="h-3 w-3 mr-1" />
                   {stat.trend === "up" ? "Crescimento" : "Melhoria"}
                 </Badge>
-                <span className="text-gray-500">{stat.description}</span>
+                <span className="text-gray-500 truncate">{stat.description}</span>
               </div>
             </CardContent>
           </Card>
@@ -195,137 +195,145 @@ export function ReportsOverview() {
       </div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* User Growth */}
-        <Card className="lg:col-span-2">
+        <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Crescimento de Usuários</CardTitle>
-            <CardDescription>Evolução mensal de clientes e prestadores</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Crescimento de Usuários</CardTitle>
+            <CardDescription className="text-sm">Evolução mensal de clientes e prestadores</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={userGrowthData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Area
-                  type="monotone"
-                  dataKey="clientes"
-                  stackId="1"
-                  stroke="#2196F3"
-                  fill="#2196F3"
-                  fillOpacity={0.6}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="prestadores"
-                  stackId="1"
-                  stroke="#4CAF50"
-                  fill="#4CAF50"
-                  fillOpacity={0.6}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="h-64 sm:h-80 lg:h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={userGrowthData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" fontSize={12} />
+                  <YAxis fontSize={12} />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="clientes"
+                    stackId="1"
+                    stroke="#2196F3"
+                    fill="#2196F3"
+                    fillOpacity={0.6}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="prestadores"
+                    stackId="1"
+                    stroke="#4CAF50"
+                    fill="#4CAF50"
+                    fillOpacity={0.6}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
         {/* Service Categories */}
         <Card>
           <CardHeader>
-            <CardTitle>Categorias Mais Solicitadas</CardTitle>
-            <CardDescription>Pedidos por categoria de serviço</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Categorias Mais Solicitadas</CardTitle>
+            <CardDescription className="text-sm">Pedidos por categoria de serviço</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="pedidos" fill="#2196F3" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="h-64 sm:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" fontSize={12} />
+                  <YAxis fontSize={12} />
+                  <Tooltip />
+                  <Bar dataKey="pedidos" fill="#2196F3" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
         {/* Geographic Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribuição Geográfica</CardTitle>
-            <CardDescription>Pedidos por cidade</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Distribuição Geográfica</CardTitle>
+            <CardDescription className="text-sm">Pedidos por cidade</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={geographicData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ cidade, percent }) => `${cidade} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="pedidos"
-                >
-                  {geographicData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={categoryData[index]?.color || "#2196F3"} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="h-64 sm:h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={geographicData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ cidade, percent }) => `${cidade} ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={60}
+                    fill="#8884d8"
+                    dataKey="pedidos"
+                  >
+                    {geographicData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={categoryData[index]?.color || "#2196F3"} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
         {/* Satisfaction Trend */}
-        <Card className="lg:col-span-2">
+        <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>Evolução da Satisfação</CardTitle>
-            <CardDescription>Avaliação média mensal dos serviços</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Evolução da Satisfação</CardTitle>
+            <CardDescription className="text-sm">Avaliação média mensal dos serviços</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={satisfactionTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis domain={[4.0, 5.0]} />
-                <Tooltip />
-                <Line
-                  type="monotone"
-                  dataKey="satisfacao"
-                  stroke="#4CAF50"
-                  strokeWidth={3}
-                  dot={{ fill: "#4CAF50", strokeWidth: 2, r: 6 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-64 sm:h-80 lg:h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={satisfactionTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" fontSize={12} />
+                  <YAxis domain={[4.0, 5.0]} fontSize={12} />
+                  <Tooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="satisfacao"
+                    stroke="#4CAF50"
+                    strokeWidth={3}
+                    dot={{ fill: "#4CAF50", strokeWidth: 2, r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Detailed Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Top Categories */}
         <Card>
           <CardHeader>
-            <CardTitle>Performance por Categoria</CardTitle>
-            <CardDescription>Análise detalhada de cada categoria</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Performance por Categoria</CardTitle>
+            <CardDescription className="text-sm">Análise detalhada de cada categoria</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {categoryData.map((category) => (
                 <div key={category.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{category.name}</p>
-                    <p className="text-sm text-gray-600">{category.pedidos} pedidos</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{category.name}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">{category.pedidos} pedidos</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right ml-2">
                     <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="font-medium">{category.satisfacao}</span>
+                      <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400 fill-current" />
+                      <span className="font-medium text-sm sm:text-base">{category.satisfacao}</span>
                     </div>
-                    <p className="text-sm text-gray-600">satisfação</p>
+                    <p className="text-xs sm:text-sm text-gray-600">satisfação</p>
                   </div>
                 </div>
               ))}
@@ -336,20 +344,20 @@ export function ReportsOverview() {
         {/* Geographic Performance */}
         <Card>
           <CardHeader>
-            <CardTitle>Performance Geográfica</CardTitle>
-            <CardDescription>Receita e pedidos por cidade</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Performance Geográfica</CardTitle>
+            <CardDescription className="text-sm">Receita e pedidos por cidade</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {geographicData.map((city) => (
                 <div key={city.cidade} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{city.cidade}</p>
-                    <p className="text-sm text-gray-600">{city.pedidos} pedidos</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{city.cidade}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">{city.pedidos} pedidos</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">R$ {city.receita.toLocaleString()}</p>
-                    <p className="text-sm text-gray-600">receita</p>
+                  <div className="text-right ml-2">
+                    <p className="font-medium text-sm sm:text-base">R$ {city.receita.toLocaleString()}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">receita</p>
                   </div>
                 </div>
               ))}

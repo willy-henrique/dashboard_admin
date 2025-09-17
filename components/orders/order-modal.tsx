@@ -90,52 +90,52 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] sm:max-h-[80vh] overflow-y-auto w-[95vw] sm:w-full">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Detalhes do Pedido {order.id}</span>
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+            <span className="text-lg sm:text-xl">Detalhes do Pedido {order.id}</span>
             {getStatusBadge(order.status)}
           </DialogTitle>
-          <DialogDescription>Informações completas e gerenciamento do pedido</DialogDescription>
+          <DialogDescription className="text-sm">Informações completas e gerenciamento do pedido</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Order Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Informações do Pedido</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Informações do Pedido</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Categoria</label>
-                  <p className="text-sm">{order.serviceCategory}</p>
+                  <label className="text-xs sm:text-sm font-medium text-gray-500">Categoria</label>
+                  <p className="text-sm sm:text-base">{order.serviceCategory}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Prioridade</label>
+                  <label className="text-xs sm:text-sm font-medium text-gray-500">Prioridade</label>
                   <div className="mt-1">{getPriorityBadge(order.priority)}</div>
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">Descrição</label>
-                <p className="text-sm mt-1">{order.description}</p>
+                <label className="text-xs sm:text-sm font-medium text-gray-500">Descrição</label>
+                <p className="text-sm sm:text-base mt-1">{order.description}</p>
               </div>
 
               <Separator />
 
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{order.location}</span>
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm truncate">{order.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">R$ {order.budget.toFixed(2)}</span>
+                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">R$ {order.budget.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">
                     Criado em {new Date(order.createdAt).toLocaleDateString("pt-BR")} às{" "}
                     {new Date(order.createdAt).toLocaleTimeString("pt-BR")}
                   </span>
@@ -145,41 +145,41 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
           </Card>
 
           {/* Client and Provider Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Cliente</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Cliente</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-400" />
-                  <span className="font-medium">{order.clientName}</span>
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <span className="font-medium text-sm sm:text-base truncate">{order.clientName}</span>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Prestador</CardTitle>
+                <CardTitle className="text-base sm:text-lg">Prestador</CardTitle>
               </CardHeader>
               <CardContent>
                 {order.providerName ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-400" />
-                      <span className="font-medium">{order.providerName}</span>
+                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                      <span className="font-medium text-sm sm:text-base truncate">{order.providerName}</span>
                     </div>
                     {order.assignedAt && (
                       <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-gray-600">
                           Atribuído em {new Date(order.assignedAt).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm">Nenhum prestador atribuído</p>
+                  <p className="text-gray-500 text-xs sm:text-sm">Nenhum prestador atribuído</p>
                 )}
               </CardContent>
             </Card>
@@ -241,12 +241,12 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
           {/* Actions */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Ações</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Ações</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="text-sm font-medium text-gray-500">Alterar Status</label>
+              <div className="flex flex-col space-y-4">
+                <div>
+                  <label className="text-xs sm:text-sm font-medium text-gray-500">Alterar Status</label>
                   <Select value={order.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
@@ -261,10 +261,10 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
                   </Select>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex items-center gap-2 bg-transparent">
-                    <MessageCircle className="h-4 w-4" />
-                    Chat
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button variant="outline" className="flex items-center justify-center gap-2 bg-transparent w-full sm:w-auto">
+                    <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="text-sm">Chat</span>
                   </Button>
                 </div>
               </div>

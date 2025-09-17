@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Sidebar } from "./sidebar"
 import { Header } from "./header"
+import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode
@@ -41,7 +42,11 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         
         {/* Main Content */}
         <main className="min-h-screen">
-          <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            {/* Breadcrumbs */}
+            <div className="mb-4 sm:mb-6">
+              <Breadcrumbs />
+            </div>
             {children}
           </div>
         </main>
