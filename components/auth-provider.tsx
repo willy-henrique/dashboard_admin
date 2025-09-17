@@ -28,13 +28,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    // Login automático em desenvolvimento se não houver usuário
-    if (process.env.NODE_ENV === 'development' && !user) {
+    return () => unsubscribe()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Login automático em desenvolvimento
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && !user && !loading) {
       signInAnonymously(auth).catch(console.error)
     }
-
-    return () => unsubscribe()
-  }, [user])
+  }, [user, loading])
 
   const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
     // Implementar login real aqui se necessário

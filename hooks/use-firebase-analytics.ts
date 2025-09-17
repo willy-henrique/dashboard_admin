@@ -204,7 +204,7 @@ export function useFirebaseAnalytics() {
 
   useEffect(() => {
     fetchAnalyticsData()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     analyticsData,

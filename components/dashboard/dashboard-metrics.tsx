@@ -5,29 +5,29 @@ import { Users, ClipboardList, DollarSign, Star, UserPlus, TrendingUp, BarChart3
 import { useFirebaseAnalytics } from "@/hooks/use-firebase-analytics"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 
 export function DashboardMetrics() {
   const [firestoreData, setFirestoreData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const data = await FirestoreAnalyticsService.getDashboardMetrics()
-        setFirestoreData(data)
-      } catch (err) {
-        console.error('Erro ao buscar dados do Firestore:', err)
-        setError('Erro ao carregar dados')
-      } finally {
-        setLoading(false)
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const data = await FirestoreAnalyticsService.getDashboardMetrics()
+      setFirestoreData(data)
+    } catch (err) {
+      console.error('Erro ao buscar dados do Firestore:', err)
+      setError('Erro ao carregar dados')
+    } finally {
+      setLoading(false)
     }
-
-    fetchData()
   }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   if (loading) {
     return (
@@ -63,7 +63,7 @@ export function DashboardMetrics() {
     )
   }
 
-  const metrics = [
+  const metrics = useMemo(() => [
     {
       title: "Total de Pedidos",
       value: firestoreData.orders.totalOrders.toLocaleString(),
@@ -128,7 +128,7 @@ export function DashboardMetrics() {
       icon: TrendingUp,
       description: "Eficiência",
     },
-  ]
+  ], [firestoreData])
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
