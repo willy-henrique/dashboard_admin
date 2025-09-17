@@ -84,16 +84,7 @@ export default function ClientsPage() {
         </CardContent>
       </Card>
 
-      <UsersTable 
-        users={users}
-        loading={loading}
-        onView={(id) => { setSelectedUserId(id); setModalOpen(true) }}
-        onEdit={(id) => { setSelectedUserId(id); setModalOpen(true) }}
-        onDelete={(id) => deleteUser(id)}
-        onToggleStatus={(id, status) => toggleUserStatus(id, status)}
-        onBlock={(id) => blockUser(id)}
-        onUnblock={(id) => unblockUser(id)}
-      />
+      <UsersTable filters={{ role: 'client' }} />
 
       <UserModal 
         user={selectedUser}

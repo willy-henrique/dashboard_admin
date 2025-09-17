@@ -1,17 +1,38 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, ClipboardList, DollarSign, Star, UserPlus, TrendingUp, BarChart3, FileText, Activity, AlertCircle } from "lucide-react"
+import { Users, ClipboardList, DollarSign, Star, UserPlus, TrendingUp, BarChart3, FileText, Activity, AlertCircle, Clock, MapPin } from "lucide-react"
 import { useFirebaseAnalytics } from "@/hooks/use-firebase-analytics"
 import { Skeleton } from "@/components/ui/skeleton"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { useEffect, useState } from "react"
 
 export function DashboardMetrics() {
-  const { analyticsData, loading, error } = useFirebaseAnalytics()
+  const [firestoreData, setFirestoreData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const data = await FirestoreAnalyticsService.getDashboardMetrics()
+        setFirestoreData(data)
+      } catch (err) {
+        console.error('Erro ao buscar dados do Firestore:', err)
+        setError('Erro ao carregar dados')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <Skeleton className="h-4 w-24" />
@@ -27,7 +48,7 @@ export function DashboardMetrics() {
     )
   }
 
-  if (error) {
+  if (error || !firestoreData) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card className="col-span-full">
@@ -44,52 +65,68 @@ export function DashboardMetrics() {
 
   const metrics = [
     {
-      title: "Usuários Ativos",
-      value: analyticsData.activeUsers.toLocaleString(),
+      title: "Total de Pedidos",
+      value: firestoreData.orders.totalOrders.toLocaleString(),
       change: "+12%",
+      changeType: "positive" as const,
+      icon: ClipboardList,
+      description: "Todos os tempos",
+    },
+    {
+      title: "Pedidos Ativos",
+      value: firestoreData.orders.activeOrders.toLocaleString(),
+      change: "+8%",
+      changeType: "positive" as const,
+      icon: Activity,
+      description: "Em andamento",
+    },
+    {
+      title: "Usuários Ativos",
+      value: firestoreData.users.activeUsers.toLocaleString(),
+      change: "+23%",
       changeType: "positive" as const,
       icon: Users,
       description: "Últimos 30 dias",
     },
     {
-      title: "Visualizações de Página",
-      value: analyticsData.pageViews.toLocaleString(),
-      change: "+8%",
+      title: "Novos Usuários",
+      value: firestoreData.users.newUsersLast30Days.toLocaleString(),
+      change: "+15%",
       changeType: "positive" as const,
-      icon: BarChart3,
-      description: "vs período anterior",
+      icon: UserPlus,
+      description: "Últimos 30 dias",
     },
     {
-      title: "Ações de Usuário",
-      value: analyticsData.userActions.toLocaleString(),
-      change: "+23%",
+      title: "Pedidos de Emergência",
+      value: firestoreData.orders.emergencyOrders.toLocaleString(),
+      change: "+2%",
       changeType: "positive" as const,
-      icon: Activity,
-      description: "Este mês",
+      icon: AlertCircle,
+      description: "Urgentes",
     },
     {
-      title: "Eventos de Negócio",
-      value: analyticsData.businessEvents.toLocaleString(),
-      change: "+0.2%",
-      changeType: "positive" as const,
-      icon: TrendingUp,
-      description: "Últimos 7 dias",
-    },
-    {
-      title: "Ações Financeiras",
-      value: analyticsData.financialActions.toLocaleString(),
+      title: "Pedidos Cancelados",
+      value: firestoreData.orders.cancelledOrders.toLocaleString(),
       change: "-5%",
       changeType: "negative" as const,
-      icon: DollarSign,
-      description: "Transações processadas",
+      icon: Clock,
+      description: "Taxa de cancelamento",
     },
     {
-      title: "Relatórios Gerados",
-      value: analyticsData.reportsGenerated.toLocaleString(),
-      change: "+4%",
+      title: "Prestadores Verificados",
+      value: firestoreData.providers.approvedVerifications.toLocaleString(),
+      change: "+18%",
       changeType: "positive" as const,
-      icon: FileText,
-      description: "Últimas 24h",
+      icon: Star,
+      description: "Aprovados",
+    },
+    {
+      title: "Taxa de Aprovação",
+      value: `${firestoreData.providers.approvalRate.toFixed(1)}%`,
+      change: "+3%",
+      changeType: "positive" as const,
+      icon: TrendingUp,
+      description: "Eficiência",
     },
   ]
 

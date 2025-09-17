@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, TrendingUp, CreditCard, Percent, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { DollarSign, TrendingUp, CreditCard, Percent, ArrowUpRight, ArrowDownRight, Skeleton } from "lucide-react"
 import {
   LineChart,
   Line,
@@ -16,6 +16,8 @@ import {
   Pie,
   Cell,
 } from "recharts"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { useEffect, useState } from "react"
 
 const financialMetrics = [
   {
@@ -77,6 +79,100 @@ const topProvidersEarnings = [
 ]
 
 export function FinancialDashboard() {
+  const [firestoreData, setFirestoreData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const data = await FirestoreAnalyticsService.getDashboardMetrics()
+        setFirestoreData(data)
+      } catch (err) {
+        console.error('Erro ao buscar dados financeiros:', err)
+        setError('Erro ao carregar dados financeiros')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-20 mb-2" />
+                <Skeleton className="h-3 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !firestoreData) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Erro ao carregar dados financeiros: {error}</p>
+      </div>
+    )
+  }
+
+  // Calcular métricas financeiras baseadas nos dados do Firestore
+  const totalOrders = firestoreData.orders.totalOrders
+  const completedOrders = firestoreData.orders.completedOrders || 0
+  const averageOrderValue = 150 // Valor médio por pedido (simulado)
+  const totalRevenue = completedOrders * averageOrderValue
+  const commissionRate = 0.10 // 10% de comissão
+  const totalCommissions = totalRevenue * commissionRate
+  const successRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0
+
+  const financialMetrics = [
+    {
+      title: "Receita Total",
+      value: `R$ ${totalRevenue.toLocaleString()}`,
+      change: "+15.2%",
+      changeType: "positive" as const,
+      icon: DollarSign,
+      description: "Baseado em pedidos concluídos",
+    },
+    {
+      title: "Comissões Geradas",
+      value: `R$ ${totalCommissions.toLocaleString()}`,
+      change: "+18.1%",
+      changeType: "positive" as const,
+      icon: Percent,
+      description: `${(commissionRate * 100)}% média`,
+    },
+    {
+      title: "Transações",
+      value: totalOrders.toLocaleString(),
+      change: "+12.5%",
+      changeType: "positive" as const,
+      icon: CreditCard,
+      description: "Total de pedidos",
+    },
+    {
+      title: "Taxa de Sucesso",
+      value: `${successRate.toFixed(1)}%`,
+      change: "+0.8%",
+      changeType: "positive" as const,
+      icon: TrendingUp,
+      description: "Pedidos concluídos",
+    },
+  ]
+
   return (
     <div className="space-y-6">
       {/* Financial Metrics */}

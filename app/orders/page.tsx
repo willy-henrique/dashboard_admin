@@ -142,87 +142,19 @@ export default function OrdersPage() {
         </TabsContent>
 
         <TabsContent value="todos" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Todos os Pedidos</CardTitle>
-              <p className="text-sm text-gray-600">
-                Visualize e gerencie todos os pedidos do sistema
-              </p>
-            </CardHeader>
-          </Card>
-          <OrdersTable
-            orders={orders}
-            loading={loading}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onAssignProvider={handleAssignProvider}
-            onUpdateStatus={handleUpdateStatus}
-            onView={handleView}
-            onEdit={handleEdit}
-          />
+          <OrdersTable />
         </TabsContent>
 
         <TabsContent value="pendentes" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pedidos Pendentes</CardTitle>
-              <p className="text-sm text-gray-600">
-                Pedidos aguardando atribuição de prestador
-              </p>
-            </CardHeader>
-          </Card>
-          <OrdersTable
-            orders={getFilteredOrders('pending')}
-            loading={loading}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onAssignProvider={handleAssignProvider}
-            onUpdateStatus={handleUpdateStatus}
-            onView={handleView}
-            onEdit={handleEdit}
-          />
+          <OrdersTable filters={{ status: 'pending' }} />
         </TabsContent>
 
         <TabsContent value="ativos" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pedidos Ativos</CardTitle>
-              <p className="text-sm text-gray-600">
-                Pedidos atribuídos e em andamento
-              </p>
-            </CardHeader>
-          </Card>
-          <OrdersTable
-            orders={getFilteredOrders('assigned').concat(getFilteredOrders('in_progress'))}
-            loading={loading}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onAssignProvider={handleAssignProvider}
-            onUpdateStatus={handleUpdateStatus}
-            onView={handleView}
-            onEdit={handleEdit}
-          />
+          <OrdersTable filters={{ status: 'in_progress' }} />
         </TabsContent>
 
         <TabsContent value="concluidos" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pedidos Concluídos</CardTitle>
-              <p className="text-sm text-gray-600">
-                Pedidos finalizados e avaliados
-              </p>
-            </CardHeader>
-          </Card>
-          <OrdersTable
-            orders={getFilteredOrders('completed')}
-            loading={loading}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-            onAssignProvider={handleAssignProvider}
-            onUpdateStatus={handleUpdateStatus}
-            onView={handleView}
-            onEdit={handleEdit}
-          />
+          <OrdersTable filters={{ status: 'completed' }} />
         </TabsContent>
       </Tabs>
 

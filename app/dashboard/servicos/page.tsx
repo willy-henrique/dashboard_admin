@@ -19,17 +19,36 @@ import {
   AlertCircle
 } from "lucide-react"
 import Link from "next/link"
-import { useServices } from "@/hooks/use-services"
 import { useAnalytics } from "@/hooks/use-analytics"
-import { useEffect } from "react"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics"
+import { useEffect, useState } from "react"
 
 export default function ServicosPage() {
-  const { services, stats, loading, error, refetch } = useServices()
+  const [firestoreData, setFirestoreData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { trackPageView, trackUserAction } = useAnalytics()
 
   useEffect(() => {
     trackPageView('Página de Serviços')
   }, [trackPageView])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const data = await FirestoreAnalyticsService.getDashboardMetrics()
+        setFirestoreData(data)
+      } catch (err) {
+        console.error('Erro ao buscar dados de serviços:', err)
+        setError('Erro ao carregar dados de serviços')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const handleNewService = () => {
     trackUserAction('novo_servico', 'servicos')
@@ -37,7 +56,41 @@ export default function ServicosPage() {
 
   const handleRefresh = () => {
     trackUserAction('atualizar_servicos', 'servicos')
-    refetch()
+    // Refetch data
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const data = await FirestoreAnalyticsService.getDashboardMetrics()
+        setFirestoreData(data)
+      } catch (err) {
+        console.error('Erro ao buscar dados de serviços:', err)
+        setError('Erro ao carregar dados de serviços')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }
+
+  // Calcular estatísticas baseadas nos dados do Firestore
+  const stats = firestoreData ? {
+    total: firestoreData.orders.totalOrders,
+    pendentes: firestoreData.orders.totalOrders - firestoreData.orders.activeOrders - firestoreData.orders.cancelledOrders,
+    emAndamento: firestoreData.orders.activeOrders,
+    concluidos: firestoreData.orders.completedOrders || 0,
+    orcamentos: Math.floor(firestoreData.orders.totalOrders * 0.3), // Simulação: 30% são orçamentos
+    agendados: firestoreData.orders.ordersToday,
+    aguardando: Math.floor(firestoreData.orders.totalOrders * 0.1), // Simulação: 10% aguardando
+    aceitos: Math.floor(firestoreData.orders.totalOrders * 0.2) // Simulação: 20% aceitos
+  } : {
+    total: 0,
+    pendentes: 0,
+    emAndamento: 0,
+    concluidos: 0,
+    orcamentos: 0,
+    agendados: 0,
+    aguardando: 0,
+    aceitos: 0
   }
 
   return (
