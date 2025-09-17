@@ -49,8 +49,14 @@ try {
         console.log('📊 Firebase Analytics inicializado com sucesso!');
       } else {
         console.warn('⚠️ Firebase Analytics não é suportado neste navegador');
+        analytics = null;
       }
+    }).catch((error) => {
+      console.warn('⚠️ Erro ao verificar suporte do Analytics:', error);
+      analytics = null;
     });
+  } else {
+    analytics = null;
   }
 } catch (error) {
   console.error('❌ Erro ao inicializar Firebase:', error);

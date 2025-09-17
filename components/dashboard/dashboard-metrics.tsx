@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, ClipboardList, DollarSign, Star, UserPlus, TrendingUp, BarChart3, FileText, Activity, AlertCircle, Clock, MapPin } from "lucide-react"
-import { useFirebaseAnalytics } from "@/hooks/use-firebase-analytics"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { useEffect, useState, useMemo, useCallback } from "react"
@@ -48,23 +47,8 @@ export function DashboardMetrics() {
     )
   }
 
-  if (error || !firestoreData) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="col-span-full">
-          <CardContent className="pt-6">
-            <div className="text-center text-red-600">
-              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-              <p>Erro ao carregar métricas: {error}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   const metrics = useMemo(() => {
-    if (!firestoreData) return []
+    if (!firestoreData || error) return []
     
     return [
       {
@@ -132,7 +116,22 @@ export function DashboardMetrics() {
         description: "Eficiência",
       },
     ]
-  }, [firestoreData])
+  }, [firestoreData, error])
+
+  if (error || !firestoreData) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="col-span-full">
+          <CardContent className="pt-6">
+            <div className="text-center text-red-600">
+              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
+              <p>Erro ao carregar métricas: {error}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
