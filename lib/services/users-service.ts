@@ -98,6 +98,33 @@ export class UsersService {
     }
   }
 
+  // Criar usuário
+  static async createUser(userData: Partial<UserData>) {
+    try {
+      const userId = await addDocument('users', {
+        ...userData,
+        isActive: userData.isActive !== false,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      })
+      return { id: userId, ...userData } as UserData
+    } catch (error) {
+      console.error('Erro ao criar usuário:', error)
+      throw error
+    }
+  }
+
+  // Deletar usuário
+  static async deleteUser(userId: string) {
+    try {
+      await deleteDocument('users', userId)
+      return true
+    } catch (error) {
+      console.error('Erro ao deletar usuário:', error)
+      throw error
+    }
+  }
+
   // Ativar/Desativar usuário
   static async toggleUserStatus(userId: string, isActive: boolean) {
     try {
