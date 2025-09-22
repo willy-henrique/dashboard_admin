@@ -154,25 +154,24 @@ export default function ProvidersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                <Shield className="h-6 w-6 text-white" />
+            <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-3" style={{ color: 'var(--foreground)' }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-1)' }}>
+                <Shield className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
               </div>
               Gestão de Prestadores
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-2 text-lg">
+            <p className="mt-2 text-lg" style={{ color: 'var(--muted-foreground)' }}>
               Gerencie todos os prestadores de serviços
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               variant="outline" 
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 dark:hover:bg-blue-900/20"
               onClick={() => refetch()}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -180,14 +179,18 @@ export default function ProvidersPage() {
             </Button>
             <Button 
               variant="outline"
-              className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-900/20"
             >
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
             <Button 
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               onClick={() => { setSelectedUserId(null); setModalOpen(true) }}
+              style={{ 
+                background: 'var(--primary)', 
+                color: 'var(--primary-foreground)',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              }}
+              className="hover:opacity-90 transition-all duration-200"
             >
               <Plus className="h-4 w-4 mr-2" />
               Novo Prestador
@@ -197,57 +200,57 @@ export default function ProvidersPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Prestadores</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{users.length}</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Total de Prestadores</p>
+                  <p className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>{users.length}</p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                  <User className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-1)' }}>
+                  <User className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Prestadores Ativos</p>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{activeUsers}</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Prestadores Ativos</p>
+                  <p className="text-3xl font-bold" style={{ color: 'var(--chart-2)' }}>{activeUsers}</p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-                  <UserCheck className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-2)' }}>
+                  <UserCheck className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Verificados</p>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{verifiedUsers}</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Verificados</p>
+                  <p className="text-3xl font-bold" style={{ color: 'var(--chart-3)' }}>{verifiedUsers}</p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <CheckCircle className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-3)' }}>
+                  <CheckCircle className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Novos (30 dias)</p>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{recentUsers}</p>
+                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Novos (30 dias)</p>
+                  <p className="text-3xl font-bold" style={{ color: 'var(--chart-4)' }}>{recentUsers}</p>
                 </div>
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
-                  <TrendingUp className="h-6 w-6 text-white" />
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-4)' }}>
+                  <TrendingUp className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
                 </div>
               </div>
             </CardContent>
@@ -255,9 +258,9 @@ export default function ProvidersPage() {
         </div>
 
         {/* Filters */}
-        <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg">
+        <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
               <Filter className="h-5 w-5" />
               Filtros e Busca
             </CardTitle>
@@ -266,7 +269,7 @@ export default function ProvidersPage() {
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
                   <Input
                     placeholder="Buscar por nome, email, CPF..."
                     value={search}

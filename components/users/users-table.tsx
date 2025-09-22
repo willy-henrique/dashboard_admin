@@ -149,9 +149,9 @@ export function UsersTable({
   }
 
   return (
-    <Card className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg">
+    <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <CardTitle className="text-xl font-bold flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
           <UsersIcon className="h-5 w-5" />
           Usuários ({users.length})
         </CardTitle>
@@ -159,11 +159,11 @@ export function UsersTable({
       <CardContent>
         {users.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
-              <UserX className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: 'var(--muted)' }}>
+              <UserX className="h-8 w-8" style={{ color: 'var(--muted-foreground)' }} />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Nenhum usuário encontrado</h3>
-            <p className="text-gray-500 dark:text-gray-400">Tente ajustar os filtros ou criar um novo usuário.</p>
+            <h3 className="text-lg font-medium mb-2" style={{ color: 'var(--foreground)' }}>Nenhum usuário encontrado</h3>
+            <p style={{ color: 'var(--muted-foreground)' }}>Tente ajustar os filtros ou criar um novo usuário.</p>
           </div>
         ) : (
           <>
@@ -171,34 +171,36 @@ export function UsersTable({
             <div className="hidden lg:block overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-gray-200 dark:border-gray-700">
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Usuário</TableHead>
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Contato</TableHead>
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Tipo</TableHead>
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Status</TableHead>
+                  <TableRow style={{ borderColor: 'var(--border)' }}>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Usuário</TableHead>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Contato</TableHead>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Tipo</TableHead>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Status</TableHead>
                     {showVerification && (
-                      <TableHead className="font-semibold text-gray-900 dark:text-white">Verificação</TableHead>
+                      <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Verificação</TableHead>
                     )}
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Último Login</TableHead>
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Criado</TableHead>
-                    <TableHead className="font-semibold text-gray-900 dark:text-white">Ações</TableHead>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Último Login</TableHead>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Criado</TableHead>
+                    <TableHead className="font-semibold" style={{ color: 'var(--foreground)' }}>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <TableRow key={user.id} className="transition-colors" style={{ 
+                      ':hover': { backgroundColor: 'var(--muted)' }
+                    }}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md">
-                            <span className="text-white font-semibold text-sm">
+                          <div className="h-10 w-10 rounded-full flex items-center justify-center shadow-md" style={{ background: 'var(--primary)' }}>
+                            <span className="font-semibold text-sm" style={{ color: 'var(--primary-foreground)' }}>
                               {(user.name || user.nome || 'U').charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
-                            <div className="font-semibold text-gray-900 dark:text-white">
+                            <div className="font-semibold" style={{ color: 'var(--foreground)' }}>
                               {user.name || user.nome || 'Nome não informado'}
                             </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                            <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                               ID: {user.id.slice(0, 8)}...
                             </div>
                           </div>
@@ -207,15 +209,15 @@ export function UsersTable({
                       <TableCell>
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-900 dark:text-white">
+                            <Mail className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
+                            <span className="text-sm" style={{ color: 'var(--foreground)' }}>
                               {user.email || 'Email não informado'}
                             </span>
                           </div>
                           {user.telefone && (
                             <div className="flex items-center gap-2">
-                              <Phone className="h-4 w-4 text-gray-400" />
-                              <span className="text-sm text-gray-500 dark:text-gray-400">
+                              <Phone className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
+                              <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                                 {user.telefone}
                               </span>
                             </div>
@@ -236,17 +238,17 @@ export function UsersTable({
                       <TableCell>
                         <div className="text-sm">
                           {user.lastLoginAt ? (
-                            <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center gap-1" style={{ color: 'var(--muted-foreground)' }}>
                               <Clock className="h-3 w-3" />
                               {formatDate(user.lastLoginAt)}
                             </div>
                           ) : (
-                            <span className="text-gray-500 dark:text-gray-400">Nunca</span>
+                            <span style={{ color: 'var(--muted-foreground)' }}>Nunca</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                           {formatDate(user.createdAt)}
                         </div>
                       </TableCell>
@@ -319,24 +321,24 @@ export function UsersTable({
             {/* Mobile Cards */}
             <div className="lg:hidden space-y-4">
               {users.map((user) => (
-                <Card key={user.id} className="p-4 bg-white dark:bg-slate-800 border-0 shadow-md hover:shadow-lg transition-shadow">
+                <Card key={user.id} className="p-4 border-0 shadow-md hover:shadow-lg transition-shadow" style={{ backgroundColor: 'var(--card)' }}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3 flex-1">
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-md">
-                        <span className="text-white font-semibold text-sm">
+                      <div className="h-12 w-12 rounded-full flex items-center justify-center shadow-md" style={{ background: 'var(--primary)' }}>
+                        <span className="font-semibold text-sm" style={{ color: 'var(--primary-foreground)' }}>
                           {(user.name || user.nome || 'U').charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-lg text-gray-900 dark:text-white">
+                        <div className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
                           {user.name || user.nome || 'Nome não informado'}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <div className="text-sm flex items-center gap-1" style={{ color: 'var(--muted-foreground)' }}>
                           <Mail className="h-3 w-3" />
                           {user.email || 'Email não informado'}
                         </div>
                         {user.telefone && (
-                          <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                          <div className="text-sm flex items-center gap-1 mt-1" style={{ color: 'var(--muted-foreground)' }}>
                             <Phone className="h-3 w-3" />
                             {user.telefone}
                           </div>
@@ -353,28 +355,28 @@ export function UsersTable({
                   <div className="space-y-3 mb-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Último Login:</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Último Login:</div>
+                        <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                           {user.lastLoginAt ? (
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
                               {formatDate(user.lastLoginAt)}
                             </div>
                           ) : (
-                            <span className="text-gray-500">Nunca</span>
+                            <span>Nunca</span>
                           )}
                         </div>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Criado:</div>
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Criado:</div>
+                        <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                           {formatDate(user.createdAt)}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                     {onView && (
                       <Button variant="ghost" size="sm" className="flex-1" onClick={() => onView(user.id)}>
                         <Eye className="h-4 w-4 mr-2" />
