@@ -29,7 +29,8 @@ import {
   AlertCircle,
   MoreVertical,
   Phone,
-  MapPin
+  MapPin,
+  Users as UsersIcon
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
