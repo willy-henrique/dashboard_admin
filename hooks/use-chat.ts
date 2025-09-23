@@ -55,52 +55,56 @@ export function useChatConversations(filter?: ChatFilter) {
       }
     }
 
+    // Buscar conversas apenas quando filtros mudarem
     fetchConversations()
-
-    // Configurar listener em tempo real para novas conversas (apenas uma vez)
-    if (db) {
-      let isListening = false
-      
-      const setupListeners = () => {
-        if (isListening) return
-        
-        isListening = true
-        console.log('🎧 Configurando listeners em tempo real...')
-        
-        const unsubscribeChat = onSnapshot(
-          collection(db, 'chatConversations'),
-          () => {
-            console.log('🔄 Mudança detectada em chatConversations')
-            fetchConversations()
-          },
-          (err) => {
-            console.error('Erro no listener de conversas:', err)
-          }
-        )
-
-        const unsubscribeOrders = onSnapshot(
-          collection(db, 'orders'),
-          () => {
-            console.log('🔄 Mudança detectada em orders')
-            fetchConversations()
-          },
-          (err) => {
-            console.error('Erro no listener de orders:', err)
-          }
-        )
-
-        return () => {
-          console.log('🔇 Removendo listeners')
-          unsubscribeChat()
-          unsubscribeOrders()
-          isListening = false
-        }
-      }
-
-      const cleanup = setupListeners()
-      return cleanup
-    }
   }, [filter])
+
+  // Listener separado para tempo real (sem dependências)
+  useEffect(() => {
+    if (!db) return
+
+    console.log('🎧 Configurando listeners em tempo real...')
+    
+    const unsubscribeChat = onSnapshot(
+      collection(db, 'chatConversations'),
+      () => {
+        console.log('🔄 Mudança detectada em chatConversations')
+        // Recarregar apenas se não estiver carregando
+        if (!loading) {
+          ChatService.getAllConversations().then(conversations => {
+            console.log(`📊 Conversas atualizadas: ${conversations.length}`)
+            setConversations(conversations)
+          })
+        }
+      },
+      (err) => {
+        console.error('Erro no listener de conversas:', err)
+      }
+    )
+
+    const unsubscribeOrders = onSnapshot(
+      collection(db, 'orders'),
+      () => {
+        console.log('🔄 Mudança detectada em orders')
+        // Recarregar apenas se não estiver carregando
+        if (!loading) {
+          ChatService.getAllConversations().then(conversations => {
+            console.log(`📊 Conversas atualizadas: ${conversations.length}`)
+            setConversations(conversations)
+          })
+        }
+      },
+      (err) => {
+        console.error('Erro no listener de orders:', err)
+      }
+    )
+
+    return () => {
+      console.log('🔇 Removendo listeners')
+      unsubscribeChat()
+      unsubscribeOrders()
+    }
+  }, [db, loading])
 
   return { conversations, loading, error }
 }
@@ -214,39 +218,57 @@ export function useChatStats() {
     }
 
     fetchStats()
-
-    // Configurar listener para atualizações em tempo real (apenas uma vez)
-    if (db) {
-      let isListening = false
-      
-      const setupStatsListener = () => {
-        if (isListening) return
-        
-        isListening = true
-        console.log('🎧 Configurando listener de estatísticas...')
-        
-        const unsubscribeOrders = onSnapshot(
-          collection(db, 'orders'),
-          () => {
-            console.log('🔄 Atualizando estatísticas...')
-            fetchStats()
-          },
-          (err) => {
-            console.error('Erro no listener de estatísticas:', err)
-          }
-        )
-
-        return () => {
-          console.log('🔇 Removendo listener de estatísticas')
-          unsubscribeOrders()
-          isListening = false
-        }
-      }
-
-      const cleanup = setupStatsListener()
-      return cleanup
-    }
   }, [])
+
+  // Listener separado para estatísticas
+  useEffect(() => {
+    if (!db) return
+
+    console.log('🎧 Configurando listener de estatísticas...')
+    
+    const unsubscribeOrders = onSnapshot(
+      collection(db, 'orders'),
+      () => {
+        console.log('🔄 Atualizando estatísticas...')
+        // Recarregar estatísticas apenas se não estiver carregando
+        if (!loading) {
+          ChatService.getAllConversations().then(allConversations => {
+            const newStats: ChatStats = {
+              totalConversations: allConversations.length,
+              activeConversations: allConversations.filter(c => c.status === 'active').length,
+              closedConversations: allConversations.filter(c => c.status === 'closed').length,
+              blockedConversations: allConversations.filter(c => c.status === 'blocked').length,
+              totalMessages: allConversations.reduce((sum, conv) => sum + (conv.lastMessage ? 1 : 0), 0),
+              unreadMessages: allConversations.reduce((sum, conv) => sum + conv.unreadCount.admin, 0),
+              averageResponseTime: 0,
+              conversationsByPriority: {
+                low: allConversations.filter(c => c.priority === 'low').length,
+                medium: allConversations.filter(c => c.priority === 'medium').length,
+                high: allConversations.filter(c => c.priority === 'high').length,
+                urgent: allConversations.filter(c => c.priority === 'urgent').length,
+              },
+              messagesByType: {
+                text: allConversations.filter(c => c.lastMessage?.messageType === 'text').length,
+                image: allConversations.filter(c => c.lastMessage?.messageType === 'image').length,
+                file: allConversations.filter(c => c.lastMessage?.messageType === 'file').length,
+                location: allConversations.filter(c => c.lastMessage?.messageType === 'location').length,
+                system: allConversations.filter(c => c.lastMessage?.messageType === 'system').length,
+              }
+            }
+            setStats(newStats)
+          })
+        }
+      },
+      (err) => {
+        console.error('Erro no listener de estatísticas:', err)
+      }
+    )
+
+    return () => {
+      console.log('🔇 Removendo listener de estatísticas')
+      unsubscribeOrders()
+    }
+  }, [db, loading])
 
   return { stats, loading }
 }
