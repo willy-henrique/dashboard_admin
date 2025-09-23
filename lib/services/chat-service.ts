@@ -125,65 +125,86 @@ export class ChatService {
     }
   }
 
-  // Buscar conversas da coleção messages
-  static async getMessagesConversations(): Promise<LegacyChatConversation[]> {
+  // Buscar conversas da coleção orders com subcoleção messages
+  static async getOrdersWithMessagesConversations(): Promise<LegacyChatConversation[]> {
     try {
-      const messages = await getCollection('messages')
+      const orders = await getCollection('orders')
       const conversations: LegacyChatConversation[] = []
-      
-      // Agrupar mensagens por pedido/cliente
-      const messagesByOrder: Record<string, any[]> = {}
-      
-      messages.forEach(message => {
-        const orderId = message.clientId || 'general'
-        if (!messagesByOrder[orderId]) {
-          messagesByOrder[orderId] = []
-        }
-        messagesByOrder[orderId].push(message)
-      })
 
-      // Converter para conversas
-      for (const [clientId, messages] of Object.entries(messagesByOrder)) {
-        if (messages.length > 0) {
-          const lastMessage = messages[messages.length - 1]
-          const unreadCount = messages.filter(msg => !msg.isRead).length
+      for (const order of orders) {
+        try {
+          // Buscar mensagens da subcoleção messages para este pedido
+          const messages = await getCollection(`orders/${order.id}/messages`)
           
-          // Usar dados do primeiro documento para informações do cliente
-          const firstMessage = messages[0]
-          
-          const conversation: LegacyChatConversation = {
-            id: `messages_${clientId}`,
-            orderId: clientId,
-            clientId: clientId,
-            clientName: firstMessage.clientName || 'Cliente',
-            clientEmail: firstMessage.clientEmail || '',
-            clientPhone: firstMessage.phone || '',
-            status: this.mapOrderStatusToChatStatus(firstMessage.status || 'active'),
-            priority: firstMessage.isEmergency ? 'urgent' : 'medium',
-            createdAt: firstMessage.createdAt?.toDate() || new Date(),
-            updatedAt: lastMessage.timestamp?.toDate() || firstMessage.assignedAt?.toDate() || new Date(),
-            lastMessage: {
-              content: `Pedido ${clientId} - ${firstMessage.description || 'Serviço solicitado'}`,
-              senderName: firstMessage.clientName || 'Cliente',
-              timestamp: lastMessage.timestamp?.toDate() || new Date(),
-              messageType: 'text'
-            },
-            unreadCount: {
-              cliente: 0,
-              prestador: 0,
-              admin: unreadCount
-            },
-            source: 'legacy',
-            orderData: firstMessage
+          if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1]
+            const unreadCount = messages.filter(msg => !msg.isRead).length
+            
+            const conversation: LegacyChatConversation = {
+              id: `orders_${order.id}`,
+              orderId: order.id,
+              clientId: order.clientId,
+              clientName: order.clientName || 'Cliente',
+              clientEmail: order.clientEmail || '',
+              clientPhone: order.phone || '',
+              status: this.mapOrderStatusToChatStatus(order.status || 'active'),
+              priority: order.isEmergency ? 'urgent' : 'medium',
+              createdAt: order.createdAt?.toDate() || new Date(),
+              updatedAt: lastMessage.timestamp?.toDate() || order.assignedAt?.toDate() || new Date(),
+              lastMessage: {
+                content: lastMessage.content || `Pedido ${order.id} - ${order.description || 'Serviço solicitado'}`,
+                senderName: lastMessage.senderName || order.clientName || 'Cliente',
+                timestamp: lastMessage.timestamp?.toDate() || new Date(),
+                messageType: lastMessage.messageType || 'text'
+              },
+              unreadCount: {
+                cliente: 0,
+                prestador: 0,
+                admin: unreadCount
+              },
+              source: 'legacy',
+              orderData: order
+            }
+            
+            conversations.push(conversation)
+          } else {
+            // Se não tem mensagens, criar conversa baseada apenas no pedido
+            const conversation: LegacyChatConversation = {
+              id: `orders_${order.id}`,
+              orderId: order.id,
+              clientId: order.clientId,
+              clientName: order.clientName || 'Cliente',
+              clientEmail: order.clientEmail || '',
+              clientPhone: order.phone || '',
+              status: this.mapOrderStatusToChatStatus(order.status || 'active'),
+              priority: order.isEmergency ? 'urgent' : 'medium',
+              createdAt: order.createdAt?.toDate() || new Date(),
+              updatedAt: order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date(),
+              lastMessage: {
+                content: `Pedido criado: ${order.description || 'Serviço solicitado'}`,
+                senderName: order.clientName || 'Cliente',
+                timestamp: order.createdAt?.toDate() || new Date(),
+                messageType: 'text'
+              },
+              unreadCount: {
+                cliente: 0,
+                prestador: 0,
+                admin: 0
+              },
+              source: 'legacy',
+              orderData: order
+            }
+            
+            conversations.push(conversation)
           }
-          
-          conversations.push(conversation)
+        } catch (error) {
+          console.log(`Nenhuma mensagem encontrada para o pedido ${order.id}`)
         }
       }
 
       return conversations
     } catch (error) {
-      console.error('Erro ao buscar conversas da coleção messages:', error)
+      console.error('Erro ao buscar conversas dos pedidos com mensagens:', error)
       return []
     }
   }
@@ -261,11 +282,11 @@ export class ChatService {
   // Buscar todas as conversas (novas + legadas)
   static async getAllConversations(): Promise<LegacyChatConversation[]> {
     try {
-      const [newConversations, legacyConversations, supportConversations, messagesConversations] = await Promise.all([
+      const [newConversations, legacyConversations, supportConversations, ordersWithMessages] = await Promise.all([
         this.getNewConversations(),
         this.getLegacyConversations(),
         this.getSupportChatConversations(),
-        this.getMessagesConversations()
+        this.getOrdersWithMessagesConversations()
       ])
 
       // Converter conversas novas para o formato legado para compatibilidade
@@ -290,7 +311,7 @@ export class ChatService {
         ...convertedNewConversations,
         ...legacyConversations,
         ...supportConversations,
-        ...messagesConversations
+        ...ordersWithMessages
       ]
 
       return allConversations.sort((a, b) => 
@@ -369,28 +390,23 @@ export class ChatService {
         })) as ChatMessage[]
       }
 
-      // Se for conversa da coleção messages
-      if (conversationId.startsWith('messages_')) {
-        const clientId = conversationId.replace('messages_', '')
-        const messages = await getCollection('messages', [
-          where('clientId', '==', clientId),
-          orderBy('assignedAt', 'asc')
-        ])
+      // Se for conversa dos pedidos com mensagens
+      if (conversationId.startsWith('orders_')) {
+        const orderId = conversationId.replace('orders_', '')
+        const messages = await getCollection(`orders/${orderId}/messages`)
 
         return messages.map(doc => ({
           id: doc.id,
           chatId: conversationId,
-          senderId: doc.clientId || 'unknown',
-          senderName: doc.clientName || 'Cliente',
-          senderType: 'cliente' as const,
-          content: `${doc.description || 'Serviço solicitado'} - Status: ${doc.status || 'Pendente'}`,
-          messageType: 'text' as const,
-          timestamp: doc.assignedAt?.toDate() || doc.createdAt?.toDate() || new Date(),
-          isRead: true,
-          readBy: [],
-          metadata: {
-            orderData: doc
-          }
+          senderId: doc.senderId || doc.clientId || 'unknown',
+          senderName: doc.senderName || doc.clientName || 'Cliente',
+          senderType: this.mapSenderToType(doc.sender || 'user'),
+          content: doc.content || 'Mensagem',
+          messageType: doc.messageType || 'text' as const,
+          timestamp: doc.timestamp?.toDate() || doc.createdAt?.toDate() || new Date(),
+          isRead: doc.isRead || false,
+          readBy: doc.readBy || [],
+          metadata: doc.metadata || {}
         })) as ChatMessage[]
       }
 

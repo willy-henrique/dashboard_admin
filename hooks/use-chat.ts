@@ -69,20 +69,20 @@ export function useChatConversations(filter?: ChatFilter) {
         }
       )
 
-      const unsubscribeMessages = onSnapshot(
-        collection(db, 'messages'),
+      const unsubscribeOrders = onSnapshot(
+        collection(db, 'orders'),
         () => {
-          // Recarregar conversas quando houver mudanças na coleção messages
+          // Recarregar conversas quando houver mudanças na coleção orders
           fetchConversations()
         },
         (err) => {
-          console.error('Erro no listener de messages:', err)
+          console.error('Erro no listener de orders:', err)
         }
       )
 
       return () => {
         unsubscribeChat()
-        unsubscribeMessages()
+        unsubscribeOrders()
       }
     }
   }, [filter])
@@ -121,7 +121,7 @@ export function useChatMessages(chatId: string) {
     fetchMessages()
 
     // Para conversas do novo sistema, configurar listener em tempo real
-    if (chatId && !chatId.startsWith('legacy_') && !chatId.startsWith('support_') && !chatId.startsWith('messages_') && db) {
+    if (chatId && !chatId.startsWith('legacy_') && !chatId.startsWith('support_') && !chatId.startsWith('orders_') && db) {
       const q = query(
         collection(db, 'chatMessages'),
         where('chatId', '==', chatId),
