@@ -128,19 +128,13 @@ export class ChatService {
   // Buscar conversas da coleção orders com subcoleção messages
   static async getOrdersWithMessagesConversations(): Promise<LegacyChatConversation[]> {
     try {
-      console.log('🔍 Buscando pedidos na coleção orders...')
       const orders = await getCollection('orders')
-      console.log(`📦 Encontrados ${orders.length} pedidos`)
-      
       const conversations: LegacyChatConversation[] = []
 
       for (const order of orders) {
-        console.log(`📋 Processando pedido: ${order.id} - ${order.clientName}`)
-        
         try {
           // Buscar mensagens da subcoleção messages para este pedido
           const messages = await getCollection(`orders/${order.id}/messages`)
-          console.log(`💬 Pedido ${order.id}: ${messages.length} mensagens encontradas`)
           
           const conversation: LegacyChatConversation = {
             id: `orders_${order.id}`,
@@ -176,11 +170,8 @@ export class ChatService {
           }
           
           conversations.push(conversation)
-          console.log(`✅ Conversa criada para pedido ${order.id}`)
           
         } catch (error) {
-          console.log(`⚠️ Nenhuma mensagem encontrada para o pedido ${order.id}:`, error.message)
-          
           // Criar conversa mesmo sem mensagens
           const conversation: LegacyChatConversation = {
             id: `orders_${order.id}`,
@@ -209,11 +200,9 @@ export class ChatService {
           }
           
           conversations.push(conversation)
-          console.log(`✅ Conversa criada para pedido ${order.id} (sem mensagens)`)
         }
       }
 
-      console.log(`🎉 Total de conversas criadas: ${conversations.length}`)
       return conversations
     } catch (error) {
       console.error('❌ Erro ao buscar conversas dos pedidos com mensagens:', error)

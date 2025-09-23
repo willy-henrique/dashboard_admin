@@ -14,32 +14,22 @@ export function useChatConversations(filter?: ChatFilter) {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        console.log('🚀 Iniciando busca de conversas...')
         setLoading(true)
         setError(null)
         
         // Buscar todas as conversas (novas + legadas)
-        console.log('📞 Chamando ChatService.getAllConversations()...')
         const allConversations = await ChatService.getAllConversations()
-        console.log(`📊 Conversas encontradas: ${allConversations.length}`)
-        
-        // Log das conversas encontradas
-        allConversations.forEach((conv, index) => {
-          console.log(`💬 Conversa ${index + 1}: ${conv.clientName} (${conv.orderId})`)
-        })
+        console.log(`📊 Conversas carregadas: ${allConversations.length}`)
         
         // Aplicar filtros
         let filteredConversations = allConversations
-        console.log(`🔍 Aplicando filtros... Filtros ativos:`, filter)
 
         if (filter?.status) {
           filteredConversations = filteredConversations.filter(conv => conv.status === filter.status)
-          console.log(`📋 Filtro por status ${filter.status}: ${filteredConversations.length} conversas`)
         }
 
         if (filter?.priority) {
           filteredConversations = filteredConversations.filter(conv => conv.priority === filter.priority)
-          console.log(`⚡ Filtro por prioridade ${filter.priority}: ${filteredConversations.length} conversas`)
         }
 
         if (filter?.searchTerm) {
@@ -50,55 +40,65 @@ export function useChatConversations(filter?: ChatFilter) {
             conv.orderId.toLowerCase().includes(searchLower) ||
             conv.lastMessage?.content.toLowerCase().includes(searchLower)
           )
-          console.log(`🔎 Filtro por busca "${filter.searchTerm}": ${filteredConversations.length} conversas`)
         }
 
         if (filter?.hasUnread) {
           filteredConversations = filteredConversations.filter(conv => conv.unreadCount.admin > 0)
-          console.log(`📬 Filtro por não lidas: ${filteredConversations.length} conversas`)
         }
 
-        console.log(`✅ Total final de conversas: ${filteredConversations.length}`)
         setConversations(filteredConversations)
       } catch (err) {
         console.error('❌ Erro ao carregar conversas:', err)
         setError('Erro ao carregar conversas')
       } finally {
         setLoading(false)
-        console.log('🏁 Busca de conversas finalizada')
       }
     }
 
     fetchConversations()
 
-    // Configurar listener em tempo real para novas conversas
+    // Configurar listener em tempo real para novas conversas (apenas uma vez)
     if (db) {
-      const unsubscribeChat = onSnapshot(
-        collection(db, 'chatConversations'),
-        () => {
-          // Recarregar conversas quando houver mudanças
-          fetchConversations()
-        },
-        (err) => {
-          console.error('Erro no listener de conversas:', err)
-        }
-      )
+      let isListening = false
+      
+      const setupListeners = () => {
+        if (isListening) return
+        
+        isListening = true
+        console.log('🎧 Configurando listeners em tempo real...')
+        
+        const unsubscribeChat = onSnapshot(
+          collection(db, 'chatConversations'),
+          () => {
+            console.log('🔄 Mudança detectada em chatConversations')
+            fetchConversations()
+          },
+          (err) => {
+            console.error('Erro no listener de conversas:', err)
+          }
+        )
 
-      const unsubscribeOrders = onSnapshot(
-        collection(db, 'orders'),
-        () => {
-          // Recarregar conversas quando houver mudanças na coleção orders
-          fetchConversations()
-        },
-        (err) => {
-          console.error('Erro no listener de orders:', err)
-        }
-      )
+        const unsubscribeOrders = onSnapshot(
+          collection(db, 'orders'),
+          () => {
+            console.log('🔄 Mudança detectada em orders')
+            fetchConversations()
+          },
+          (err) => {
+            console.error('Erro no listener de orders:', err)
+          }
+        )
 
-      return () => {
-        unsubscribeChat()
-        unsubscribeOrders()
+        return () => {
+          console.log('🔇 Removendo listeners')
+          unsubscribeChat()
+          unsubscribeOrders()
+          isListening = false
+        }
       }
+
+      const cleanup = setupListeners()
+      return cleanup
     }
   }, [filter])
 
@@ -176,12 +176,10 @@ export function useChatStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        console.log('📊 Calculando estatísticas do chat...')
         setLoading(true)
         
         // Buscar todas as conversas usando o serviço
         const allConversations = await ChatService.getAllConversations()
-        console.log(`📈 Conversas para estatísticas: ${allConversations.length}`)
         
         // Calcular estatísticas
         const newStats: ChatStats = {
@@ -207,7 +205,6 @@ export function useChatStats() {
           }
         }
 
-        console.log('📊 Estatísticas calculadas:', newStats)
         setStats(newStats)
         setLoading(false)
       } catch (error) {
@@ -218,20 +215,36 @@ export function useChatStats() {
 
     fetchStats()
 
-    // Configurar listener para atualizações em tempo real
+    // Configurar listener para atualizações em tempo real (apenas uma vez)
     if (db) {
-      const unsubscribeOrders = onSnapshot(
-        collection(db, 'orders'),
-        () => {
-          console.log('🔄 Atualizando estatísticas...')
-          fetchStats()
-        },
-        (err) => {
-          console.error('Erro no listener de estatísticas:', err)
-        }
-      )
+      let isListening = false
+      
+      const setupStatsListener = () => {
+        if (isListening) return
+        
+        isListening = true
+        console.log('🎧 Configurando listener de estatísticas...')
+        
+        const unsubscribeOrders = onSnapshot(
+          collection(db, 'orders'),
+          () => {
+            console.log('🔄 Atualizando estatísticas...')
+            fetchStats()
+          },
+          (err) => {
+            console.error('Erro no listener de estatísticas:', err)
+          }
+        )
 
-      return () => unsubscribeOrders()
+        return () => {
+          console.log('🔇 Removendo listener de estatísticas')
+          unsubscribeOrders()
+          isListening = false
+        }
+      }
+
+      const cleanup = setupStatsListener()
+      return cleanup
     }
   }, [])
 
