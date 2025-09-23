@@ -58,7 +58,7 @@ export function useChatConversations(filter?: ChatFilter) {
 
     // Configurar listener em tempo real para novas conversas
     if (db) {
-      const unsubscribe = onSnapshot(
+      const unsubscribeChat = onSnapshot(
         collection(db, 'chatConversations'),
         () => {
           // Recarregar conversas quando houver mudanças
@@ -69,7 +69,21 @@ export function useChatConversations(filter?: ChatFilter) {
         }
       )
 
-      return () => unsubscribe()
+      const unsubscribeMessages = onSnapshot(
+        collection(db, 'messages'),
+        () => {
+          // Recarregar conversas quando houver mudanças na coleção messages
+          fetchConversations()
+        },
+        (err) => {
+          console.error('Erro no listener de messages:', err)
+        }
+      )
+
+      return () => {
+        unsubscribeChat()
+        unsubscribeMessages()
+      }
     }
   }, [filter])
 
@@ -107,7 +121,7 @@ export function useChatMessages(chatId: string) {
     fetchMessages()
 
     // Para conversas do novo sistema, configurar listener em tempo real
-    if (chatId && !chatId.startsWith('legacy_') && !chatId.startsWith('support_') && db) {
+    if (chatId && !chatId.startsWith('legacy_') && !chatId.startsWith('support_') && !chatId.startsWith('messages_') && db) {
       const q = query(
         collection(db, 'chatMessages'),
         where('chatId', '==', chatId),
