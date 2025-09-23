@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -36,10 +36,13 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
   const [filter, setFilter] = useState<ChatFilter>({})
   const [searchTerm, setSearchTerm] = useState("")
   
-  const { conversations, loading, error } = useChatConversations({
+  // Criar objeto de filtro estável para evitar re-renderizações
+  const filterObject = useMemo(() => ({
     ...filter,
     searchTerm: searchTerm || undefined
-  })
+  }), [filter, searchTerm])
+  
+  const { conversations, loading, error } = useChatConversations(filterObject)
   
   const { updateConversationStatus, updateConversationPriority, assignConversation } = useChatActions()
 

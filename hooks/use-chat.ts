@@ -10,8 +10,12 @@ export function useChatConversations(filter?: ChatFilter) {
   const [conversations, setConversations] = useState<LegacyChatConversation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
+    // Carregar apenas uma vez
+    if (hasLoaded) return
+    
     const fetchConversations = async () => {
       try {
         setLoading(true)
@@ -46,6 +50,7 @@ export function useChatConversations(filter?: ChatFilter) {
         }
 
         setConversations(filteredConversations)
+        setHasLoaded(true)
       } catch (err) {
         console.error('❌ Erro ao carregar conversas:', err)
         setError('Erro ao carregar conversas')
@@ -54,11 +59,8 @@ export function useChatConversations(filter?: ChatFilter) {
       }
     }
 
-    // Buscar conversas apenas quando filtros mudarem
     fetchConversations()
-  }, [filter])
-
-  // Sem listeners em tempo real por enquanto - apenas carregamento inicial
+  }, [filter, hasLoaded])
 
   return { conversations, loading, error }
 }
@@ -130,8 +132,12 @@ export function useChatMessages(chatId: string) {
 export function useChatStats() {
   const [stats, setStats] = useState<ChatStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
+    // Carregar apenas uma vez
+    if (hasLoaded) return
+    
     const fetchStats = async () => {
       try {
         setLoading(true)
@@ -164,17 +170,16 @@ export function useChatStats() {
         }
 
         setStats(newStats)
-        setLoading(false)
+        setHasLoaded(true)
       } catch (error) {
         console.error('❌ Erro ao calcular estatísticas:', error)
+      } finally {
         setLoading(false)
       }
     }
 
     fetchStats()
-  }, [])
-
-  // Sem listeners em tempo real por enquanto - apenas carregamento inicial
+  }, [hasLoaded])
 
   return { stats, loading }
 }
