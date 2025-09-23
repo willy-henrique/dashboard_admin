@@ -253,14 +253,54 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       {/* Mensagens */}
       <CardContent className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
-          {/* TESTE: Usar mensagens hardcoded temporariamente */}
-          {testMessages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Nenhuma mensagem nesta conversa</p>
+          {/* TESTE: Mostrar tanto mensagens reais quanto de teste */}
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800 text-sm font-medium">🔍 Debug: Mostrando mensagens reais + teste</p>
+            <p className="text-blue-600 text-xs">Mensagens reais: {messages.length} | Mensagens teste: {testMessages.length}</p>
+          </div>
+          
+          {/* Mensagens reais do Firebase */}
+          {messages.length > 0 && (
+            <div className="mb-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">📨 Mensagens Reais do Firebase:</h4>
+              {messages.map((message) => {
+                console.log('🔍 Renderizando mensagem REAL:', message.id, message.content, message.senderName)
+                return (
+                <div
+                  key={`real-${message.id}`}
+                  className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)} mb-2`}
+                >
+                  <div className="flex-shrink-0">
+                    {getSenderIcon(message.senderType)}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="font-medium text-sm text-gray-900">
+                        {message.senderName} (REAL)
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatDistanceToNow(message.timestamp, { 
+                          addSuffix: true, 
+                          locale: ptBR 
+                        })}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm text-gray-700">
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                  </div>
+                </div>
+                )
+              })}
             </div>
-          ) : (
-            testMessages.map((message) => {
+          )}
+          
+          {/* Mensagens de teste */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">🧪 Mensagens de Teste:</h4>
+            {testMessages.map((message) => {
               console.log('🔍 Renderizando mensagem de teste:', message.id, message.content, message.senderName)
               return (
               <div
