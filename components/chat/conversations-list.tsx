@@ -144,7 +144,7 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
           <div className="grid grid-cols-2 gap-2">
             <Select 
               value={filter.status || "all"} 
-              onValueChange={(value) => setFilter(prev => ({ ...prev, status: value === "all" ? undefined : value as ChatConversation['status'] }))}
+              onValueChange={(value) => setFilter(prev => ({ ...prev, status: value === "all" ? undefined : value as LegacyChatConversation['status'] }))}
             >
               <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue placeholder="Status" />
@@ -160,7 +160,7 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
 
             <Select 
               value={filter.priority || "all"} 
-              onValueChange={(value) => setFilter(prev => ({ ...prev, priority: value === "all" ? undefined : value as ChatConversation['priority'] }))}
+              onValueChange={(value) => setFilter(prev => ({ ...prev, priority: value === "all" ? undefined : value as LegacyChatConversation['priority'] }))}
             >
               <SelectTrigger className="bg-gray-50 border-gray-200">
                 <SelectValue placeholder="Prioridade" />

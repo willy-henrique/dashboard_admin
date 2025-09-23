@@ -24,6 +24,7 @@ import { ConversationsList } from "./conversations-list"
 import { ChatMessages } from "./chat-messages"
 import { AdminActionsPanel } from "./admin-actions-panel"
 import { AdminLogs } from "./admin-logs"
+import { DebugConversations } from "./debug-conversations"
 
 export function ChatDashboard() {
   const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
@@ -80,6 +81,7 @@ export function ChatDashboard() {
 
         {/* Visão Geral */}
         <TabsContent value="overview" className="space-y-6">
+          <DebugConversations />
           <ChatStatsCards />
           
           {/* Ações Rápidas */}
