@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useChatActions } from "@/hooks/use-chat"
-import { ChatConversation } from "@/types/chat"
+import { LegacyChatConversation } from "@/lib/services/chat-service"
 import { 
   Shield, 
   Archive, 
@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog"
 
 interface AdminActionsPanelProps {
-  conversation: ChatConversation
+  conversation: LegacyChatConversation
   onUpdate: () => void
 }
 
@@ -52,14 +52,14 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
     loading 
   } = useChatActions()
 
-  const handleStatusChange = async (newStatus: ChatConversation['status']) => {
+  const handleStatusChange = async (newStatus: LegacyChatConversation['status']) => {
     const success = await updateConversationStatus(conversation.id, newStatus)
     if (success) {
       onUpdate()
     }
   }
 
-  const handlePriorityChange = async (newPriority: ChatConversation['priority']) => {
+  const handlePriorityChange = async (newPriority: LegacyChatConversation['priority']) => {
     const success = await updateConversationPriority(conversation.id, newPriority)
     if (success) {
       setPriority(newPriority)
@@ -78,7 +78,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
     }
   }
 
-  const getStatusColor = (status: ChatConversation['status']) => {
+  const getStatusColor = (status: LegacyChatConversation['status']) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800 border-green-200'
@@ -93,7 +93,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
     }
   }
 
-  const getPriorityColor = (priority: ChatConversation['priority']) => {
+  const getPriorityColor = (priority: LegacyChatConversation['priority']) => {
     switch (priority) {
       case 'low':
         return 'bg-gray-100 text-gray-800 border-gray-200'

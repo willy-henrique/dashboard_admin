@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ChatConversation } from "@/types/chat"
+import { LegacyChatConversation } from "@/lib/services/chat-service"
 import { 
   MessageSquare, 
   Users, 
@@ -26,10 +26,10 @@ import { AdminActionsPanel } from "./admin-actions-panel"
 import { AdminLogs } from "./admin-logs"
 
 export function ChatDashboard() {
-  const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null)
+  const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
   const [activeTab, setActiveTab] = useState("overview")
 
-  const handleSelectConversation = (conversation: ChatConversation) => {
+  const handleSelectConversation = (conversation: LegacyChatConversation) => {
     setSelectedConversation(conversation)
     setActiveTab("messages")
   }
@@ -208,11 +208,15 @@ export function ChatDashboard() {
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Cliente:</span>
-                          <span className="font-medium">{selectedConversation.clienteName}</span>
+                          <span className="font-medium">{selectedConversation.clientName}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Prestador:</span>
-                          <span className="font-medium">{selectedConversation.prestadorName}</span>
+                          <span className="text-gray-600">Email:</span>
+                          <span className="font-medium">{selectedConversation.clientEmail}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Pedido:</span>
+                          <span className="font-medium">{selectedConversation.orderId}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Status:</span>

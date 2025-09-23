@@ -4,77 +4,73 @@ import { useState, useEffect, useCallback } from 'react'
 import { collection, query, orderBy, where, onSnapshot, doc, updateDoc, addDoc, deleteDoc, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { ChatConversation, ChatMessage, ChatStats, ChatFilter, AdminAction } from '@/types/chat'
+import { ChatService, LegacyChatConversation } from '@/lib/services/chat-service'
 
 export function useChatConversations(filter?: ChatFilter) {
-  const [conversations, setConversations] = useState<ChatConversation[]>([])
+  const [conversations, setConversations] = useState<LegacyChatConversation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!db) {
-      setError('Firestore não inicializado')
-      setLoading(false)
-      return
-    }
+    const fetchConversations = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Buscar todas as conversas (novas + legadas)
+        const allConversations = await ChatService.getAllConversations()
+        
+        // Aplicar filtros
+        let filteredConversations = allConversations
 
-    let q = query(
-      collection(db, 'chatConversations'),
-      orderBy('updatedAt', 'desc')
-    )
+        if (filter?.status) {
+          filteredConversations = filteredConversations.filter(conv => conv.status === filter.status)
+        }
 
-    // Aplicar filtros
-    if (filter?.status) {
-      q = query(q, where('status', '==', filter.status))
-    }
+        if (filter?.priority) {
+          filteredConversations = filteredConversations.filter(conv => conv.priority === filter.priority)
+        }
 
-    if (filter?.priority) {
-      q = query(q, where('priority', '==', filter.priority))
-    }
-
-    if (filter?.monitoringLevel) {
-      q = query(q, where('monitoringLevel', '==', filter.monitoringLevel))
-    }
-
-    if (filter?.assignedAdmin) {
-      q = query(q, where('assignedAdmin', '==', filter.assignedAdmin))
-    }
-
-    const unsubscribe = onSnapshot(q, 
-      (snapshot) => {
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date(),
-          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-          lastMessage: doc.data().lastMessage ? {
-            ...doc.data().lastMessage,
-            timestamp: doc.data().lastMessage.timestamp?.toDate() || new Date()
-          } : undefined
-        })) as ChatConversation[]
-
-        // Aplicar filtros client-side para busca
-        let filteredData = data
         if (filter?.searchTerm) {
           const searchLower = filter.searchTerm.toLowerCase()
-          filteredData = data.filter(conv => 
-            conv.clienteName.toLowerCase().includes(searchLower) ||
-            conv.prestadorName.toLowerCase().includes(searchLower) ||
-            conv.orderProtocol?.toLowerCase().includes(searchLower) ||
+          filteredConversations = filteredConversations.filter(conv => 
+            conv.clientName.toLowerCase().includes(searchLower) ||
+            conv.clientEmail.toLowerCase().includes(searchLower) ||
+            conv.orderId.toLowerCase().includes(searchLower) ||
             conv.lastMessage?.content.toLowerCase().includes(searchLower)
           )
         }
 
-        setConversations(filteredData)
-        setLoading(false)
-      },
-      (err) => {
+        if (filter?.hasUnread) {
+          filteredConversations = filteredConversations.filter(conv => conv.unreadCount.admin > 0)
+        }
+
+        setConversations(filteredConversations)
+      } catch (err) {
         console.error('Erro ao carregar conversas:', err)
         setError('Erro ao carregar conversas')
+      } finally {
         setLoading(false)
       }
-    )
+    }
 
-    return () => unsubscribe()
+    fetchConversations()
+
+    // Configurar listener em tempo real para novas conversas
+    if (db) {
+      const unsubscribe = onSnapshot(
+        collection(db, 'chatConversations'),
+        () => {
+          // Recarregar conversas quando houver mudanças
+          fetchConversations()
+        },
+        (err) => {
+          console.error('Erro no listener de conversas:', err)
+        }
+      )
+
+      return () => unsubscribe()
+    }
   }, [filter])
 
   return { conversations, loading, error }
@@ -86,39 +82,59 @@ export function useChatMessages(chatId: string) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!chatId || !db) {
-      setMessages([])
-      setLoading(false)
-      return
-    }
-
-    const q = query(
-      collection(db, 'chatMessages'),
-      where('chatId', '==', chatId),
-      orderBy('timestamp', 'asc')
-    )
-
-    const unsubscribe = onSnapshot(q,
-      (snapshot) => {
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          timestamp: doc.data().timestamp?.toDate() || new Date(),
-          readBy: doc.data().readBy || [],
-          metadata: doc.data().metadata || {}
-        })) as ChatMessage[]
-
-        setMessages(data.filter(msg => !msg.isDeleted))
+    const fetchMessages = async () => {
+      if (!chatId) {
+        setMessages([])
         setLoading(false)
-      },
-      (err) => {
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Buscar mensagens usando o serviço unificado
+        const conversationMessages = await ChatService.getConversationMessages(chatId)
+        setMessages(conversationMessages)
+      } catch (err) {
         console.error('Erro ao carregar mensagens:', err)
         setError('Erro ao carregar mensagens')
+      } finally {
         setLoading(false)
       }
-    )
+    }
 
-    return () => unsubscribe()
+    fetchMessages()
+
+    // Para conversas do novo sistema, configurar listener em tempo real
+    if (chatId && !chatId.startsWith('legacy_') && !chatId.startsWith('support_') && db) {
+      const q = query(
+        collection(db, 'chatMessages'),
+        where('chatId', '==', chatId),
+        orderBy('timestamp', 'asc')
+      )
+
+      const unsubscribe = onSnapshot(q,
+        (snapshot) => {
+          const data = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            timestamp: doc.data().timestamp?.toDate() || new Date(),
+            readBy: doc.data().readBy || [],
+            metadata: doc.data().metadata || {}
+          })) as ChatMessage[]
+
+          setMessages(data.filter(msg => !msg.isDeleted))
+          setLoading(false)
+        },
+        (err) => {
+          console.error('Erro no listener de mensagens:', err)
+          setLoading(false)
+        }
+      )
+
+      return () => unsubscribe()
+    }
   }, [chatId])
 
   return { messages, loading, error }

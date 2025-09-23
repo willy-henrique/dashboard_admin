@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useChatConversations, useChatActions } from "@/hooks/use-chat"
-import { ChatConversation, ChatFilter } from "@/types/chat"
+import { ChatFilter } from "@/types/chat"
+import { LegacyChatConversation } from "@/lib/services/chat-service"
 import { 
   Search, 
   Filter, 
@@ -27,7 +28,7 @@ import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
 interface ConversationsListProps {
-  onSelectConversation: (conversation: ChatConversation) => void
+  onSelectConversation: (conversation: LegacyChatConversation) => void
   selectedConversationId?: string
 }
 
@@ -42,7 +43,7 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
   
   const { updateConversationStatus, updateConversationPriority, assignConversation } = useChatActions()
 
-  const getStatusIcon = (status: ChatConversation['status']) => {
+  const getStatusIcon = (status: LegacyChatConversation['status']) => {
     switch (status) {
       case 'active':
         return <MessageSquare className="h-4 w-4 text-green-500" />
@@ -57,7 +58,7 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
     }
   }
 
-  const getPriorityColor = (priority: ChatConversation['priority']) => {
+  const getPriorityColor = (priority: LegacyChatConversation['priority']) => {
     switch (priority) {
       case 'low':
         return 'bg-gray-100 text-gray-800'
@@ -72,7 +73,7 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
     }
   }
 
-  const getStatusColor = (status: ChatConversation['status']) => {
+  const getStatusColor = (status: LegacyChatConversation['status']) => {
     switch (status) {
       case 'active':
         return 'bg-green-100 text-green-800'
@@ -200,11 +201,14 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
                       {getStatusIcon(conversation.status)}
                       <div>
                         <h4 className="font-medium text-gray-900 text-sm">
-                          {conversation.clienteName} ↔ {conversation.prestadorName}
+                          {conversation.clientName}
+                          {conversation.source === 'legacy' && (
+                            <span className="text-xs text-orange-600 ml-1">(Histórico)</span>
+                          )}
                         </h4>
-                        {conversation.orderProtocol && (
-                          <p className="text-xs text-gray-500">Pedido: {conversation.orderProtocol}</p>
-                        )}
+                        <p className="text-xs text-gray-500">
+                          {conversation.orderId !== 'suporte-geral' ? `Pedido: ${conversation.orderId}` : 'Suporte Geral'}
+                        </p>
                       </div>
                     </div>
                     
@@ -238,11 +242,11 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
                     <div className="flex items-center space-x-4 text-xs text-gray-500">
                       <div className="flex items-center">
                         <User className="h-3 w-3 mr-1" />
-                        {conversation.clienteName}
+                        {conversation.clientName}
                       </div>
                       <div className="flex items-center">
-                        <UserCheck className="h-3 w-3 mr-1" />
-                        {conversation.prestadorName}
+                        <Mail className="h-3 w-3 mr-1" />
+                        {conversation.clientEmail}
                       </div>
                     </div>
 

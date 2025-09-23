@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useChatMessages, useChatActions } from "@/hooks/use-chat"
-import { ChatConversation, ChatMessage } from "@/types/chat"
+import { ChatMessage } from "@/types/chat"
+import { LegacyChatConversation } from "@/lib/services/chat-service"
 import { 
   Send, 
   User, 
@@ -36,7 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface ChatMessagesProps {
-  conversation: ChatConversation | null
+  conversation: LegacyChatConversation | null
 }
 
 export function ChatMessages({ conversation }: ChatMessagesProps) {
@@ -161,20 +162,23 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-gray-900 text-lg">
-              {conversation.clienteName} ↔ {conversation.prestadorName}
+              {conversation.clientName}
+              {conversation.source === 'legacy' && (
+                <span className="text-sm text-orange-600 ml-2">(Histórico)</span>
+              )}
             </CardTitle>
             <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
               <div className="flex items-center">
                 <Phone className="h-3 w-3 mr-1" />
-                {conversation.clientePhone || "Sem telefone"}
+                {conversation.clientPhone || "Sem telefone"}
               </div>
               <div className="flex items-center">
                 <Mail className="h-3 w-3 mr-1" />
-                {conversation.clienteEmail}
+                {conversation.clientEmail}
               </div>
-              {conversation.orderProtocol && (
+              {conversation.orderId !== 'suporte-geral' && (
                 <Badge variant="outline" className="text-xs">
-                  Pedido: {conversation.orderProtocol}
+                  Pedido: {conversation.orderId}
                 </Badge>
               )}
             </div>
