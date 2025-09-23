@@ -25,10 +25,7 @@ export function SimpleTabs({ activeTab, onTabChange }: SimpleTabsProps) {
           <Button
             key={tab.id}
             variant={activeTab === tab.id ? "default" : "ghost"}
-            onClick={() => {
-              console.log('🔄 Clique na aba:', tab.id)
-              onTabChange(tab.id)
-            }}
+            onClick={() => onTabChange(tab.id)}
             className={`flex-1 ${
               activeTab === tab.id 
                 ? 'bg-orange-500 text-white hover:bg-orange-600' 

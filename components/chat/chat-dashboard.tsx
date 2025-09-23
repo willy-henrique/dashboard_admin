@@ -24,7 +24,6 @@ import { ConversationsList } from "./conversations-list"
 import { ChatMessages } from "./chat-messages"
 import { AdminActionsPanel } from "./admin-actions-panel"
 import { AdminLogs } from "./admin-logs"
-import { DebugConversations } from "./debug-conversations"
 import { SimpleTabs } from "./simple-tabs"
 
 export function ChatDashboard() {
@@ -37,11 +36,8 @@ export function ChatDashboard() {
   }
 
   const handleTabChange = (value: string) => {
-    console.log('🔄 Mudando aba para:', value)
     setActiveTab(value)
   }
-
-  console.log('📊 ChatDashboard - activeTab atual:', activeTab)
 
   return (
     <div className="space-y-6">
@@ -73,7 +69,6 @@ export function ChatDashboard() {
         {/* Conteúdo baseado na aba ativa */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            <DebugConversations />
             <ChatStatsCards />
           
           {/* Ações Rápidas */}
@@ -186,9 +181,6 @@ export function ChatDashboard() {
         {/* Conversas */}
         {activeTab === "conversations" && (
           <div className="space-y-6">
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <p className="text-yellow-800 font-medium">Debug: Aba Conversas Ativa!</p>
-            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ConversationsList 
               onSelectConversation={handleSelectConversation}
@@ -264,9 +256,6 @@ export function ChatDashboard() {
         {/* Mensagens */}
         {activeTab === "messages" && (
           <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <p className="text-blue-800 font-medium">Debug: Aba Mensagens Ativa!</p>
-            </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
             <div className="lg:col-span-1">
               <ConversationsList 
@@ -285,9 +274,6 @@ export function ChatDashboard() {
         {/* Logs Administrativos */}
         {activeTab === "logs" && (
           <div className="space-y-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <p className="text-green-800 font-medium">Debug: Aba Logs Ativa!</p>
-            </div>
             <AdminLogs />
           </div>
         )}

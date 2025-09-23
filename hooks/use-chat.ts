@@ -19,7 +19,6 @@ export function useChatConversations(filter?: ChatFilter) {
         
         // Buscar todas as conversas (novas + legadas)
         const allConversations = await ChatService.getAllConversations()
-        console.log(`📊 Conversas carregadas: ${allConversations.length}`)
         
         // Aplicar filtros
         let filteredConversations = allConversations
