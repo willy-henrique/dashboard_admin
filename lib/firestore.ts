@@ -16,17 +16,22 @@ import { db } from "./firebase"
 
 // Generic Firestore helpers
 export const getCollection = async (collectionName: string, ...constraints: QueryConstraint[]) => {
+  console.log('🔍 getCollection chamado:', collectionName, constraints)
+  
   if (!db) {
-    console.warn('Firestore não inicializado, retornando dados vazios')
+    console.warn('❌ Firestore não inicializado, retornando dados vazios')
     return []
   }
   
   try {
+    console.log('✅ Firebase db disponível, fazendo query...')
     const q = query(collection(db, collectionName), ...constraints)
     const snapshot = await getDocs(q)
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    const result = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    console.log(`✅ getCollection resultado para ${collectionName}:`, result.length, 'documentos')
+    return result
   } catch (error) {
-    console.error('Erro ao buscar coleção:', error)
+    console.error('❌ Erro ao buscar coleção:', collectionName, error)
     return []
   }
 }

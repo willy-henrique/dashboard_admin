@@ -48,6 +48,12 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   const { messages, loading, error } = useChatMessages(conversation?.id || "")
   const { deleteMessage, addConversationNote } = useChatActions()
 
+  // Debug: Log das mensagens recebidas
+  console.log('🔍 ChatMessages - conversation:', conversation?.id)
+  console.log('🔍 ChatMessages - messages:', messages)
+  console.log('🔍 ChatMessages - loading:', loading)
+  console.log('🔍 ChatMessages - error:', error)
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])

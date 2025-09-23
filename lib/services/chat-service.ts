@@ -328,6 +328,7 @@ export class ChatService {
   static async getConversationMessages(conversationId: string): Promise<ChatMessage[]> {
     try {
       console.log('🔍 Buscando mensagens para conversa:', conversationId)
+      console.log('🔍 Firebase db disponível:', !!db)
       
       // Primeiro, tentar buscar da nova coleção
       const newMessages = await getCollection('chatMessages', [
