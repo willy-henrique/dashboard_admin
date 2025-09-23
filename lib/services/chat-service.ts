@@ -327,20 +327,26 @@ export class ChatService {
   // Buscar mensagens de uma conversa específica
   static async getConversationMessages(conversationId: string): Promise<ChatMessage[]> {
     try {
+      console.log('🔍 Buscando mensagens para conversa:', conversationId)
+      
       // Primeiro, tentar buscar da nova coleção
       const newMessages = await getCollection('chatMessages', [
         where('chatId', '==', conversationId),
         orderBy('timestamp', 'asc')
       ])
 
+      console.log('📨 Mensagens da nova coleção:', newMessages.length)
+
       if (newMessages.length > 0) {
-        return newMessages.map(doc => ({
+        const mappedMessages = newMessages.map(doc => ({
           id: doc.id,
           ...doc,
           timestamp: doc.timestamp?.toDate() || new Date(),
           readBy: doc.readBy || [],
           metadata: doc.metadata || {}
         })) as ChatMessage[]
+        console.log('✅ Mensagens mapeadas da nova coleção:', mappedMessages)
+        return mappedMessages
       }
 
       // Se não encontrar, tentar buscar das mensagens legadas
@@ -394,9 +400,11 @@ export class ChatService {
       // Se for conversa dos pedidos com mensagens
       if (conversationId.startsWith('orders_')) {
         const orderId = conversationId.replace('orders_', '')
+        console.log('📦 Buscando mensagens do pedido:', orderId)
         const messages = await getCollection(`orders/${orderId}/messages`)
+        console.log('📨 Mensagens encontradas no pedido:', messages.length, messages)
 
-        return messages.map(doc => ({
+        const mappedMessages = messages.map(doc => ({
           id: doc.id,
           chatId: conversationId,
           senderId: doc.senderId || doc.clientId || 'unknown',
@@ -409,6 +417,9 @@ export class ChatService {
           readBy: doc.readBy || [],
           metadata: doc.metadata || {}
         })) as ChatMessage[]
+        
+        console.log('✅ Mensagens mapeadas do pedido:', mappedMessages)
+        return mappedMessages
       }
 
       return []
