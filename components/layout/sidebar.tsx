@@ -63,6 +63,7 @@ const navigation = [
       { name: "AutEM Mobile", href: "/dashboard/controle/autem-mobile", icon: Smartphone },
       { name: "Estoque", href: "/dashboard/controle/estoque", icon: Package },
       { name: "Frota", href: "/dashboard/controle/frota", icon: Truck },
+      { name: "Monitoramento de Chat", href: "/dashboard/controle/chat", icon: MessageSquare },
     ],
   },
   {
