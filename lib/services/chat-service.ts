@@ -128,83 +128,95 @@ export class ChatService {
   // Buscar conversas da coleção orders com subcoleção messages
   static async getOrdersWithMessagesConversations(): Promise<LegacyChatConversation[]> {
     try {
+      console.log('🔍 Buscando pedidos na coleção orders...')
       const orders = await getCollection('orders')
+      console.log(`📦 Encontrados ${orders.length} pedidos`)
+      
       const conversations: LegacyChatConversation[] = []
 
       for (const order of orders) {
+        console.log(`📋 Processando pedido: ${order.id} - ${order.clientName}`)
+        
         try {
           // Buscar mensagens da subcoleção messages para este pedido
           const messages = await getCollection(`orders/${order.id}/messages`)
+          console.log(`💬 Pedido ${order.id}: ${messages.length} mensagens encontradas`)
           
-          if (messages.length > 0) {
-            const lastMessage = messages[messages.length - 1]
-            const unreadCount = messages.filter(msg => !msg.isRead).length
-            
-            const conversation: LegacyChatConversation = {
-              id: `orders_${order.id}`,
-              orderId: order.id,
-              clientId: order.clientId,
-              clientName: order.clientName || 'Cliente',
-              clientEmail: order.clientEmail || '',
-              clientPhone: order.phone || '',
-              status: this.mapOrderStatusToChatStatus(order.status || 'active'),
-              priority: order.isEmergency ? 'urgent' : 'medium',
-              createdAt: order.createdAt?.toDate() || new Date(),
-              updatedAt: lastMessage.timestamp?.toDate() || order.assignedAt?.toDate() || new Date(),
-              lastMessage: {
-                content: lastMessage.content || `Pedido ${order.id} - ${order.description || 'Serviço solicitado'}`,
-                senderName: lastMessage.senderName || order.clientName || 'Cliente',
-                timestamp: lastMessage.timestamp?.toDate() || new Date(),
-                messageType: lastMessage.messageType || 'text'
-              },
-              unreadCount: {
-                cliente: 0,
-                prestador: 0,
-                admin: unreadCount
-              },
-              source: 'legacy',
-              orderData: order
-            }
-            
-            conversations.push(conversation)
-          } else {
-            // Se não tem mensagens, criar conversa baseada apenas no pedido
-            const conversation: LegacyChatConversation = {
-              id: `orders_${order.id}`,
-              orderId: order.id,
-              clientId: order.clientId,
-              clientName: order.clientName || 'Cliente',
-              clientEmail: order.clientEmail || '',
-              clientPhone: order.phone || '',
-              status: this.mapOrderStatusToChatStatus(order.status || 'active'),
-              priority: order.isEmergency ? 'urgent' : 'medium',
-              createdAt: order.createdAt?.toDate() || new Date(),
-              updatedAt: order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date(),
-              lastMessage: {
-                content: `Pedido criado: ${order.description || 'Serviço solicitado'}`,
-                senderName: order.clientName || 'Cliente',
-                timestamp: order.createdAt?.toDate() || new Date(),
-                messageType: 'text'
-              },
-              unreadCount: {
-                cliente: 0,
-                prestador: 0,
-                admin: 0
-              },
-              source: 'legacy',
-              orderData: order
-            }
-            
-            conversations.push(conversation)
+          const conversation: LegacyChatConversation = {
+            id: `orders_${order.id}`,
+            orderId: order.id,
+            clientId: order.clientId || order.id,
+            clientName: order.clientName || 'Cliente',
+            clientEmail: order.clientEmail || '',
+            clientPhone: order.phone || '',
+            status: this.mapOrderStatusToChatStatus(order.status || 'active'),
+            priority: order.isEmergency ? 'urgent' : 'medium',
+            createdAt: order.createdAt?.toDate() || new Date(),
+            updatedAt: messages.length > 0 
+              ? (messages[messages.length - 1].timestamp?.toDate() || order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date())
+              : (order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date()),
+            lastMessage: messages.length > 0 ? {
+              content: messages[messages.length - 1].content || `Pedido ${order.id} - ${order.description || 'Serviço solicitado'}`,
+              senderName: messages[messages.length - 1].senderName || order.clientName || 'Cliente',
+              timestamp: messages[messages.length - 1].timestamp?.toDate() || new Date(),
+              messageType: messages[messages.length - 1].messageType || 'text'
+            } : {
+              content: `Pedido criado: ${order.description || 'Serviço solicitado'}`,
+              senderName: order.clientName || 'Cliente',
+              timestamp: order.createdAt?.toDate() || new Date(),
+              messageType: 'text'
+            },
+            unreadCount: {
+              cliente: 0,
+              prestador: 0,
+              admin: messages.filter(msg => !msg.isRead).length
+            },
+            source: 'legacy',
+            orderData: order
           }
+          
+          conversations.push(conversation)
+          console.log(`✅ Conversa criada para pedido ${order.id}`)
+          
         } catch (error) {
-          console.log(`Nenhuma mensagem encontrada para o pedido ${order.id}`)
+          console.log(`⚠️ Nenhuma mensagem encontrada para o pedido ${order.id}:`, error.message)
+          
+          // Criar conversa mesmo sem mensagens
+          const conversation: LegacyChatConversation = {
+            id: `orders_${order.id}`,
+            orderId: order.id,
+            clientId: order.clientId || order.id,
+            clientName: order.clientName || 'Cliente',
+            clientEmail: order.clientEmail || '',
+            clientPhone: order.phone || '',
+            status: this.mapOrderStatusToChatStatus(order.status || 'active'),
+            priority: order.isEmergency ? 'urgent' : 'medium',
+            createdAt: order.createdAt?.toDate() || new Date(),
+            updatedAt: order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date(),
+            lastMessage: {
+              content: `Pedido criado: ${order.description || 'Serviço solicitado'}`,
+              senderName: order.clientName || 'Cliente',
+              timestamp: order.createdAt?.toDate() || new Date(),
+              messageType: 'text'
+            },
+            unreadCount: {
+              cliente: 0,
+              prestador: 0,
+              admin: 0
+            },
+            source: 'legacy',
+            orderData: order
+          }
+          
+          conversations.push(conversation)
+          console.log(`✅ Conversa criada para pedido ${order.id} (sem mensagens)`)
         }
       }
 
+      console.log(`🎉 Total de conversas criadas: ${conversations.length}`)
       return conversations
     } catch (error) {
-      console.error('Erro ao buscar conversas dos pedidos com mensagens:', error)
+      console.error('❌ Erro ao buscar conversas dos pedidos com mensagens:', error)
       return []
     }
   }

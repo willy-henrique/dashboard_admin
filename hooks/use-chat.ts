@@ -14,21 +14,32 @@ export function useChatConversations(filter?: ChatFilter) {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
+        console.log('🚀 Iniciando busca de conversas...')
         setLoading(true)
         setError(null)
         
         // Buscar todas as conversas (novas + legadas)
+        console.log('📞 Chamando ChatService.getAllConversations()...')
         const allConversations = await ChatService.getAllConversations()
+        console.log(`📊 Conversas encontradas: ${allConversations.length}`)
+        
+        // Log das conversas encontradas
+        allConversations.forEach((conv, index) => {
+          console.log(`💬 Conversa ${index + 1}: ${conv.clientName} (${conv.orderId})`)
+        })
         
         // Aplicar filtros
         let filteredConversations = allConversations
+        console.log(`🔍 Aplicando filtros... Filtros ativos:`, filter)
 
         if (filter?.status) {
           filteredConversations = filteredConversations.filter(conv => conv.status === filter.status)
+          console.log(`📋 Filtro por status ${filter.status}: ${filteredConversations.length} conversas`)
         }
 
         if (filter?.priority) {
           filteredConversations = filteredConversations.filter(conv => conv.priority === filter.priority)
+          console.log(`⚡ Filtro por prioridade ${filter.priority}: ${filteredConversations.length} conversas`)
         }
 
         if (filter?.searchTerm) {
@@ -39,18 +50,22 @@ export function useChatConversations(filter?: ChatFilter) {
             conv.orderId.toLowerCase().includes(searchLower) ||
             conv.lastMessage?.content.toLowerCase().includes(searchLower)
           )
+          console.log(`🔎 Filtro por busca "${filter.searchTerm}": ${filteredConversations.length} conversas`)
         }
 
         if (filter?.hasUnread) {
           filteredConversations = filteredConversations.filter(conv => conv.unreadCount.admin > 0)
+          console.log(`📬 Filtro por não lidas: ${filteredConversations.length} conversas`)
         }
 
+        console.log(`✅ Total final de conversas: ${filteredConversations.length}`)
         setConversations(filteredConversations)
       } catch (err) {
-        console.error('Erro ao carregar conversas:', err)
+        console.error('❌ Erro ao carregar conversas:', err)
         setError('Erro ao carregar conversas')
       } finally {
         setLoading(false)
+        console.log('🏁 Busca de conversas finalizada')
       }
     }
 
@@ -159,53 +174,65 @@ export function useChatStats() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!db) {
-      setLoading(false)
-      return
-    }
-
-    // Buscar conversas para calcular estatísticas
-    const conversationsQuery = query(collection(db, 'chatConversations'))
-    const messagesQuery = query(collection(db, 'chatMessages'))
-
-    const unsubscribeConversations = onSnapshot(conversationsQuery, (conversationsSnapshot) => {
-      const conversations = conversationsSnapshot.docs.map(doc => doc.data()) as ChatConversation[]
-
-      // Buscar mensagens para completar as estatísticas
-      const unsubscribeMessages = onSnapshot(messagesQuery, (messagesSnapshot) => {
-        const messages = messagesSnapshot.docs.map(doc => doc.data()) as ChatMessage[]
-
+    const fetchStats = async () => {
+      try {
+        console.log('📊 Calculando estatísticas do chat...')
+        setLoading(true)
+        
+        // Buscar todas as conversas usando o serviço
+        const allConversations = await ChatService.getAllConversations()
+        console.log(`📈 Conversas para estatísticas: ${allConversations.length}`)
+        
+        // Calcular estatísticas
         const newStats: ChatStats = {
-          totalConversations: conversations.length,
-          activeConversations: conversations.filter(c => c.status === 'active').length,
-          closedConversations: conversations.filter(c => c.status === 'closed').length,
-          blockedConversations: conversations.filter(c => c.status === 'blocked').length,
-          totalMessages: messages.length,
-          unreadMessages: conversations.reduce((sum, conv) => sum + conv.unreadCount.admin, 0),
+          totalConversations: allConversations.length,
+          activeConversations: allConversations.filter(c => c.status === 'active').length,
+          closedConversations: allConversations.filter(c => c.status === 'closed').length,
+          blockedConversations: allConversations.filter(c => c.status === 'blocked').length,
+          totalMessages: allConversations.reduce((sum, conv) => sum + (conv.lastMessage ? 1 : 0), 0),
+          unreadMessages: allConversations.reduce((sum, conv) => sum + conv.unreadCount.admin, 0),
           averageResponseTime: 0, // Implementar cálculo de tempo de resposta
           conversationsByPriority: {
-            low: conversations.filter(c => c.priority === 'low').length,
-            medium: conversations.filter(c => c.priority === 'medium').length,
-            high: conversations.filter(c => c.priority === 'high').length,
-            urgent: conversations.filter(c => c.priority === 'urgent').length,
+            low: allConversations.filter(c => c.priority === 'low').length,
+            medium: allConversations.filter(c => c.priority === 'medium').length,
+            high: allConversations.filter(c => c.priority === 'high').length,
+            urgent: allConversations.filter(c => c.priority === 'urgent').length,
           },
           messagesByType: {
-            text: messages.filter(m => m.messageType === 'text').length,
-            image: messages.filter(m => m.messageType === 'image').length,
-            file: messages.filter(m => m.messageType === 'file').length,
-            location: messages.filter(m => m.messageType === 'location').length,
-            system: messages.filter(m => m.messageType === 'system').length,
+            text: allConversations.filter(c => c.lastMessage?.messageType === 'text').length,
+            image: allConversations.filter(c => c.lastMessage?.messageType === 'image').length,
+            file: allConversations.filter(c => c.lastMessage?.messageType === 'file').length,
+            location: allConversations.filter(c => c.lastMessage?.messageType === 'location').length,
+            system: allConversations.filter(c => c.lastMessage?.messageType === 'system').length,
           }
         }
 
+        console.log('📊 Estatísticas calculadas:', newStats)
         setStats(newStats)
         setLoading(false)
-      })
+      } catch (error) {
+        console.error('❌ Erro ao calcular estatísticas:', error)
+        setLoading(false)
+      }
+    }
 
-      return unsubscribeMessages
-    })
+    fetchStats()
 
-    return () => unsubscribeConversations()
+    // Configurar listener para atualizações em tempo real
+    if (db) {
+      const unsubscribeOrders = onSnapshot(
+        collection(db, 'orders'),
+        () => {
+          console.log('🔄 Atualizando estatísticas...')
+          fetchStats()
+        },
+        (err) => {
+          console.error('Erro no listener de estatísticas:', err)
+        }
+      )
+
+      return () => unsubscribeOrders()
+    }
   }, [])
 
   return { stats, loading }
