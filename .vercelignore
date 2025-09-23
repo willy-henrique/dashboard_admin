@@ -1,0 +1,10 @@
+# Arquivos que não devem ser enviados para o Vercel
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+node_modules
+.next
+.git
+*.log
+.DS_Store
