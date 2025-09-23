@@ -53,6 +53,8 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   console.log('🔍 ChatMessages - messages:', messages)
   console.log('🔍 ChatMessages - loading:', loading)
   console.log('🔍 ChatMessages - error:', error)
+  console.log('🔍 ChatMessages - messages.length:', messages.length)
+  console.log('🔍 ChatMessages - messages content:', messages.map(m => ({ id: m.id, content: m.content, senderName: m.senderName })))
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -219,7 +221,9 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
               <p>Nenhuma mensagem nesta conversa</p>
             </div>
           ) : (
-            messages.map((message) => (
+            messages.map((message) => {
+              console.log('🔍 Renderizando mensagem:', message.id, message.content, message.senderName)
+              return (
               <div
                 key={message.id}
                 className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)}`}
@@ -286,7 +290,8 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-            ))
+              )
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
