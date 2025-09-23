@@ -13,7 +13,7 @@ import {
   Shield, 
   Archive, 
   Unarchive, 
-  Block, 
+  Ban, 
   Unlock, 
   Star, 
   Edit, 
@@ -174,7 +174,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
               disabled={loading || conversation.status === 'blocked'}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              <Block className="h-4 w-4 mr-2" />
+              <Ban className="h-4 w-4 mr-2" />
               Bloquear
             </Button>
           </div>
@@ -295,7 +295,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         {conversation.status === 'blocked' && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-center space-x-2">
-              <Block className="h-5 w-5 text-red-500" />
+              <Ban className="h-5 w-5 text-red-500" />
               <span className="font-medium text-red-800">Conversa Bloqueada</span>
             </div>
             <p className="text-sm text-red-700 mt-1">

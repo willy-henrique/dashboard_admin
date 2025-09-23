@@ -12,7 +12,7 @@ import {
   Clock, 
   AlertTriangle,
   Archive,
-  Block,
+  Ban,
   Star,
   Edit,
   Trash2,
@@ -91,9 +91,9 @@ export function AdminLogs() {
   const getActionIcon = (action: AdminAction['action']) => {
     switch (action) {
       case 'block':
-        return <Block className="h-4 w-4 text-red-500" />
+        return <Ban className="h-4 w-4 text-red-500" />
       case 'unblock':
-        return <Block className="h-4 w-4 text-green-500" />
+        return <Ban className="h-4 w-4 text-green-500" />
       case 'archive':
         return <Archive className="h-4 w-4 text-blue-500" />
       case 'unarchive':

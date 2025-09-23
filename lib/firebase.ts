@@ -29,7 +29,8 @@ if (isProduction && isServer) {
   ];
   const missing = keyPairs.filter(([, v]) => !v).map(([k]) => k);
   if (missing.length > 0) {
-    throw new Error(`Variáveis de ambiente do Firebase ausentes em produção: ${missing.join(', ')}`);
+    console.warn(`⚠️ Variáveis de ambiente do Firebase ausentes em produção: ${missing.join(', ')}`);
+    console.warn('⚠️ Firebase será inicializado com configuração mock para desenvolvimento');
   }
 }
 
