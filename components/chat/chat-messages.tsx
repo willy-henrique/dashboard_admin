@@ -115,6 +115,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   }
 
   if (!conversation) {
+    console.log('🔍 ChatMessages - Estado: SEM CONVERSA')
     return (
       <Card className="bg-white h-full">
         <CardContent className="flex items-center justify-center h-full">
@@ -127,7 +128,10 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
     )
   }
 
+  console.log('🔍 ChatMessages - CONVERSA SELECIONADA:', conversation.id, conversation.clientName)
+
   if (loading) {
+    console.log('🔍 ChatMessages - Estado: LOADING')
     return (
       <Card className="bg-white h-full">
         <CardHeader>
@@ -149,6 +153,40 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       </Card>
     )
   }
+
+  console.log('🔍 ChatMessages - Estado: RENDERIZANDO', { loading, error, messagesLength: messages.length })
+
+  // TESTE: Mensagens hardcoded para verificar se o componente funciona
+  const testMessages = [
+    {
+      id: 'test1',
+      chatId: conversation.id,
+      senderId: 'test123',
+      senderName: 'Cliente Teste',
+      senderType: 'cliente' as const,
+      content: 'Esta é uma mensagem de teste para verificar se o componente está funcionando.',
+      messageType: 'text' as const,
+      timestamp: new Date(),
+      isRead: false,
+      readBy: [],
+      metadata: {}
+    },
+    {
+      id: 'test2',
+      chatId: conversation.id,
+      senderId: 'test456',
+      senderName: 'Prestador Teste',
+      senderType: 'prestador' as const,
+      content: 'Resposta de teste do prestador. O sistema está funcionando!',
+      messageType: 'text' as const,
+      timestamp: new Date(Date.now() - 60000),
+      isRead: false,
+      readBy: [],
+      metadata: {}
+    }
+  ]
+
+  console.log('🔍 ChatMessages - Mensagens de teste:', testMessages)
 
   if (error) {
     return (
@@ -215,14 +253,15 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       {/* Mensagens */}
       <CardContent className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
-          {messages.length === 0 ? (
+          {/* TESTE: Usar mensagens hardcoded temporariamente */}
+          {testMessages.length === 0 ? (
             <div className="text-center text-gray-500 py-8">
               <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p>Nenhuma mensagem nesta conversa</p>
             </div>
           ) : (
-            messages.map((message) => {
-              console.log('🔍 Renderizando mensagem:', message.id, message.content, message.senderName)
+            testMessages.map((message) => {
+              console.log('🔍 Renderizando mensagem de teste:', message.id, message.content, message.senderName)
               return (
               <div
                 key={message.id}
