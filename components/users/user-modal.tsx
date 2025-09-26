@@ -67,7 +67,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
   useEffect(() => {
     if (user && mode !== 'create') {
       setFormData({
-        nome: user.nome || user.name || '',
+        nome: user.fullName || user.nome || user.name || '',
         email: user.email || '',
         telefone: user.telefone || user.phone || '',
         cpf: user.cpf || '',

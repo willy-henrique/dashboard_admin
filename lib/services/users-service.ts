@@ -61,6 +61,7 @@ export class UsersService {
         if (filters.searchTerm) {
           const searchLower = filters.searchTerm.toLowerCase()
           users = users.filter(user => 
+            user.fullName?.toLowerCase().includes(searchLower) ||
             user.name?.toLowerCase().includes(searchLower) ||
             user.email?.toLowerCase().includes(searchLower)
           )

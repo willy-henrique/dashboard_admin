@@ -208,12 +208,12 @@ export function UsersTable({
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full flex items-center justify-center shadow-md" style={{ background: 'var(--primary)' }}>
                             <span className="font-semibold text-sm" style={{ color: 'var(--primary-foreground)' }}>
-                              {(user.name || user.nome || 'U').charAt(0).toUpperCase()}
+                              {(user.fullName || user.name || user.nome || 'U').charAt(0).toUpperCase()}
                             </span>
                           </div>
                           <div>
                             <div className="font-semibold" style={{ color: 'var(--foreground)' }}>
-                              {user.name || user.nome || 'Nome não informado'}
+                              {user.fullName || user.name || user.nome || 'Nome não informado'}
                             </div>
                             <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
                               ID: {user.id.slice(0, 8)}...
@@ -341,12 +341,12 @@ export function UsersTable({
                     <div className="flex items-center gap-3 flex-1">
                       <div className="h-12 w-12 rounded-full flex items-center justify-center shadow-md" style={{ background: 'var(--primary)' }}>
                         <span className="font-semibold text-sm" style={{ color: 'var(--primary-foreground)' }}>
-                          {(user.name || user.nome || 'U').charAt(0).toUpperCase()}
+                          {(user.fullName || user.name || user.nome || 'U').charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
-                          {user.name || user.nome || 'Nome não informado'}
+                          {user.fullName || user.name || user.nome || 'Nome não informado'}
                         </div>
                         <div className="text-sm flex items-center gap-1" style={{ color: 'var(--muted-foreground)' }}>
                           <Mail className="h-3 w-3" />
