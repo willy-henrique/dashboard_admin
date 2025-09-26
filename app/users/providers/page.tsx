@@ -35,7 +35,7 @@ export default function ProvidersPage() {
   const { toast } = useToast()
 
   const filters = {
-    role: 'prestador',
+    userType: 'provider',
     searchTerm: search || undefined,
     isActive: statusFilter === "all" ? undefined : statusFilter === "active"
   }
@@ -67,7 +67,7 @@ export default function ProvidersPage() {
     try {
       await createUser({ 
         ...data, 
-        role: 'prestador', 
+        userType: 'provider', 
         isActive: true,
         name: data.nome || data.name || '',
         email: data.email || '',

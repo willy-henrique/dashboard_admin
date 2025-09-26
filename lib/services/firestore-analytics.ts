@@ -23,9 +23,16 @@ export interface UserData {
   name: string
   email: string
   role: string
+  userType?: string
   isActive: boolean
   createdAt: Timestamp
   lastLoginAt?: Timestamp
+  verificado?: boolean
+  fullName?: string
+  username?: string
+  phone?: string
+  profileImageUrl?: string
+  uid?: string
 }
 
 export interface ProviderVerificationData {

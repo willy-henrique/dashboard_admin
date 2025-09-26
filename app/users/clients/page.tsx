@@ -31,7 +31,7 @@ export default function ClientsPage() {
   const { toast } = useToast()
 
   const filters = {
-    role: 'cliente',
+    userType: 'client',
     searchTerm: search || undefined,
     isActive: statusFilter === "all" ? undefined : statusFilter === "active"
   }
@@ -62,7 +62,7 @@ export default function ClientsPage() {
     try {
       await createUser({ 
         ...data, 
-        role: 'cliente', 
+        userType: 'client', 
         isActive: true,
         name: data.nome || data.name || '',
         email: data.email || ''

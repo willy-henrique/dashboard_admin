@@ -4,6 +4,7 @@ import type { UserData } from './firestore-analytics'
 
 export interface UserFilters {
   role?: string
+  userType?: string
   isActive?: boolean
   searchTerm?: string
   dateFrom?: Date
@@ -30,6 +31,10 @@ export class UsersService {
       if (filters) {
         if (filters.role) {
           users = users.filter(user => user.role === filters.role)
+        }
+        
+        if (filters.userType) {
+          users = users.filter(user => user.userType === filters.userType)
         }
         
         if (filters.isActive !== undefined) {

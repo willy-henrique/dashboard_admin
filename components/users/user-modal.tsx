@@ -40,7 +40,9 @@ const roleConfig = {
   admin: { color: "bg-red-100 text-red-800", label: "Administrador" },
   operador: { color: "bg-blue-100 text-blue-800", label: "Operador" },
   prestador: { color: "bg-green-100 text-green-800", label: "Prestador" },
-  cliente: { color: "bg-gray-100 text-gray-800", label: "Cliente" }
+  cliente: { color: "bg-gray-100 text-gray-800", label: "Cliente" },
+  provider: { color: "bg-green-100 text-green-800", label: "Prestador" },
+  client: { color: "bg-gray-100 text-gray-800", label: "Cliente" }
 }
 
 const statusConfig = {
@@ -57,6 +59,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
     cpf: '',
     endereco: '',
     role: 'cliente' as const,
+    userType: 'client' as const,
     status: 'ativo' as const,
     rating: 0
   })
@@ -64,12 +67,13 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
   useEffect(() => {
     if (user && mode !== 'create') {
       setFormData({
-        nome: user.nome || '',
+        nome: user.nome || user.name || '',
         email: user.email || '',
-        telefone: user.telefone || '',
+        telefone: user.telefone || user.phone || '',
         cpf: user.cpf || '',
         endereco: user.endereco || '',
         role: user.role || 'cliente',
+        userType: user.userType || 'client',
         status: user.status || 'ativo',
         rating: user.rating || 0
       })
@@ -81,6 +85,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
         cpf: '',
         endereco: '',
         role: 'cliente',
+        userType: 'client',
         status: 'ativo',
         rating: 0
       })

@@ -86,18 +86,33 @@ export function UsersTable({
     )
   }
 
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (user: any) => {
+    const userType = user.userType || user.role
     const roleColors: Record<string, string> = {
       admin: "bg-red-100 text-red-800 hover:bg-red-200",
       manager: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+      provider: "bg-green-100 text-green-800 hover:bg-green-200",
+      client: "bg-gray-100 text-gray-800 hover:bg-gray-200",
       prestador: "bg-green-100 text-green-800 hover:bg-green-200",
       cliente: "bg-gray-100 text-gray-800 hover:bg-gray-200",
       user: "bg-purple-100 text-purple-800 hover:bg-purple-200"
     }
     
+    const getDisplayName = (type: string) => {
+      switch (type) {
+        case 'provider': return 'Prestador'
+        case 'client': return 'Cliente'
+        case 'prestador': return 'Prestador'
+        case 'cliente': return 'Cliente'
+        case 'admin': return 'Admin'
+        case 'manager': return 'Gerente'
+        default: return type || 'Usuário'
+      }
+    }
+    
     return (
-      <Badge className={`px-2 py-1 ${roleColors[role] || "bg-gray-100 text-gray-800 hover:bg-gray-200"}`}>
-        {role === 'prestador' ? 'Prestador' : role === 'cliente' ? 'Cliente' : role || 'user'}
+      <Badge className={`px-2 py-1 ${roleColors[userType] || "bg-gray-100 text-gray-800 hover:bg-gray-200"}`}>
+        {getDisplayName(userType)}
       </Badge>
     )
   }
@@ -225,7 +240,7 @@ export function UsersTable({
                         </div>
                       </TableCell>
                       <TableCell>
-                        {getRoleBadge(user.role || 'user')}
+                        {getRoleBadge(user)}
                       </TableCell>
                       <TableCell>
                         {getStatusBadge(user)}
@@ -347,7 +362,7 @@ export function UsersTable({
                     </div>
                     <div className="flex flex-col gap-2">
                       {getStatusBadge(user)}
-                      {getRoleBadge(user.role || 'user')}
+                      {getRoleBadge(user)}
                       {showVerification && getVerificationBadge(user)}
                     </div>
                   </div>
