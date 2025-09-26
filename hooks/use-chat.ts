@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { collection, query, orderBy, where, onSnapshot, doc, updateDoc, addDoc, deleteDoc, Timestamp } from 'firebase/firestore'
+import { collection, query, orderBy, where, onSnapshot, doc, updateDoc, addDoc, getDoc, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { ChatConversation, ChatMessage, ChatStats, ChatFilter, AdminAction } from '@/types/chat'
+import { ChatConversation, ChatMessage, ChatStats, ChatFilter } from '@/types/chat'
 import { ChatService, LegacyChatConversation } from '@/lib/services/chat-service'
 
 export function useChatConversations(filter?: ChatFilter) {
@@ -258,7 +258,7 @@ export function useChatActions() {
     setLoading(true)
     try {
       const conversationRef = doc(db, 'chatConversations', chatId)
-      const conversationDoc = await conversationRef.get()
+      const conversationDoc = await getDoc(conversationRef)
       const currentNotes = conversationDoc.data()?.notes || ''
       const newNotes = currentNotes ? `${currentNotes}\n\n[${new Date().toLocaleString()}] ${adminName}: ${note}` : `[${new Date().toLocaleString()}] ${adminName}: ${note}`
 
@@ -292,7 +292,7 @@ export function useChatActions() {
     setLoading(true)
     try {
       const messageRef = doc(db, 'chatMessages', messageId)
-      const messageDoc = await messageRef.get()
+      const messageDoc = await getDoc(messageRef)
       const messageData = messageDoc.data()
 
       await updateDoc(messageRef, {

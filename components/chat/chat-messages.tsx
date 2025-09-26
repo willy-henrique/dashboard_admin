@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,25 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useChatMessages, useChatActions } from "@/hooks/use-chat"
 import { ChatMessage } from "@/types/chat"
 import { LegacyChatConversation } from "@/lib/services/chat-service"
-import { 
-  Send, 
-  User, 
-  UserCheck, 
-  Shield, 
-  Image, 
-  FileText, 
-  MapPin, 
-  Clock,
-  AlertTriangle,
-  Edit,
-  Trash2,
-  Eye,
-  EyeOff,
-  MoreVertical,
-  Phone,
-  Mail,
-  Calendar
-} from "lucide-react"
+import { User, UserCheck, Shield, FileText, MapPin, AlertTriangle, Edit, Trash2, MoreVertical, Phone, Mail, Image } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
@@ -48,17 +30,42 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   const { messages, loading, error } = useChatMessages(conversation?.id || "")
   const { deleteMessage, addConversationNote } = useChatActions()
 
-  // Debug: Log das mensagens recebidas
-  console.log('🔍 ChatMessages - conversation:', conversation?.id)
-  console.log('🔍 ChatMessages - messages:', messages)
-  console.log('🔍 ChatMessages - loading:', loading)
-  console.log('🔍 ChatMessages - error:', error)
-  console.log('🔍 ChatMessages - messages.length:', messages.length)
-  console.log('🔍 ChatMessages - messages content:', messages.map(m => ({ id: m.id, content: m.content, senderName: m.senderName })))
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+
+  const fallbackMessages = useMemo(() => {
+    if (!conversation) return []
+
+    return [
+      {
+        id: "fallback-1",
+        chatId: conversation.id,
+        senderId: "cliente-fallback",
+        senderName: conversation.clientName,
+        senderType: "cliente" as const,
+        content: "Olá! Esta é uma mensagem de exemplo enquanto carregamos o histórico real.",
+        messageType: "text" as const,
+        timestamp: new Date(),
+        isRead: true,
+        readBy: [],
+        metadata: {}
+      },
+      {
+        id: "fallback-2",
+        chatId: conversation.id,
+        senderId: "prestador-fallback",
+        senderName: "Equipe de Suporte",
+        senderType: "admin" as const,
+        content: "Estamos sincronizando as mensagens desta conversa. Caso precise, envie uma nova mensagem.",
+        messageType: "text" as const,
+        timestamp: new Date(Date.now() - 60 * 1000),
+        isRead: true,
+        readBy: [],
+        metadata: {}
+      }
+    ]
+  }, [conversation])
 
   const getSenderIcon = (senderType: ChatMessage['senderType']) => {
     switch (senderType) {
@@ -115,7 +122,6 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   }
 
   if (!conversation) {
-    console.log('🔍 ChatMessages - Estado: SEM CONVERSA')
     return (
       <Card className="bg-white h-full">
         <CardContent className="flex items-center justify-center h-full">
@@ -128,65 +134,28 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
     )
   }
 
-  console.log('🔍 ChatMessages - CONVERSA SELECIONADA:', conversation.id, conversation.clientName)
-
   if (loading) {
-    console.log('🔍 ChatMessages - Estado: LOADING')
     return (
       <Card className="bg-white h-full">
         <CardHeader>
           <CardTitle className="text-gray-900">Carregando mensagens...</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[...Array(5)].map((_, i) => (
+          {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="p-4 border rounded-lg animate-pulse">
               <div className="flex items-center space-x-2 mb-2">
-                <div className="h-4 bg-gray-200 rounded w-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
-                <div className="h-3 bg-gray-200 rounded w-16"></div>
+                <div className="h-4 bg-gray-200 rounded w-4" />
+                <div className="h-4 bg-gray-200 rounded w-24" />
+                <div className="h-3 bg-gray-200 rounded w-16" />
               </div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-2/3" />
             </div>
           ))}
         </CardContent>
       </Card>
     )
   }
-
-  console.log('🔍 ChatMessages - Estado: RENDERIZANDO', { loading, error, messagesLength: messages.length })
-
-  // TESTE: Mensagens hardcoded para verificar se o componente funciona
-  const testMessages = [
-    {
-      id: 'test1',
-      chatId: conversation.id,
-      senderId: 'test123',
-      senderName: 'Cliente Teste',
-      senderType: 'cliente' as const,
-      content: 'Esta é uma mensagem de teste para verificar se o componente está funcionando.',
-      messageType: 'text' as const,
-      timestamp: new Date(),
-      isRead: false,
-      readBy: [],
-      metadata: {}
-    },
-    {
-      id: 'test2',
-      chatId: conversation.id,
-      senderId: 'test456',
-      senderName: 'Prestador Teste',
-      senderType: 'prestador' as const,
-      content: 'Resposta de teste do prestador. O sistema está funcionando!',
-      messageType: 'text' as const,
-      timestamp: new Date(Date.now() - 60000),
-      isRead: false,
-      readBy: [],
-      metadata: {}
-    }
-  ]
-
-  console.log('🔍 ChatMessages - Mensagens de teste:', testMessages)
 
   if (error) {
     return (
@@ -203,13 +172,12 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
 
   return (
     <Card className="bg-white h-full flex flex-col">
-      {/* Header da Conversa */}
       <CardHeader className="border-b bg-gray-50">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-gray-900 text-lg">
               {conversation.clientName}
-              {conversation.source === 'legacy' && (
+              {conversation.source === "legacy" && (
                 <span className="text-sm text-orange-600 ml-2">(Histórico)</span>
               )}
             </CardTitle>
@@ -222,161 +190,140 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                 <Mail className="h-3 w-3 mr-1" />
                 {conversation.clientEmail}
               </div>
-              {conversation.orderId !== 'suporte-geral' && (
+              {conversation.orderId !== "suporte-geral" && (
                 <Badge variant="outline" className="text-xs">
                   Pedido: {conversation.orderId}
                 </Badge>
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
-            <Badge className={`${conversation.priority === 'urgent' ? 'bg-red-500' : 
-                              conversation.priority === 'high' ? 'bg-orange-500' : 
-                              conversation.priority === 'medium' ? 'bg-yellow-500' : 'bg-gray-500'} text-white`}>
+            <Badge
+              className={`${
+                conversation.priority === "urgent"
+                  ? "bg-red-500"
+                  : conversation.priority === "high"
+                    ? "bg-orange-500"
+                    : conversation.priority === "medium"
+                      ? "bg-yellow-500"
+                      : "bg-gray-500"
+              } text-white`}
+            >
               {conversation.priority}
             </Badge>
-            <Badge variant={conversation.status === 'active' ? 'default' : 'secondary'}>
+            <Badge variant={conversation.status === "active" ? "default" : "secondary"}>
               {conversation.status}
             </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAdminActions(!showAdminActions)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowAdminActions(!showAdminActions)}>
               <MoreVertical className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </CardHeader>
 
-      {/* Mensagens */}
-      <CardContent className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-4">
-          {/* TESTE: Mostrar tanto mensagens reais quanto de teste */}
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm font-medium">🔍 Debug: Mostrando mensagens reais + teste</p>
-            <p className="text-blue-600 text-xs">Mensagens reais: {messages.length} | Mensagens teste: {testMessages.length}</p>
-          </div>
-          
-          {/* Mensagens reais do Firebase */}
-          {messages.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">📨 Mensagens Reais do Firebase:</h4>
-              {messages.map((message) => {
-                console.log('🔍 Renderizando mensagem REAL:', message.id, message.content, message.senderName)
-                return (
-                  <div
-                    key={`real-${message.id}`}
-                    className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)} mb-2`}
-                  >
-                  <div className="flex-shrink-0">
-                    {getSenderIcon(message.senderType)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-sm text-gray-900">
-                        {message.senderName} (REAL)
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {formatDistanceToNow(message.timestamp, { 
-                          addSuffix: true, 
-                          locale: ptBR 
-                        })}
-                      </span>
-                    </div>
-                    
-                    <div className="text-sm text-gray-700">
-                      <p className="whitespace-pre-wrap">{message.content}</p>
-                    </div>
-                  </div>
-                </div>
-                )
-              })}
-            </div>
-          )}
-          
-          {/* Mensagens de teste */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">🧪 Mensagens de Teste:</h4>
-            {testMessages.map((message) => {
-              console.log('🔍 Renderizando mensagem de teste:', message.id, message.content, message.senderName)
-              return (
-                <div
-                  key={message.id}
-                  className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)}`}
-                >
-                <div className="flex-shrink-0">
-                  {getSenderIcon(message.senderType)}
-                </div>
-                
+      <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">📨 Mensagens Reais do Firebase:</h4>
+            {messages.map((message) => (
+              <div
+                key={`real-${message.id}`}
+                className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)}`}
+              >
+                <div className="flex-shrink-0">{getSenderIcon(message.senderType)}</div>
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center space-x-2 mb-1">
-                    <span className="font-medium text-sm text-gray-900">
-                      {message.senderName}
-                    </span>
+                    <span className="font-medium text-sm text-gray-900">{message.senderName} (REAL)</span>
                     <span className="text-xs text-gray-500">
-                      {formatDistanceToNow(message.timestamp, { 
-                        addSuffix: true, 
-                        locale: ptBR 
+                      {formatDistanceToNow(message.timestamp, {
+                        addSuffix: true,
+                        locale: ptBR,
                       })}
                     </span>
-                    {getMessageIcon(message.messageType)}
                   </div>
-                  
+
                   <div className="text-sm text-gray-700">
-                    {message.messageType === 'image' && message.metadata?.imageUrl && (
-                      <img 
-                        src={message.metadata.imageUrl} 
-                        alt="Imagem" 
-                        className="max-w-xs rounded-lg mb-2"
-                      />
-                    )}
-                    
-                    {message.messageType === 'file' && (
-                      <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                        <FileText className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm">{message.metadata?.fileName}</span>
-                        <span className="text-xs text-gray-500">
-                          ({(message.metadata?.fileSize || 0) / 1024} KB)
-                        </span>
-                      </div>
-                    )}
-                    
-                    {message.messageType === 'location' && message.metadata?.location && (
-                      <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                        <MapPin className="h-4 w-4 text-red-500" />
-                        <span className="text-sm">{message.metadata.location.address}</span>
-                      </div>
-                    )}
-                    
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   </div>
                 </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                      <MoreVertical className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleDeleteMessage(message.id)}>
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Deletar mensagem
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
-              )
-            })
-          )}
-          <div ref={messagesEndRef} />
+            ))}
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-gray-700">🧪 Mensagens de Teste:</h4>
+          {fallbackMessages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)}`}
+            >
+              <div className="flex-shrink-0">{getSenderIcon(message.senderType)}</div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="font-medium text-sm text-gray-900">{message.senderName}</span>
+                  <span className="text-xs text-gray-500">
+                    {formatDistanceToNow(message.timestamp, {
+                      addSuffix: true,
+                      locale: ptBR,
+                    })}
+                  </span>
+                  {getMessageIcon(message.messageType)}
+                </div>
+
+                <div className="text-sm text-gray-700 space-y-2">
+                  {message.messageType === "image" && message.metadata?.imageUrl && (
+                    <img
+                      src={message.metadata.imageUrl}
+                      alt="Imagem"
+                      className="max-w-xs rounded-lg"
+                    />
+                  )}
+
+                  {message.messageType === "file" && (
+                    <div className="flex items-center space-x-2 p-2 bg-white rounded border">
+                      <FileText className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">{message.metadata?.fileName}</span>
+                      <span className="text-xs text-gray-500">
+                        ({(message.metadata?.fileSize || 0) / 1024} KB)
+                      </span>
+                    </div>
+                  )}
+
+                  {message.messageType === "location" && message.metadata?.location && (
+                    <div className="flex items-center space-x-2 p-2 bg-white rounded border">
+                      <MapPin className="h-4 w-4 text-red-500" />
+                      <span className="text-sm">{message.metadata.location.address}</span>
+                    </div>
+                  )}
+
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                </div>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <MoreVertical className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleDeleteMessage(message.id)}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Deletar mensagem
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ))}
         </div>
+
+        <div ref={messagesEndRef} />
       </CardContent>
 
-      {/* Notas do Admin */}
       {showAdminActions && (
         <div className="border-t bg-gray-50 p-4">
           <div className="space-y-2">
@@ -390,7 +337,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
               className="bg-white border-gray-200"
               rows={2}
             />
-            <Button 
+            <Button
               onClick={handleAddNote}
               disabled={!messageText.trim()}
               className="bg-orange-500 hover:bg-orange-600"
