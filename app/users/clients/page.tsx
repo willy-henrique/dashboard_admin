@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { UsersTable } from "@/components/users/users-table"
 import { UserModal } from "@/components/users/user-modal"
 import { useUsers } from "@/hooks/use-users"
+import { useUsersDebug } from "@/hooks/use-users-debug"
 import { Badge } from "@/components/ui/badge"
 import { 
   User, 
@@ -28,7 +29,11 @@ export default function ClientsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [showDebug, setShowDebug] = useState(false)
   const { toast } = useToast()
+
+  // Hook de debug para ver todos os usuários
+  const { allUsers, loading: debugLoading, refetch: refetchDebug } = useUsersDebug()
 
   const filters = {
     userType: 'client',
@@ -48,11 +53,18 @@ export default function ClientsPage() {
     unblockUser 
   } = useUsers(filters)
 
-  const selectedUser = useMemo(() => users.find(u => u.id === selectedUserId) || null, [users, selectedUserId])
+  // Buscar clientes manualmente se não encontrar via filtro
+  const clientUsers = users.length > 0 ? users : allUsers.filter(user => 
+    user.userType === 'client' || 
+    (user.role === 'cliente' && !user.userType) ||
+    (user.userType === 'client')
+  )
 
-  const activeUsers = users.filter(u => u.isActive !== false).length
-  const blockedUsers = users.filter(u => u.isActive === false).length
-  const recentUsers = users.filter(u => {
+  const selectedUser = useMemo(() => clientUsers.find(u => u.id === selectedUserId) || null, [clientUsers, selectedUserId])
+
+  const activeUsers = clientUsers.filter(u => u.isActive !== false).length
+  const blockedUsers = clientUsers.filter(u => u.isActive === false).length
+  const recentUsers = clientUsers.filter(u => {
     if (!u.createdAt) return false
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     return u.createdAt.toDate() >= thirtyDaysAgo
@@ -150,10 +162,17 @@ export default function ClientsPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               variant="outline" 
-              onClick={() => refetch()}
+              onClick={() => { refetch(); refetchDebug(); }}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Atualizar
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => setShowDebug(!showDebug)}
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Debug
             </Button>
             <Button 
               variant="outline"
@@ -283,10 +302,44 @@ export default function ClientsPage() {
           </CardContent>
         </Card>
 
+        {/* Debug Panel */}
+        {showDebug && (
+          <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                <Filter className="h-5 w-5" />
+                Debug - Dados do Firestore
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-semibold text-blue-800">Total de Usuários</h4>
+                    <p className="text-2xl font-bold text-blue-600">{allUsers.length}</p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-semibold text-green-800">Clientes Encontrados</h4>
+                    <p className="text-2xl font-bold text-green-600">{clientUsers.length}</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <h4 className="font-semibold text-purple-800">Via Filtro</h4>
+                    <p className="text-2xl font-bold text-purple-600">{users.length}</p>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600">
+                  <p><strong>Filtro aplicado:</strong> userType: 'client'</p>
+                  <p><strong>Status:</strong> {loading ? 'Carregando...' : 'Concluído'}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Users Table */}
         <UsersTable 
-          users={users}
-          loading={loading}
+          users={clientUsers}
+          loading={loading || debugLoading}
           onView={(id) => { setSelectedUserId(id); setModalOpen(true) }}
           onEdit={(id) => { setSelectedUserId(id); setModalOpen(true) }}
           onDelete={handleDeleteUser}

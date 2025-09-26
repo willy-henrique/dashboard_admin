@@ -25,20 +25,25 @@ export class UsersService {
   // Buscar todos os usuários com filtros opcionais
   static async getUsers(filters?: UserFilters, limitCount?: number) {
     try {
+      console.log('🔍 Buscando usuários com filtros:', filters)
       let users = await getCollection('users')
+      console.log('📊 Total de usuários encontrados:', users.length)
       
       // Aplicar filtros
       if (filters) {
         if (filters.role) {
           users = users.filter(user => user.role === filters.role)
+          console.log(`👥 Usuários filtrados por role '${filters.role}':`, users.length)
         }
         
         if (filters.userType) {
           users = users.filter(user => user.userType === filters.userType)
+          console.log(`👥 Usuários filtrados por userType '${filters.userType}':`, users.length)
         }
         
         if (filters.isActive !== undefined) {
           users = users.filter(user => user.isActive === filters.isActive)
+          console.log(`👥 Usuários filtrados por isActive '${filters.isActive}':`, users.length)
         }
         
         if (filters.dateFrom) {
