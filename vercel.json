@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "pnpm run vercel-build",
   "outputDirectory": ".next",
-  "installCommand": "corepack enable pnpm && pnpm install --frozen-lockfile",
+  "installCommand": "corepack enable pnpm && pnpm install",
   "framework": "nextjs",
   "env": {
     "NODE_ENV": "production"
