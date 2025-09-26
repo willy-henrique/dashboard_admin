@@ -182,8 +182,8 @@ export default function VerificationsPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+      <div className="flex items-center justify-between">
+        <div>
             <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
               Verificações de Prestadores
             </h1>
@@ -191,14 +191,35 @@ export default function VerificationsPage() {
               Aprove ou recuse cadastros de prestadores de serviço
             </p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={() => refetch()}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Atualizar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => refetch()}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Atualizar
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setSelectedVerification({
+                  id: 'test',
+                  providerId: 'test',
+                  providerName: 'Teste Modal',
+                  providerEmail: 'teste@teste.com',
+                  providerPhone: '(11) 99999-9999',
+                  status: 'pending',
+                  documents: [],
+                  submittedAt: new Date()
+                })
+                setShowDetails(true)
+              }}
+              className="flex items-center gap-2"
+            >
+              Testar Modal
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -258,18 +279,18 @@ export default function VerificationsPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
         {/* Filters */}
         <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
-          <CardHeader>
+        <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
               <Filter className="h-5 w-5" />
               Filtros e Busca
             </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-4">
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -311,9 +332,9 @@ export default function VerificationsPage() {
                   Rejeitados
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
 
         {/* Verifications List */}
         <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
@@ -442,15 +463,19 @@ export default function VerificationsPage() {
 
         {/* Verification Details Modal */}
         {showDetails && selectedVerification && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <CardHeader>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
+            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
+              <CardHeader className="bg-gray-50 border-b">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
                     <Shield className="h-5 w-5" />
-                    Detalhes da Verificação
+                    Detalhes da Verificação - {selectedVerification.providerName}
                   </CardTitle>
-                  <Button variant="ghost" onClick={() => setShowDetails(false)}>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setShowDetails(false)}
+                    className="hover:bg-gray-200"
+                  >
                     ✕
                   </Button>
                 </div>

@@ -211,15 +211,19 @@ export function VerificationDocumentViewer({
 
       {/* Document Preview Modal */}
       {selectedDocument && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
+            <CardHeader className="bg-gray-50 border-b">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-gray-900">
                   <FileText className="h-5 w-5" />
                   {getDocumentTypeName(selectedDocument.type)}
                 </CardTitle>
-                <Button variant="ghost" onClick={() => setSelectedDocument(null)}>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setSelectedDocument(null)}
+                  className="hover:bg-gray-200"
+                >
                   ✕
                 </Button>
               </div>
