@@ -266,10 +266,10 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
               {messages.map((message) => {
                 console.log('🔍 Renderizando mensagem REAL:', message.id, message.content, message.senderName)
                 return (
-                <div
-                  key={`real-${message.id}`}
-                  className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)} mb-2`}
-                >
+                  <div
+                    key={`real-${message.id}`}
+                    className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)} mb-2`}
+                  >
                   <div className="flex-shrink-0">
                     {getSenderIcon(message.senderType)}
                   </div>
@@ -303,10 +303,10 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
             {testMessages.map((message) => {
               console.log('🔍 Renderizando mensagem de teste:', message.id, message.content, message.senderName)
               return (
-              <div
-                key={message.id}
-                className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)}`}
-              >
+                <div
+                  key={message.id}
+                  className={`flex items-start space-x-3 p-3 rounded-lg border ${getSenderColor(message.senderType)}`}
+                >
                 <div className="flex-shrink-0">
                   {getSenderIcon(message.senderType)}
                 </div>
