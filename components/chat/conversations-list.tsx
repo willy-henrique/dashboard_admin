@@ -149,55 +149,53 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
                 }`}
                 onClick={() => onSelectConversation(conversation)}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      {getStatusIcon(conversation.status)}
-                      <h4 className="font-medium text-gray-900 text-sm truncate">
-                        {conversation.clientName}
-                        {conversation.source === 'legacy' && (
-                          <span className="text-xs text-orange-600 ml-1">(Histórico)</span>
-                        )}
-                      </h4>
-                    </div>
-                    
-                    <p className="text-xs text-gray-500 mb-2">
-                      {conversation.orderId !== 'suporte-geral' ? `Pedido: ${conversation.orderId}` : 'Suporte Geral'}
-                    </p>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Badge className={`text-xs px-2 py-1 ${getPriorityColor(conversation.priority)}`}>
-                        {conversation.priority}
-                      </Badge>
-                      <Badge className={`text-xs px-2 py-1 ${getStatusColor(conversation.status)}`}>
-                        {conversation.status}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  {/* Informações adicionais compactas */}
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center space-x-2 text-xs text-gray-500">
-                      <Mail className="h-3 w-3" />
-                      <span className="truncate">{conversation.clientEmail}</span>
-                    </div>
-                    
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(conversation.status)}
+                    <h4 className="font-medium text-gray-900 text-sm truncate flex-1">
+                      {conversation.clientName}
+                      {conversation.source === 'legacy' && (
+                        <span className="text-xs text-orange-600 ml-1">(Histórico)</span>
+                      )}
+                    </h4>
                     {conversation.unreadCount.admin > 0 && (
-                      <div className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                      <div className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full flex-shrink-0">
                         {conversation.unreadCount.admin}
                       </div>
                     )}
                   </div>
                   
-                  {conversation.lastMessage && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      <Clock className="h-3 w-3 inline mr-1" />
-                      {formatDistanceToNow(conversation.lastMessage.timestamp, { 
-                        addSuffix: true, 
-                        locale: ptBR 
-                      })}
+                  <p className="text-xs text-gray-500 truncate">
+                    {conversation.orderId !== 'suporte-geral' ? `Pedido: ${conversation.orderId}` : 'Suporte Geral'}
+                  </p>
+                  
+                  <div className="flex items-center space-x-2 flex-wrap">
+                    <Badge className={`text-xs px-2 py-1 ${getPriorityColor(conversation.priority)}`}>
+                      {conversation.priority}
+                    </Badge>
+                    <Badge className={`text-xs px-2 py-1 ${getStatusColor(conversation.status)}`}>
+                      {conversation.status}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center space-x-1 truncate">
+                      <Mail className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{conversation.clientEmail}</span>
                     </div>
-                  )}
+                    
+                    {conversation.lastMessage && (
+                      <div className="flex items-center space-x-1 flex-shrink-0">
+                        <Clock className="h-3 w-3" />
+                        <span className="whitespace-nowrap">
+                          {formatDistanceToNow(conversation.lastMessage.timestamp, { 
+                            addSuffix: true, 
+                            locale: ptBR 
+                          })}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

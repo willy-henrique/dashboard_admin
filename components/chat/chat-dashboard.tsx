@@ -31,58 +31,58 @@ export function ChatDashboard() {
         </p>
       </div>
 
-      {/* Estatísticas e Alertas em Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
+      {/* Estatísticas e Alertas em Grid Responsivo */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 max-w-full">
+        <div className="lg:col-span-3 min-w-0">
           <ChatStatsCards />
         </div>
         
         {/* Alertas Compactos */}
-        <div className="space-y-4">
+        <div className="space-y-3 min-w-0">
           <Card className="bg-red-50 border-red-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <AlertTriangle className="h-6 w-6 text-red-500" />
-                  <div>
-                    <p className="font-semibold text-gray-900">Urgentes</p>
-                    <p className="text-sm text-gray-600">Atenção imediata</p>
+                <div className="flex items-center space-x-2 min-w-0">
+                  <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm">Urgentes</p>
+                    <p className="text-xs text-gray-600">Atenção imediata</p>
                   </div>
                 </div>
-                <span className="text-2xl font-bold text-red-600">3</span>
+                <span className="text-xl font-bold text-red-600">3</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-orange-50 border-orange-200">
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Clock className="h-6 w-6 text-orange-500" />
-                  <div>
-                    <p className="font-semibold text-gray-900">Sem Resposta</p>
-                    <p className="text-sm text-gray-600">+1 hora</p>
+                <div className="flex items-center space-x-2 min-w-0">
+                  <Clock className="h-5 w-5 text-orange-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm">Sem Resposta</p>
+                    <p className="text-xs text-gray-600">+1 hora</p>
                   </div>
                 </div>
-                <span className="text-2xl font-bold text-orange-600">5</span>
+                <span className="text-xl font-bold text-orange-600">5</span>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* Monitor Principal - Layout Melhorado */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 h-[700px]">
+      {/* Monitor Principal - Layout Responsivo */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 max-w-full overflow-hidden">
         {/* Lista de Conversas */}
-        <div className="xl:col-span-2">
-          <Card className="h-full border border-gray-200 shadow-sm">
+        <div className="lg:col-span-1 min-w-0">
+          <Card className="h-[600px] border border-gray-200 shadow-sm overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <CardTitle className="text-lg font-semibold text-gray-800 flex items-center">
                 <Users className="h-5 w-5 text-orange-500 mr-2" />
                 Conversas Ativas
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0 h-full">
+            <CardContent className="p-0 h-full overflow-hidden">
               <ConversationsList 
                 onSelectConversation={handleSelectConversation}
                 selectedConversationId={selectedConversation?.id}
@@ -92,20 +92,22 @@ export function ChatDashboard() {
         </div>
         
         {/* Mensagens */}
-        <div className="xl:col-span-3">
-          <Card className="h-full border border-gray-200 shadow-sm">
+        <div className="lg:col-span-2 min-w-0">
+          <Card className="h-[600px] border border-gray-200 shadow-sm overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
               <CardTitle className="text-lg font-semibold text-gray-800 flex items-center">
                 <MessageSquare className="h-5 w-5 text-orange-500 mr-2" />
-                Mensagens
-                {selectedConversation && (
-                  <span className="ml-2 text-sm font-normal text-gray-600">
-                    - {selectedConversation.clientName}
-                  </span>
-                )}
+                <span className="truncate">
+                  Mensagens
+                  {selectedConversation && (
+                    <span className="ml-2 text-sm font-normal text-gray-600">
+                      - {selectedConversation.clientName}
+                    </span>
+                  )}
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0 h-full">
+            <CardContent className="p-0 h-full overflow-hidden">
               <ChatMessages conversation={selectedConversation} />
             </CardContent>
           </Card>

@@ -12,12 +12,12 @@ export function AppShell({ children }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-      <div className="lg:ml-64">
+      <div className="lg:ml-64 min-w-0">
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <main>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <main className="min-w-0">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-full">
             {children}
           </div>
         </main>
