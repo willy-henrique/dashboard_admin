@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Menu, Search, Bell, User, Moon, Sun, LogOut } from "lucide-react"
+import { Menu, Search, Bell, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -12,7 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useTheme } from "next-themes"
 import { useAuth } from "@/components/auth-provider"
 import { signOut } from "firebase/auth"
 import { auth } from "@/lib/firebase"
@@ -22,7 +21,6 @@ interface TopbarProps {
 }
 
 export function Topbar({ onMenuClick }: TopbarProps) {
-  const { theme, setTheme } = useTheme()
   const { user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -76,20 +74,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-4">
-          {/* Theme Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            style={{ color: 'var(--foreground)' }}
-            aria-label={`Alternar para tema ${theme === "light" ? "escuro" : "claro"}`}
-          >
-            {theme === "light" ? (
-              <Moon className="h-5 w-5" />
-            ) : (
-              <Sun className="h-5 w-5" />
-            )}
-          </Button>
 
           {/* Notifications */}
           <Button 
