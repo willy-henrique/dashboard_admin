@@ -164,15 +164,15 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-blue-50 to-white">
+        <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Pedidos Ativos</CardTitle>
-            <div className="p-3 bg-blue-100 rounded-xl shadow-sm">
-              <Activity className="h-5 w-5 text-blue-600" />
+            <div className="p-3 bg-orange-100 rounded-xl shadow-sm">
+              <Activity className="h-5 w-5 text-orange-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-blue-600 mb-2">{stats.assigned + stats.inProgress}</div>
+            <div className="text-4xl font-bold text-orange-600 mb-2">{stats.assigned + stats.inProgress}</div>
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
                 {stats.assigned} atribuídos • {stats.inProgress} em andamento
@@ -261,17 +261,17 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+        <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-blue-800">
+            <CardTitle className="flex items-center space-x-2 text-gray-800">
               <TrendingUp className="h-5 w-5" />
               <span>Status dos Pedidos</span>
             </CardTitle>
-            <CardDescription className="text-blue-600">Distribuição por status</CardDescription>
+            <CardDescription className="text-gray-600">Distribuição por status</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-blue-200 shadow-sm">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
                   <div>
@@ -280,7 +280,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-blue-600">{stats.pending}</span>
+                  <span className="text-lg font-bold text-gray-700">{stats.pending}</span>
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-yellow-500 h-2 rounded-full transition-all duration-500" 
@@ -290,26 +290,26 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-blue-200 shadow-sm">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-blue-500 rounded-full shadow-sm"></div>
+                  <div className="w-4 h-4 bg-orange-500 rounded-full shadow-sm"></div>
                   <div>
                     <span className="text-sm font-medium text-gray-700">Atribuídos</span>
                     <p className="text-xs text-gray-500">Aguardando início</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-blue-600">{stats.assigned}</span>
+                  <span className="text-lg font-bold text-gray-700">{stats.assigned}</span>
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                      className="bg-orange-500 h-2 rounded-full transition-all duration-500" 
                       style={{ width: `${stats.total > 0 ? (stats.assigned / stats.total) * 100 : 0}%` }}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-blue-200 shadow-sm">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-purple-500 rounded-full shadow-sm"></div>
                   <div>
@@ -318,7 +318,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-blue-600">{stats.inProgress}</span>
+                  <span className="text-lg font-bold text-gray-700">{stats.inProgress}</span>
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-purple-500 h-2 rounded-full transition-all duration-500" 
@@ -328,7 +328,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-blue-200 shadow-sm">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></div>
                   <div>
@@ -337,7 +337,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-blue-600">{stats.completed}</span>
+                  <span className="text-lg font-bold text-gray-700">{stats.completed}</span>
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-green-500 h-2 rounded-full transition-all duration-500" 
@@ -347,7 +347,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-blue-200 shadow-sm">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center space-x-3">
                   <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
                   <div>
@@ -356,7 +356,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-blue-600">{stats.cancelled}</span>
+                  <span className="text-lg font-bold text-gray-700">{stats.cancelled}</span>
                   <div className="w-20 bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-red-500 h-2 rounded-full transition-all duration-500" 

@@ -147,7 +147,7 @@ export function ProfessionalSupportChat({
   const getSenderInfo = (sender: string) => {
     switch (sender) {
       case 'client':
-        return { name: clientName || 'Cliente', icon: User, color: 'bg-blue-500' }
+        return { name: clientName || 'Cliente', icon: User, color: 'bg-gray-500' }
       case 'support':
         return { name: 'Suporte', icon: MessageCircle, color: 'bg-orange-500' }
       case 'system':
@@ -216,7 +216,7 @@ export function ProfessionalSupportChat({
                     ? 'bg-orange-500 text-white' 
                     : message.sender === 'system'
                     ? 'bg-gray-100 text-gray-800 border border-gray-200'
-                    : 'bg-blue-500 text-white'
+                    : 'bg-gray-500 text-white'
                 }`}>
                   <div className="flex items-center space-x-2 mb-1">
                     <span className="text-xs font-medium">{senderInfo.name}</span>

@@ -188,7 +188,7 @@ export function OrdersTable({ filters, onView, onEdit }: OrdersTableProps) {
                 <TableBody>
                   {orders.map((order, index) => (
                     <TableRow key={order.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
-                      <TableCell className="font-mono text-sm font-medium text-blue-600">
+                      <TableCell className="font-mono text-sm font-medium text-gray-700">
                         #{order.id.slice(-8)}
                       </TableCell>
                       <TableCell>
@@ -231,9 +231,9 @@ export function OrdersTable({ filters, onView, onEdit }: OrdersTableProps) {
                             variant="ghost"
                             size="sm"
                             onClick={() => onView?.(order.id)}
-                            className="h-8 w-8 p-0 hover:bg-blue-100"
+                            className="h-8 w-8 p-0 hover:bg-gray-100"
                           >
-                            <Eye className="h-4 w-4 text-blue-600" />
+                            <Eye className="h-4 w-4 text-gray-600" />
                           </Button>
                           <Button
                             variant="ghost"
