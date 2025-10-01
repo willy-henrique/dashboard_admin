@@ -45,61 +45,30 @@ export function ProfessionalSupportChat({
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Dados simulados baseados no exemplo do link
+  // Carregar mensagens reais do chat
   useEffect(() => {
-    const mockMessages: Message[] = [
-      {
-        id: "1",
-        sender: 'client',
-        message: "Olá, gostaria de saber o status do meu pedido ORD-001",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 min atrás
-        orderId: "ORD-001",
-        isRead: true
-      },
-      {
-        id: "2",
-        sender: 'support',
-        message: "Olá! Vou verificar o status do seu pedido para você. Um momento, por favor.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 29),
-        isRead: true
-      },
-      {
-        id: "3",
-        sender: 'support',
-        message: "Seu pedido ORD-001 está atualmente em andamento. O prestador João Silva foi atribuído e está a caminho do local. O tempo estimado de chegada é de 30 minutos.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 29),
-        isRead: true
-      },
-      {
-        id: "4",
-        sender: 'client',
-        message: "Perfeito! Obrigado pela informação. Posso acompanhar em tempo real?",
-        timestamp: new Date(Date.now() - 1000 * 60 * 28),
-        isRead: true
-      },
-      {
-        id: "5",
-        sender: 'support',
-        message: "Sim! Você pode acompanhar o progresso do seu pedido através do painel do cliente. Também enviaremos notificações por email e SMS conforme o status for atualizado.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 28),
-        isRead: true
-      },
-      {
-        id: "6",
-        sender: 'client',
-        message: "Excelente! Muito obrigado pelo atendimento.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 27),
-        isRead: true
-      },
-      {
-        id: "7",
-        sender: 'system',
-        message: "Pedido ORD-001 foi concluído com sucesso! O prestador finalizou o serviço e aguarda sua avaliação.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 26),
-        isRead: false
+    const loadMessages = async () => {
+      try {
+        // TODO: Implementar busca de mensagens reais do Firestore
+        // Por enquanto, mostrar mensagem inicial
+        const initialMessages: Message[] = [
+          {
+            id: "welcome",
+            sender: 'system',
+            message: orderId 
+              ? `Chat de suporte para o pedido ${orderId}. Como posso ajudar você hoje?`
+              : "Bem-vindo ao chat de suporte. Como posso ajudar você hoje?",
+            timestamp: new Date(),
+            isRead: true
+          }
+        ]
+        setMessages(initialMessages)
+      } catch (error) {
+        console.error('Erro ao carregar mensagens:', error)
       }
-    ]
-    setMessages(mockMessages)
+    }
+
+    loadMessages()
   }, [orderId])
 
   const scrollToBottom = () => {

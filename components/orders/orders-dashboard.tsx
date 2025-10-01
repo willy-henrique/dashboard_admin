@@ -102,20 +102,21 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
     )
   }
 
-  // Dados realistas para demonstração
+  // Dados reais do Firestore
+  const ordersData = firestoreData?.orders || {}
   const stats = {
-    total: 247,
-    pending: 23,
-    assigned: 18,
-    inProgress: 31,
-    completed: 167,
-    cancelled: 8,
-    urgentCount: 5,
-    todayOrders: 12,
-    thisWeekOrders: 67,
-    thisMonthOrders: 189,
-    totalValue: 45680.50,
-    averageRating: 4.7
+    total: ordersData.totalOrders || 0,
+    pending: ordersData.activeOrders || 0, // Usando activeOrders como pending
+    assigned: 0, // Será calculado baseado nos pedidos
+    inProgress: 0, // Será calculado baseado nos pedidos
+    completed: ordersData.completedOrders || 0,
+    cancelled: ordersData.cancelledOrders || 0,
+    urgentCount: ordersData.emergencyOrders || 0,
+    todayOrders: ordersData.ordersToday || 0,
+    thisWeekOrders: ordersData.ordersLast7Days || 0,
+    thisMonthOrders: ordersData.ordersLast30Days || 0,
+    totalValue: 0, // Será implementado quando houver dados de valor
+    averageRating: 4.5 // Valor padrão até implementar avaliações reais
   }
 
   return (

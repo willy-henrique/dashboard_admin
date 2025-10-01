@@ -9,7 +9,7 @@ import { OrdersDashboard } from "@/components/orders/orders-dashboard"
 import { OrdersTable } from "@/components/orders/orders-table"
 import { OrderDetailModal } from "@/components/orders/order-detail-modal"
 import { ProfessionalSupportChat } from "@/components/orders/professional-support-chat"
-import { useOrders } from "@/hooks/use-orders"
+import { useOrders, useOrderStats } from "@/hooks/use-orders"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { 
   ShoppingCart, 
@@ -23,7 +23,8 @@ import {
 } from "lucide-react"
 
 export default function OrdersPage() {
-  const { orders, stats, loading, error, updateOrder, deleteOrder, assignProvider, updateOrderStatus } = useOrders()
+  const { orders, loading, error, updateOrder, deleteOrder, assignProvider, updateOrderStatus } = useOrders()
+  const { stats: orderStats, loading: statsLoading } = useOrderStats()
   const { trackPageView, trackUserAction } = useAnalytics()
   const [activeTab, setActiveTab] = useState("dashboard")
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
