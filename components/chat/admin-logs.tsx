@@ -3,22 +3,16 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AdminAction } from "@/types/chat"
 import { 
   Shield, 
   User, 
-  Clock, 
   AlertTriangle,
   Archive,
   Ban,
   Star,
   Edit,
   Trash2,
-  Search,
-  Filter,
-  Calendar,
   MessageSquare
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
@@ -27,11 +21,6 @@ import { ptBR } from "date-fns/locale"
 export function AdminLogs() {
   const [logs, setLogs] = useState<AdminAction[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState({
-    action: "all",
-    admin: "all",
-    search: ""
-  })
 
   // Simulação de dados - em produção, viria do Firestore
   useEffect(() => {
@@ -134,15 +123,8 @@ export function AdminLogs() {
     }
   }
 
-  const filteredLogs = logs.filter(log => {
-    const matchesAction = filter.action === "all" || log.action === filter.action
-    const matchesAdmin = filter.admin === "all" || log.adminName.toLowerCase().includes(filter.admin.toLowerCase())
-    const matchesSearch = filter.search === "" || 
-      log.details.toLowerCase().includes(filter.search.toLowerCase()) ||
-      log.adminName.toLowerCase().includes(filter.search.toLowerCase())
-    
-    return matchesAction && matchesAdmin && matchesSearch
-  })
+  // Mostrar apenas os 10 logs mais recentes
+  const recentLogs = logs.slice(0, 10)
 
   if (loading) {
     return (
@@ -170,101 +152,42 @@ export function AdminLogs() {
       <CardHeader>
         <CardTitle className="text-gray-900 flex items-center">
           <Shield className="h-5 w-5 text-orange-500 mr-2" />
-          Logs de Atividades Administrativas
+          Atividades Recentes
         </CardTitle>
-        
-        {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Buscar logs..."
-              value={filter.search}
-              onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
-              className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
-            />
-          </div>
-          
-          <Select 
-            value={filter.action} 
-            onValueChange={(value) => setFilter(prev => ({ ...prev, action: value }))}
-          >
-            <SelectTrigger className="bg-gray-50 border-gray-200">
-              <SelectValue placeholder="Ação" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as Ações</SelectItem>
-              <SelectItem value="block">Bloquear</SelectItem>
-              <SelectItem value="unblock">Desbloquear</SelectItem>
-              <SelectItem value="archive">Arquivar</SelectItem>
-              <SelectItem value="assign">Atribuir</SelectItem>
-              <SelectItem value="priority_change">Alterar Prioridade</SelectItem>
-              <SelectItem value="note_add">Adicionar Nota</SelectItem>
-              <SelectItem value="message_delete">Deletar Mensagem</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select 
-            value={filter.admin} 
-            onValueChange={(value) => setFilter(prev => ({ ...prev, admin: value }))}
-          >
-            <SelectTrigger className="bg-gray-50 border-gray-200">
-              <SelectValue placeholder="Administrador" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os Admins</SelectItem>
-              <SelectItem value="Administrador">Administrador</SelectItem>
-              <SelectItem value="Moderador">Moderador</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
       </CardHeader>
       
       <CardContent className="p-0">
-        <div className="max-h-[500px] overflow-y-auto">
-          {filteredLogs.length === 0 ? (
+        <div className="max-h-[400px] overflow-y-auto">
+          {recentLogs.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
               <Shield className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Nenhum log encontrado</p>
+              <p>Nenhuma atividade recente</p>
             </div>
           ) : (
             <div className="space-y-1">
-              {filteredLogs.map((log) => (
-                <div key={log.id} className="p-4 border-l-4 border-l-orange-200 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-2">
+              {recentLogs.map((log) => (
+                <div key={log.id} className="p-3 border-l-4 border-l-orange-200 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-start justify-between mb-1">
                     <div className="flex items-center space-x-2">
                       {getActionIcon(log.action)}
                       <div>
                         <h4 className="font-medium text-gray-900 text-sm">
                           {log.adminName}
                         </h4>
-                        <p className="text-xs text-gray-500">
-                          Chat ID: {log.chatId}
-                        </p>
                       </div>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
-                      <Badge className={`text-xs ${getActionColor(log.action)}`}>
-                        {log.action.replace('_', ' ')}
-                      </Badge>
-                      <span className="text-xs text-gray-400">
-                        {formatDistanceToNow(log.timestamp, { 
-                          addSuffix: true, 
-                          locale: ptBR 
-                        })}
-                      </span>
-                    </div>
+                    <span className="text-xs text-gray-400">
+                      {formatDistanceToNow(log.timestamp, { 
+                        addSuffix: true, 
+                        locale: ptBR 
+                      })}
+                    </span>
                   </div>
                   
-                  <p className="text-sm text-gray-700 mb-2">
+                  <p className="text-sm text-gray-700">
                     {log.details}
                   </p>
-                  
-                  <div className="flex items-center text-xs text-gray-400">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    {log.timestamp.toLocaleString('pt-BR')}
-                  </div>
                 </div>
               ))}
             </div>

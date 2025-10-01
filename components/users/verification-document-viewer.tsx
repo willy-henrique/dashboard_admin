@@ -111,9 +111,9 @@ export function VerificationDocumentViewer({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-lg font-semibold">Documentos Enviados ({documents.length})</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
             {documents.filter(d => d.status === 'pending').length} Pendentes
@@ -125,7 +125,7 @@ export function VerificationDocumentViewer({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {documents.map((document) => (
           <Card key={document.id} className="border shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-4">
@@ -158,7 +158,7 @@ export function VerificationDocumentViewer({
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
@@ -260,6 +260,7 @@ export function VerificationDocumentViewer({
                 </p>
                 <div className="flex items-center justify-center gap-3">
                   <Button
+                    variant="outline"
                     onClick={() => onViewDocument?.(selectedDocument.id)}
                     className="flex items-center gap-2"
                   >
@@ -267,7 +268,6 @@ export function VerificationDocumentViewer({
                     Abrir em Nova Aba
                   </Button>
                   <Button
-                    variant="outline"
                     onClick={() => onDownloadDocument?.(selectedDocument.id)}
                     className="flex items-center gap-2"
                   >
@@ -279,13 +279,13 @@ export function VerificationDocumentViewer({
 
               {/* Document Actions */}
               {selectedDocument.status === 'pending' && (
-                <div className="flex items-center gap-3 pt-4 border-t">
+                <div className="flex flex-col gap-3 pt-4 border-t sm:flex-row sm:items-center">
                   <Button
                     onClick={() => {
                       onApproveDocument?.(selectedDocument.id)
                       setSelectedDocument(null)
                     }}
-                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2 w-full sm:w-auto"
                   >
                     <CheckCircle className="h-4 w-4" />
                     Aprovar Documento
@@ -296,7 +296,7 @@ export function VerificationDocumentViewer({
                       onRejectDocument?.(selectedDocument.id)
                       setSelectedDocument(null)
                     }}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 w-full sm:w-auto"
                   >
                     <XCircle className="h-4 w-4" />
                     Rejeitar Documento

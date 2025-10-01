@@ -182,8 +182,8 @@ export default function VerificationsPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-1">
             <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>
               Verificações de Prestadores
             </h1>
@@ -191,11 +191,11 @@ export default function VerificationsPage() {
               Aprove ou recuse cadastros de prestadores de serviço
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 w-full sm:flex-row sm:w-auto sm:items-center">
             <Button 
               variant="outline" 
               onClick={() => refetch()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <RefreshCw className="h-4 w-4" />
               Atualizar
@@ -215,7 +215,7 @@ export default function VerificationsPage() {
                 })
                 setShowDetails(true)
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               Testar Modal
             </Button>
@@ -223,7 +223,7 @@ export default function VerificationsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -289,8 +289,8 @@ export default function VerificationsPage() {
               Filtros e Busca
             </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+          <CardContent>
+            <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -302,7 +302,7 @@ export default function VerificationsPage() {
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                 <Button 
                   variant={statusFilter === "all" ? "default" : "outline"}
                   onClick={() => setStatusFilter("all")}
@@ -367,91 +367,88 @@ export default function VerificationsPage() {
               <div className="space-y-4">
                 {filteredVerifications.map((verification) => (
                   <Card key={verification.id} className="border shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-                              <span className="font-semibold text-primary-foreground">
-                                {verification.providerName.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
-                                {verification.providerName}
-                              </h3>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-1">
-                                  <Mail className="h-4 w-4" />
-                                  {verification.providerEmail}
-                                </div>
-                                {verification.providerPhone && (
-                                  <div className="flex items-center gap-1">
-                                    <Phone className="h-4 w-4" />
-                                    {verification.providerPhone}
-                                  </div>
-                                )}
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
+                            <span className="font-semibold text-primary-foreground">
+                              {verification.providerName.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-lg" style={{ color: 'var(--foreground)' }}>
+                              {verification.providerName}
+                            </h3>
+                            <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                              <div className="flex items-center gap-1">
+                                <Mail className="h-4 w-4" />
+                                {verification.providerEmail}
                               </div>
+                              {verification.providerPhone && (
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-4 w-4" />
+                                  {verification.providerPhone}
+                                </div>
+                              )}
                             </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <div>
-                              <p className="text-sm font-medium text-muted-foreground mb-1">Status</p>
-                              {getStatusBadge(verification.status)}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-muted-foreground mb-1">Documentos</p>
-                              <p className="text-sm">{verification.documents.length} documentos</p>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-muted-foreground mb-1">Enviado</p>
-                              <p className="text-sm">
-                                {formatDistanceToNow(verification.submittedAt, { 
-                                  addSuffix: true, 
-                                  locale: ptBR 
-                                })}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedVerification(verification)
-                                setShowDetails(true)
-                              }}
-                              className="flex items-center gap-2"
-                            >
-                              <Eye className="h-4 w-4" />
-                              Ver Detalhes
-                            </Button>
-                            
-                            {verification.status === 'pending' && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleApprove(verification.id)}
-                                  className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                  Aprovar
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => handleReject(verification.id)}
-                                  className="flex items-center gap-2"
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                  Rejeitar
-                                </Button>
-                              </>
-                            )}
                           </div>
                         </div>
+                        <div className="flex flex-col gap-2 text-sm sm:text-right">
+                          <div>
+                            <p className="text-muted-foreground">Status</p>
+                            {getStatusBadge(verification.status)}
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Documentos</p>
+                            <p>{verification.documents.length} documentos</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Enviado</p>
+                            <p>
+                              {formatDistanceToNow(verification.submittedAt, { 
+                                addSuffix: true, 
+                                locale: ptBR 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedVerification(verification)
+                            setShowDetails(true)
+                          }}
+                          className="flex items-center gap-2 w-full sm:w-auto"
+                        >
+                          <Eye className="h-4 w-4" />
+                          Ver Detalhes
+                        </Button>
+                        
+                        {verification.status === 'pending' && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleApprove(verification.id)}
+                              className="bg-green-600 hover:bg-green-700 flex items-center gap-2 w-full sm:w-auto"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Aprovar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleReject(verification.id)}
+                              className="flex items-center gap-2 w-full sm:w-auto"
+                            >
+                              <XCircle className="h-4 w-4" />
+                              Rejeitar
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

@@ -1,11 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "pnpm run vercel-build",
+  "buildCommand": "pnpm run build",
   "outputDirectory": ".next",
   "installCommand": "corepack enable pnpm && pnpm install",
   "framework": "nextjs",
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
   },
   "headers": [
     {
