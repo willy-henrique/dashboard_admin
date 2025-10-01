@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { AppShell } from "@/components/layout/app-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -179,8 +180,8 @@ export default function VerificationsPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+    <AppShell>
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-1">
@@ -567,6 +568,6 @@ export default function VerificationsPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   )
 }

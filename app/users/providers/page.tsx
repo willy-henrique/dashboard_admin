@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { AppShell } from "@/components/layout/app-shell"
 import { UsersTable } from "@/components/users/users-table"
 import { UserModal } from "@/components/users/user-modal"
 import { useUsers } from "@/hooks/use-users"
@@ -166,8 +167,8 @@ export default function ProvidersPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--background)' }}>
-      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+    <AppShell>
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
@@ -389,6 +390,6 @@ export default function ProvidersPage() {
           mode={selectedUser ? 'edit' : 'create'}
         />
       </div>
-    </div>
+    </AppShell>
   )
 }
