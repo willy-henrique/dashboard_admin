@@ -132,25 +132,6 @@ export default function ConfiguracoesPage() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Truck className="h-5 w-5" />
-              Checklist Viatura
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Checklists específicos para veículos e equipamentos
-            </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>8</span>
-              <Button variant="ghost" size="sm">
-                Ver todos →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
@@ -192,25 +173,6 @@ export default function ConfiguracoesPage() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Package className="h-5 w-5" />
-              Estoque
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Configurações de estoque e inventário
-            </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>45</span>
-              <Button variant="ghost" size="sm">
-                Ver todas →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>

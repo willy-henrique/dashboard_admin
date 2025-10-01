@@ -61,8 +61,6 @@ const navigation = [
     icon: MousePointer,
     children: [
       { name: "AutEM Mobile", href: "/dashboard/controle/autem-mobile", icon: Smartphone },
-      { name: "Estoque", href: "/dashboard/controle/estoque", icon: Package },
-      { name: "Frota", href: "/dashboard/controle/frota", icon: Truck },
       { name: "Monitoramento de Chat", href: "/dashboard/controle/chat", icon: MessageSquare },
     ],
   },
@@ -116,10 +114,8 @@ const navigation = [
     children: [
       { name: "Dashboard", href: "/dashboard/configuracoes", icon: BarChart3 },
       { name: "Checklists", href: "/dashboard/configuracoes/checklists", icon: ClipboardList },
-      { name: "Checklist Viatura", href: "/dashboard/configuracoes/checklist-viatura", icon: Truck },
       { name: "Clientes e Fornecedores", href: "/dashboard/configuracoes/clientes-fornecedores", icon: Users },
       { name: "Equipes", href: "/dashboard/configuracoes/equipes", icon: UserCheck },
-      { name: "Estoque", href: "/dashboard/configuracoes/estoque", icon: Package },
       { name: "Exportador", href: "/dashboard/configuracoes/exportador", icon: Download },
       { name: "Filiais", href: "/dashboard/configuracoes/filiais", icon: Building },
       { name: "Manutenção", href: "/dashboard/configuracoes/manutencao", icon: Wrench },
