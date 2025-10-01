@@ -35,9 +35,11 @@ interface OrdersTableProps {
     isEmergency?: boolean
     searchTerm?: string
   }
+  onView?: (orderId: string) => void
+  onEdit?: (orderId: string) => void
 }
 
-export function OrdersTable({ filters }: OrdersTableProps) {
+export function OrdersTable({ filters, onView, onEdit }: OrdersTableProps) {
   const [searchTerm, setSearchTerm] = useState(filters?.searchTerm || "")
   const { orders, loading, error, refetch } = useOrders({
     ...filters,
@@ -125,63 +127,73 @@ export function OrdersTable({ filters }: OrdersTableProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-          <CardTitle className="text-lg sm:text-xl">Pedidos ({orders.length})</CardTitle>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-              <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Filtros</span>
+    <Card className="border border-gray-200 shadow-sm">
+      <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+          <div>
+            <CardTitle className="text-xl font-bold text-gray-900">Pedidos</CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              {orders.length} pedidos encontrados
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filtros
             </Button>
-            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Exportar</span>
+            <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Exportar
             </Button>
           </div>
         </div>
-        <div className="flex items-center gap-4 mt-4">
-          <div className="relative flex-1">
+        <div className="flex items-center gap-4 mt-6">
+          <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Buscar pedidos..."
+              placeholder="Buscar por ID, cliente, prestador ou serviço..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 text-sm"
+              className="pl-10 bg-white border-gray-300 focus:border-orange-500 focus:ring-orange-500"
             />
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         {orders.length === 0 ? (
-          <div className="text-center py-8">
-            <Clock className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-            <p className="text-gray-500">Nenhum pedido encontrado</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum pedido encontrado</h3>
+            <p className="text-gray-500">Tente ajustar os filtros de busca</p>
           </div>
         ) : (
           <>
             {/* Desktop Table */}
             <div className="hidden lg:block overflow-x-auto">
               <Table>
-                <TableHeader>
+                <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Endereço</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead>Ações</TableHead>
+                    <TableHead className="font-semibold text-gray-700">ID</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Cliente</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Serviço</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Endereço</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Data</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Valor</TableHead>
+                    <TableHead className="font-semibold text-gray-700">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-sm">
-                        {order.id.slice(-8)}
+                  {orders.map((order, index) => (
+                    <TableRow key={order.id} className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-25'}`}>
+                      <TableCell className="font-mono text-sm font-medium text-blue-600">
+                        #{order.id.slice(-8)}
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{order.clientName}</div>
+                          <div className="font-semibold text-gray-900">{order.clientName}</div>
                           <div className="text-sm text-gray-500">{order.clientEmail}</div>
                         </div>
                       </TableCell>
@@ -200,24 +212,48 @@ export function OrdersTable({ filters }: OrdersTableProps) {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          <div>Criado: {formatDate(order.createdAt)}</div>
+                          <div className="font-medium">{formatDate(order.createdAt)}</div>
                           {order.cancelledAt && (
-                            <div className="text-red-600">
+                            <div className="text-xs text-red-600">
                               Cancelado: {formatDate(order.cancelledAt)}
                             </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
+                        <div className="font-semibold text-green-600">
+                          R$ {order.budget?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || 'N/A'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onView?.(order.id)}
+                            className="h-8 w-8 p-0 hover:bg-blue-100"
+                          >
+                            <Eye className="h-4 w-4 text-blue-600" />
                           </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onEdit?.(order.id)}
+                            className="h-8 w-8 p-0 hover:bg-orange-100"
+                          >
+                            <Edit className="h-4 w-4 text-orange-600" />
                           </Button>
-                          <Button variant="ghost" size="sm" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (confirm('Tem certeza que deseja deletar este pedido?')) {
+                                // Implementar deleção
+                              }
+                            }}
+                            className="h-8 w-8 p-0 hover:bg-red-100"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
                           </Button>
                         </div>
                       </TableCell>
