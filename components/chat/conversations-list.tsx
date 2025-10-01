@@ -1,27 +1,15 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useChatConversations, useChatActions } from "@/hooks/use-chat"
-import { ChatFilter } from "@/types/chat"
 import { LegacyChatConversation } from "@/lib/services/chat-service"
 import { 
   Search, 
-  Filter, 
   MessageSquare, 
   Clock, 
   AlertTriangle, 
-  CheckCircle, 
-  Archive,
-  Shield,
-  User,
-  UserCheck,
-  Calendar,
-  Phone,
   Mail
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
@@ -44,26 +32,26 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
       case 'active':
         return <MessageSquare className="h-4 w-4 text-green-500" />
       case 'closed':
-        return <CheckCircle className="h-4 w-4 text-gray-500" />
+        return <Clock className="h-4 w-4 text-gray-500" />
       case 'archived':
-        return <Archive className="h-4 w-4 text-blue-500" />
+        return <MessageSquare className="h-4 w-4 text-gray-400" />
       case 'blocked':
-        return <Shield className="h-4 w-4 text-red-500" />
+        return <AlertTriangle className="h-4 w-4 text-red-500" />
       default:
-        return <MessageSquare className="h-4 w-4 text-gray-500" />
+        return <MessageSquare className="h-4 w-4 text-gray-400" />
     }
   }
 
   const getPriorityColor = (priority: LegacyChatConversation['priority']) => {
     switch (priority) {
-      case 'low':
-        return 'bg-gray-100 text-gray-800'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'high':
-        return 'bg-orange-100 text-orange-800'
       case 'urgent':
         return 'bg-red-100 text-red-800'
+      case 'high':
+        return 'bg-orange-100 text-orange-800'
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'low':
+        return 'bg-green-100 text-green-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -86,11 +74,11 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
 
   if (loading) {
     return (
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="text-gray-900">Conversas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="h-full flex flex-col">
+        <div className="p-4 border-b border-gray-200 bg-white">
+          <h3 className="font-semibold text-gray-800">Carregando...</h3>
+        </div>
+        <div className="flex-1 p-4 space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="p-4 border rounded-lg animate-pulse">
               <div className="flex items-center justify-between mb-2">
@@ -101,19 +89,22 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
               <div className="h-3 bg-gray-200 rounded w-1/2"></div>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Card className="bg-white">
-        <CardContent className="p-6 text-center">
+      <div className="h-full flex flex-col">
+        <div className="p-4 border-b border-gray-200 bg-white">
+          <h3 className="font-semibold text-gray-800">Erro</h3>
+        </div>
+        <div className="flex-1 p-6 text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">Erro ao carregar conversas: {error}</p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
@@ -208,10 +199,10 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
