@@ -33,16 +33,9 @@ interface ConversationsListProps {
 }
 
 export function ConversationsList({ onSelectConversation, selectedConversationId }: ConversationsListProps) {
-  const [filter, setFilter] = useState<ChatFilter>({})
   const [searchTerm, setSearchTerm] = useState("")
   
-  // Criar objeto de filtro estável para evitar re-renderizações
-  const filterObject = useMemo(() => ({
-    ...filter,
-    searchTerm: searchTerm || undefined
-  }), [filter, searchTerm])
-  
-  const { conversations, loading, error } = useChatConversations(filterObject)
+  const { conversations, loading, error } = useChatConversations({ searchTerm })
   
   const { updateConversationStatus, updateConversationPriority, assignConversation } = useChatActions()
 
@@ -125,154 +118,101 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
   }
 
   return (
-    <Card className="bg-white">
-      <CardHeader>
-        <CardTitle className="text-gray-900 flex items-center">
-          <MessageSquare className="h-5 w-5 text-orange-500 mr-2" />
-          Conversas ({conversations.length})
-        </CardTitle>
-        
-        {/* Filtros */}
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Buscar conversas..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-gray-50 border-gray-200 focus:bg-white"
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2">
-            <Select 
-              value={filter.status || "all"} 
-              onValueChange={(value) => setFilter(prev => ({ ...prev, status: value === "all" ? undefined : value as LegacyChatConversation['status'] }))}
-            >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="active">Ativas</SelectItem>
-                <SelectItem value="closed">Fechadas</SelectItem>
-                <SelectItem value="archived">Arquivadas</SelectItem>
-                <SelectItem value="blocked">Bloqueadas</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select 
-              value={filter.priority || "all"} 
-              onValueChange={(value) => setFilter(prev => ({ ...prev, priority: value === "all" ? undefined : value as LegacyChatConversation['priority'] }))}
-            >
-              <SelectTrigger className="bg-gray-50 border-gray-200">
-                <SelectValue placeholder="Prioridade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as Prioridades</SelectItem>
-                <SelectItem value="low">Baixa</SelectItem>
-                <SelectItem value="medium">Média</SelectItem>
-                <SelectItem value="high">Alta</SelectItem>
-                <SelectItem value="urgent">Urgente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="h-full flex flex-col">
+      {/* Header Compacto */}
+      <div className="p-4 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-gray-800">
+            Conversas ({conversations.length})
+          </h3>
         </div>
-      </CardHeader>
+        
+        {/* Busca Simplificada */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar conversas..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-9 text-sm"
+          />
+        </div>
+      </div>
       
-      <CardContent className="p-0">
-        <div className="max-h-[600px] overflow-y-auto">
-          {conversations.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Nenhuma conversa encontrada</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  className={`p-4 border-l-4 cursor-pointer transition-colors hover:bg-gray-50 ${
-                    selectedConversationId === conversation.id 
-                      ? 'bg-orange-50 border-l-orange-500' 
-                      : 'border-l-transparent hover:border-l-orange-200'
-                  }`}
-                  onClick={() => onSelectConversation(conversation)}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center space-x-2">
+      {/* Lista de Conversas */}
+      <div className="flex-1 overflow-y-auto">
+        {conversations.length === 0 ? (
+          <div className="p-6 text-center text-gray-500">
+            <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+            <p>Nenhuma conversa encontrada</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                className={`p-4 cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
+                  selectedConversationId === conversation.id 
+                    ? 'bg-orange-50 border-r-4 border-r-orange-500' 
+                    : ''
+                }`}
+                onClick={() => onSelectConversation(conversation)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 mb-1">
                       {getStatusIcon(conversation.status)}
-                      <div>
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {conversation.clientName}
-                          {conversation.source === 'legacy' && (
-                            <span className="text-xs text-orange-600 ml-1">(Histórico)</span>
-                          )}
-                        </h4>
-                        <p className="text-xs text-gray-500">
-                          {conversation.orderId !== 'suporte-geral' ? `Pedido: ${conversation.orderId}` : 'Suporte Geral'}
-                        </p>
-                      </div>
+                      <h4 className="font-medium text-gray-900 text-sm truncate">
+                        {conversation.clientName}
+                        {conversation.source === 'legacy' && (
+                          <span className="text-xs text-orange-600 ml-1">(Histórico)</span>
+                        )}
+                      </h4>
                     </div>
                     
-                    <div className="flex items-center space-x-1">
-                      <Badge className={`text-xs ${getPriorityColor(conversation.priority)}`}>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {conversation.orderId !== 'suporte-geral' ? `Pedido: ${conversation.orderId}` : 'Suporte Geral'}
+                    </p>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Badge className={`text-xs px-2 py-1 ${getPriorityColor(conversation.priority)}`}>
                         {conversation.priority}
                       </Badge>
-                      <Badge className={`text-xs ${getStatusColor(conversation.status)}`}>
+                      <Badge className={`text-xs px-2 py-1 ${getStatusColor(conversation.status)}`}>
                         {conversation.status}
                       </Badge>
                     </div>
                   </div>
-
-                  {conversation.lastMessage && (
-                    <div className="mb-2">
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        <span className="font-medium">{conversation.lastMessage.senderName}:</span>{" "}
-                        {conversation.lastMessage.content}
-                      </p>
-                      <div className="flex items-center text-xs text-gray-400 mt-1">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {formatDistanceToNow(conversation.lastMessage.timestamp, { 
-                          addSuffix: true, 
-                          locale: ptBR 
-                        })}
-                      </div>
+                  
+                  {/* Informações adicionais compactas */}
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center space-x-2 text-xs text-gray-500">
+                      <Mail className="h-3 w-3" />
+                      <span className="truncate">{conversation.clientEmail}</span>
                     </div>
-                  )}
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <div className="flex items-center">
-                        <User className="h-3 w-3 mr-1" />
-                        {conversation.clientName}
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="h-3 w-3 mr-1" />
-                        {conversation.clientEmail}
-                      </div>
-                    </div>
-
+                    
                     {conversation.unreadCount.admin > 0 && (
-                      <Badge className="bg-orange-500 text-white text-xs">
+                      <div className="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                         {conversation.unreadCount.admin}
-                      </Badge>
+                      </div>
                     )}
                   </div>
-
-                  <div className="flex items-center text-xs text-gray-400 mt-2">
-                    <Calendar className="h-3 w-3 mr-1" />
-                    Criada {formatDistanceToNow(conversation.createdAt, { 
-                      addSuffix: true, 
-                      locale: ptBR 
-                    })}
-                  </div>
+                  
+                  {conversation.lastMessage && (
+                    <div className="mt-2 text-xs text-gray-500">
+                      <Clock className="h-3 w-3 inline mr-1" />
+                      {formatDistanceToNow(conversation.lastMessage.timestamp, { 
+                        addSuffix: true, 
+                        locale: ptBR 
+                      })}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
