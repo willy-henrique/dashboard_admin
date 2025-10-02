@@ -179,7 +179,7 @@ export function TransactionsTable() {
                 placeholder="Buscar por ID, pedido, cliente ou prestador..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-14"
+                className="pl-16"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>

@@ -248,7 +248,7 @@ export default function RelatoriosPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
                 <Input
                   placeholder="Buscar relatórios..."
-                  className="pl-14 w-64"
+                  className="pl-16 w-64"
                   aria-label="Buscar relatórios"
                 />
               </div>
