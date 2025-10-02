@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
 // Configuração do Firebase — usa acesso estático para Next injetar no build
@@ -35,12 +36,13 @@ if (isProduction && isServer) {
 }
 
 // Initialize Firebase
-let app, db, auth, analytics;
+let app, db, auth, storage, analytics;
 
 try {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   db = getFirestore(app);
   auth = getAuth(app);
+  storage = getStorage(app);
   
   // Inicializar Analytics apenas no cliente e se suportado
   if (typeof window !== 'undefined') {
@@ -65,7 +67,8 @@ try {
   app = null;
   db = null;
   auth = null;
+  storage = null;
   analytics = null;
 }
 
-export { app, db, auth, analytics };
+export { app, db, auth, storage, analytics };

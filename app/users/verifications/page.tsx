@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { 
   CheckCircle, 
   XCircle, 
@@ -18,151 +20,70 @@ import {
   Download,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle,
+  MessageSquare,
+  User,
+  Calendar
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { useUsers } from "@/hooks/use-users"
+import { useDocumentVerification } from "@/hooks/use-document-verification"
+import { DocumentViewer } from "@/components/users/document-viewer"
 import { useToast } from "@/hooks/use-toast"
-import { VerificationDocumentViewer } from "@/components/users/verification-document-viewer"
-
-interface VerificationDocument {
-  id: string
-  type: 'cpf' | 'cnh' | 'comprovante_residencia' | 'certificado'
-  name: string
-  url: string
-  uploadedAt: Date
-  status: 'pending' | 'approved' | 'rejected'
-}
-
-interface ProviderVerification {
-  id: string
-  providerId: string
-  providerName: string
-  providerEmail: string
-  providerPhone: string
-  status: 'pending' | 'approved' | 'rejected'
-  documents: VerificationDocument[]
-  submittedAt: Date
-  reviewedAt?: Date
-  reviewedBy?: string
-  rejectionReason?: string
-}
 
 export default function VerificationsPage() {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [selectedVerification, setSelectedVerification] = useState<ProviderVerification | null>(null)
+  const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("all")
+  const [selectedVerification, setSelectedVerification] = useState<any>(null)
   const [showDetails, setShowDetails] = useState(false)
+  const [showRejectDialog, setShowRejectDialog] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState("")
   const { toast } = useToast()
 
-  // Buscar prestadores pendentes de verificação
-  const { users, loading, refetch, updateUser, blockUser, unblockUser } = useUsers({ 
-    userType: 'provider', 
-    searchTerm: search || undefined 
-  })
+  // Usar o hook de verificação de documentos
+  const {
+    verifications,
+    loading,
+    stats,
+    approveVerification,
+    rejectVerification,
+    filterVerifications,
+    refetch
+  } = useDocumentVerification()
 
-  // Simular dados de verificação (em produção viria do Firestore)
-  const verifications: ProviderVerification[] = useMemo(() => {
-    return users
-      .filter(user => !user.verificado && user.userType === 'provider')
-      .map(user => ({
-        id: `verification_${user.id}`,
-        providerId: user.id,
-        providerName: user.fullName || user.name || 'Nome não informado',
-        providerEmail: user.email,
-        providerPhone: user.phone || '',
-        status: 'pending' as const,
-        documents: [
-          {
-            id: 'doc1',
-            type: 'cpf',
-            name: 'CPF - Documento de Identidade',
-            url: '/placeholder-document.pdf',
-            uploadedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-            status: 'pending'
-          },
-          {
-            id: 'doc2',
-            type: 'cnh',
-            name: 'CNH - Carteira Nacional de Habilitação',
-            url: '/placeholder-document.pdf',
-            uploadedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-            status: 'pending'
-          },
-          {
-            id: 'doc3',
-            type: 'comprovante_residencia',
-            name: 'Comprovante de Residência',
-            url: '/placeholder-document.pdf',
-            uploadedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            status: 'pending'
-          }
-        ],
-        submittedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-      }))
-  }, [users])
-
+  // Filtrar verificações
   const filteredVerifications = useMemo(() => {
-    let filtered = verifications
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(v => v.status === statusFilter)
-    }
-
-    return filtered
-  }, [verifications, statusFilter])
-
-  const stats = useMemo(() => {
-    return {
-      total: verifications.length,
-      pending: verifications.filter(v => v.status === 'pending').length,
-      approved: verifications.filter(v => v.status === 'approved').length,
-      rejected: verifications.filter(v => v.status === 'rejected').length
-    }
-  }, [verifications])
+    return filterVerifications({
+      status: statusFilter === "all" ? undefined : statusFilter as any,
+      search: search || undefined,
+      documentType: documentTypeFilter === "all" ? undefined : documentTypeFilter
+    })
+  }, [verifications, statusFilter, search, documentTypeFilter, filterVerifications])
 
   const handleApprove = async (verificationId: string) => {
-    try {
-      const verification = verifications.find(v => v.id === verificationId)
-      if (verification) {
-        await updateUser(verification.providerId, { 
-          verificado: true,
-          isActive: true,
-          status: 'ativo'
-        })
-        toast({
-          title: "Verificação aprovada",
-          description: `${verification.providerName} foi aprovado como prestador.`,
-        })
-        refetch()
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível aprovar a verificação.",
-        variant: "destructive"
-      })
+    const success = await approveVerification(verificationId, "admin@appservico.com")
+    if (success) {
+      setShowDetails(false)
     }
   }
 
   const handleReject = async (verificationId: string) => {
-    try {
-      const verification = verifications.find(v => v.id === verificationId)
-      if (verification) {
-        await blockUser(verification.providerId)
-        toast({
-          title: "Verificação rejeitada",
-          description: `${verification.providerName} foi rejeitado como prestador.`,
-        })
-        refetch()
-      }
-    } catch (error) {
+    if (!rejectionReason.trim()) {
       toast({
-        title: "Erro",
-        description: "Não foi possível rejeitar a verificação.",
+        title: "Motivo obrigatório",
+        description: "Por favor, informe o motivo da rejeição.",
         variant: "destructive"
       })
+      return
+    }
+
+    const success = await rejectVerification(verificationId, rejectionReason, "admin@appservico.com")
+    if (success) {
+      setShowDetails(false)
+      setShowRejectDialog(false)
+      setRejectionReason("")
     }
   }
 
@@ -177,6 +98,23 @@ export default function VerificationsPage() {
       default:
         return <Badge variant="outline">{status}</Badge>
     }
+  }
+
+  const getDocumentTypeLabel = (type: string) => {
+    switch (type) {
+      case 'cpf': return 'CPF/RG'
+      case 'cnh': return 'CNH'
+      case 'comprovante_residencia': return 'Comprovante de Residência'
+      case 'certificado': return 'Certificados'
+      case 'outros': return 'Outros'
+      default: return type
+    }
+  }
+
+  const countTotalDocuments = (documents: any) => {
+    return Object.values(documents).reduce((total: number, docs: any) => {
+      return total + (docs ? docs.length : 0)
+    }, 0)
   }
 
   return (
@@ -291,6 +229,8 @@ export default function VerificationsPage() {
             </CardTitle>
         </CardHeader>
           <CardContent>
+            <div className="space-y-4">
+              {/* Busca */}
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex-1">
                 <div className="relative">
@@ -303,7 +243,12 @@ export default function VerificationsPage() {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              </div>
+
+              {/* Filtros de Status */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
+                <div className="flex flex-wrap gap-2">
                 <Button 
                   variant={statusFilter === "all" ? "default" : "outline"}
                   onClick={() => setStatusFilter("all")}
@@ -332,6 +277,49 @@ export default function VerificationsPage() {
                 >
                   Rejeitados
                 </Button>
+                </div>
+              </div>
+
+              {/* Filtros de Tipo de Documento */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Tipo de Documento</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    variant={documentTypeFilter === "all" ? "default" : "outline"}
+                    onClick={() => setDocumentTypeFilter("all")}
+                    size="sm"
+                  >
+                    Todos
+                  </Button>
+                  <Button 
+                    variant={documentTypeFilter === "cpf" ? "default" : "outline"}
+                    onClick={() => setDocumentTypeFilter("cpf")}
+                    size="sm"
+                  >
+                    CPF/RG
+                  </Button>
+                  <Button 
+                    variant={documentTypeFilter === "cnh" ? "default" : "outline"}
+                    onClick={() => setDocumentTypeFilter("cnh")}
+                    size="sm"
+                  >
+                    CNH
+                  </Button>
+                  <Button 
+                    variant={documentTypeFilter === "comprovante_residencia" ? "default" : "outline"}
+                    onClick={() => setDocumentTypeFilter("comprovante_residencia")}
+                    size="sm"
+                  >
+                    Comprovante
+                  </Button>
+                  <Button 
+                    variant={documentTypeFilter === "certificado" ? "default" : "outline"}
+                    onClick={() => setDocumentTypeFilter("certificado")}
+                    size="sm"
+                  >
+                    Certificados
+                  </Button>
+                </div>
               </div>
           </div>
         </CardContent>
@@ -349,7 +337,7 @@ export default function VerificationsPage() {
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-24 bg-muted rounded-lg animate-pulse" />
+                  <div key={i} className="h-32 bg-muted rounded-lg animate-pulse" />
                 ))}
               </div>
             ) : filteredVerifications.length === 0 ? (
@@ -361,7 +349,9 @@ export default function VerificationsPage() {
                   Nenhuma verificação encontrada
                 </h3>
                 <p className="text-muted-foreground">
-                  {search ? 'Tente ajustar os filtros de busca.' : 'Não há verificações pendentes no momento.'}
+                  {search || statusFilter !== "all" || documentTypeFilter !== "all" 
+                    ? 'Tente ajustar os filtros de busca.' 
+                    : 'Não há verificações pendentes no momento.'}
                 </p>
               </div>
             ) : (
@@ -401,7 +391,7 @@ export default function VerificationsPage() {
                           </div>
                           <div>
                             <p className="text-muted-foreground">Documentos</p>
-                            <p>{verification.documents.length} documentos</p>
+                            <p>{countTotalDocuments(verification.documents)} documentos</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Enviado</p>
@@ -415,6 +405,18 @@ export default function VerificationsPage() {
                         </div>
                       </div>
 
+                      {/* Resumo dos tipos de documentos */}
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(verification.documents).map(([type, docs]) => {
+                          if (!docs || docs.length === 0) return null
+                          return (
+                            <Badge key={type} variant="outline" className="text-xs">
+                              {getDocumentTypeLabel(type)} ({docs.length})
+                            </Badge>
+                          )
+                        })}
+                      </div>
+
                       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                         <Button
                           variant="outline"
@@ -426,7 +428,7 @@ export default function VerificationsPage() {
                           className="flex items-center gap-2 w-full sm:w-auto"
                         >
                           <Eye className="h-4 w-4" />
-                          Ver Detalhes
+                          Ver Documentos
                         </Button>
                         
                         {verification.status === 'pending' && (
@@ -439,15 +441,55 @@ export default function VerificationsPage() {
                               <CheckCircle className="h-4 w-4" />
                               Aprovar
                             </Button>
+                            <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                              <DialogTrigger asChild>
                             <Button
                               variant="destructive"
                               size="sm"
-                              onClick={() => handleReject(verification.id)}
                               className="flex items-center gap-2 w-full sm:w-auto"
+                                  onClick={() => setSelectedVerification(verification)}
                             >
                               <XCircle className="h-4 w-4" />
                               Rejeitar
                             </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                                    Rejeitar Verificação
+                                  </DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <p className="text-sm text-muted-foreground">
+                                    Informe o motivo da rejeição para <strong>{selectedVerification?.providerName}</strong>:
+                                  </p>
+                                  <Textarea
+                                    placeholder="Ex: Documentos ilegíveis, informações incompletas, etc."
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    rows={4}
+                                  />
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => {
+                                        setShowRejectDialog(false)
+                                        setRejectionReason("")
+                                      }}
+                                    >
+                                      Cancelar
+                                    </Button>
+                                    <Button
+                                      variant="destructive"
+                                      onClick={() => selectedVerification && handleReject(selectedVerification.id)}
+                                    >
+                                      Confirmar Rejeição
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
                           </>
                         )}
                       </div>
@@ -462,12 +504,12 @@ export default function VerificationsPage() {
         {/* Verification Details Modal */}
         {showDetails && selectedVerification && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
-            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
+            <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
               <CardHeader className="bg-gray-50 border-b">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-gray-900">
                     <Shield className="h-5 w-5" />
-                    Detalhes da Verificação - {selectedVerification.providerName}
+                    Documentos do Prestador - {selectedVerification.providerName}
                   </CardTitle>
                   <Button 
                     variant="ghost" 
@@ -480,87 +522,112 @@ export default function VerificationsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Provider Info */}
-                <div>
-                  <h3 className="font-semibold mb-3">Informações do Prestador</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <User className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Nome</p>
-                      <p>{selectedVerification.providerName}</p>
+                      <p className="text-sm font-medium text-gray-500">Nome</p>
+                      <p className="font-semibold">{selectedVerification.providerName}</p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Email</p>
-                      <p>{selectedVerification.providerEmail}</p>
+                      <p className="text-sm font-medium text-gray-500">Email</p>
+                      <p className="font-semibold">{selectedVerification.providerEmail}</p>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Telefone</p>
-                      <p>{selectedVerification.providerPhone || 'Não informado'}</p>
                     </div>
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-gray-500" />
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Status</p>
-                      {getStatusBadge(selectedVerification.status)}
+                      <p className="text-sm font-medium text-gray-500">Enviado</p>
+                      <p className="font-semibold">
+                        {formatDistanceToNow(selectedVerification.submittedAt, { 
+                          addSuffix: true, 
+                          locale: ptBR 
+                        })}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Documents */}
-                <VerificationDocumentViewer
-                  documents={selectedVerification.documents}
-                  onViewDocument={(documentId) => {
-                    const doc = selectedVerification.documents.find(d => d.id === documentId)
-                    if (doc) {
-                      // Em produção, abriria o documento em nova aba
-                      window.open(doc.url, '_blank')
-                    }
-                  }}
-                  onDownloadDocument={(documentId) => {
-                    const doc = selectedVerification.documents.find(d => d.id === documentId)
-                    if (doc) {
-                      // Em produção, baixaria o documento
-                      const link = document.createElement('a')
-                      link.href = doc.url
-                      link.download = doc.name
-                      link.click()
-                    }
-                  }}
-                  onApproveDocument={(documentId) => {
-                    toast({
-                      title: "Documento aprovado",
-                      description: "O documento foi marcado como aprovado.",
-                    })
-                  }}
-                  onRejectDocument={(documentId) => {
-                    toast({
-                      title: "Documento rejeitado",
-                      description: "O documento foi marcado como rejeitado.",
-                      variant: "destructive"
-                    })
-                  }}
-                />
+                {/* Documents by Type */}
+                <div className="space-y-6">
+                  {Object.entries(selectedVerification.documents).map(([type, documents]) => {
+                    if (!documents || !Array.isArray(documents) || documents.length === 0) return null
+                    
+                    return (
+                      <div key={type} className="border rounded-lg p-4">
+                        <DocumentViewer
+                          documents={documents as any[]}
+                          documentType={type}
+                          showActions={false}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
 
                 {/* Actions */}
                 {selectedVerification.status === 'pending' && (
-                  <div className="flex items-center gap-3 pt-4 border-t">
+                  <div className="flex items-center justify-center gap-4 pt-6 border-t">
                     <Button
                       onClick={() => {
                         handleApprove(selectedVerification.id)
                         setShowDetails(false)
                       }}
-                      className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+                      className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-8"
                     >
                       <CheckCircle className="h-4 w-4" />
-                      Aprovar Verificação
+                      Aprovar Prestador
                     </Button>
+                    <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                      <DialogTrigger asChild>
                     <Button
                       variant="destructive"
-                      onClick={() => {
-                        handleReject(selectedVerification.id)
-                        setShowDetails(false)
-                      }}
-                      className="flex items-center gap-2"
+                          className="flex items-center gap-2 px-8"
                     >
                       <XCircle className="h-4 w-4" />
+                          Rejeitar Prestador
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-red-500" />
                       Rejeitar Verificação
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">
+                            Informe o motivo da rejeição para <strong>{selectedVerification.providerName}</strong>:
+                          </p>
+                          <Textarea
+                            placeholder="Ex: Documentos ilegíveis, informações incompletas, etc."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                            rows={4}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setShowRejectDialog(false)
+                                setRejectionReason("")
+                              }}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              onClick={() => handleReject(selectedVerification.id)}
+                            >
+                              Confirmar Rejeição
                     </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </CardContent>
