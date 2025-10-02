@@ -13,9 +13,11 @@ import {
   Eye, 
   EyeOff,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  ArrowLeft
 } from "lucide-react"
 import { useDocumentAuth } from "@/hooks/use-document-auth"
+import { useRouter } from "next/navigation"
 
 export const DocumentLogin = () => {
   const [email, setEmail] = useState("")
@@ -23,6 +25,7 @@ export const DocumentLogin = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const { login, isLoading } = useDocumentAuth()
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,8 +42,22 @@ export const DocumentLogin = () => {
     }
   }
 
+  const handleBack = () => {
+    router.push('/dashboard')
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      {/* Botão de Voltar */}
+      <Button
+        variant="outline"
+        onClick={handleBack}
+        className="absolute top-4 left-4 flex items-center gap-2 bg-white/80 hover:bg-white"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Voltar para Dashboard
+      </Button>
+      
       <Card className="w-full max-w-md shadow-2xl border-0">
         <CardHeader className="text-center pb-6">
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
