@@ -1,4 +1,5 @@
-import { createHash, randomBytes, pbkdf2Sync } from 'crypto';
+// Importações condicionais para compatibilidade com cliente/servidor
+const crypto = typeof window === 'undefined' ? require('crypto') : null;
 
 // Configurações de autenticação para área de documentos
 export const DOCUMENT_AUTH_CONFIG = {
@@ -23,10 +24,17 @@ export const DOCUMENT_AUTH_CONFIG = {
 
 // Função para gerar hash da senha
 export const hashPassword = (password: string, salt?: string): { hash: string; salt: string } => {
-  const generatedSalt = salt || randomBytes(32).toString('hex');
-  const hash = pbkdf2Sync(password, generatedSalt, 10000, 64, 'sha512').toString('hex');
-  
-  return { hash, salt: generatedSalt };
+  if (typeof window === 'undefined' && crypto) {
+    // Servidor: usar crypto nativo
+    const generatedSalt = salt || crypto.randomBytes(32).toString('hex');
+    const hash = crypto.pbkdf2Sync(password, generatedSalt, 10000, 64, 'sha512').toString('hex');
+    return { hash, salt: generatedSalt };
+  } else {
+    // Cliente: implementação simples para desenvolvimento
+    const generatedSalt = salt || Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const hash = btoa(password + generatedSalt + 'salt_key');
+    return { hash, salt: generatedSalt };
+  }
 };
 
 // Função para verificar senha
@@ -37,7 +45,22 @@ export const verifyPassword = (password: string, hash: string, salt: string): bo
 
 // Função para gerar token de sessão
 export const generateSessionToken = (): string => {
-  return randomBytes(32).toString('hex');
+  if (typeof window === 'undefined' && crypto) {
+    // Servidor: usar crypto nativo
+    return crypto.randomBytes(32).toString('hex');
+  } else {
+    // Cliente: implementação simples para desenvolvimento
+    const array = new Uint8Array(32);
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      window.crypto.getRandomValues(array);
+    } else {
+      // Fallback para navegadores sem crypto.getRandomValues
+      for (let i = 0; i < array.length; i++) {
+        array[i] = Math.floor(Math.random() * 256);
+      }
+    }
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  }
 };
 
 // Função para validar credenciais
@@ -76,20 +99,26 @@ export const isAuthenticated = (sessionToken?: string): boolean => {
 
 // Função para criptografar dados sensíveis
 export const encryptSensitiveData = (data: string, key?: string): string => {
-  const encryptionKey = key || process.env.DOCUMENT_ENCRYPTION_KEY || 'default-key-change-in-production';
-  const hash = createHash('sha256').update(encryptionKey).digest();
-  const iv = randomBytes(16);
+  const encryptionKey = key || (typeof process !== 'undefined' ? process.env.DOCUMENT_ENCRYPTION_KEY : null) || 'default-key-change-in-production';
   
-  // Implementação simples de criptografia
-  // Em produção, usar biblioteca de criptografia mais robusta
-  const cipher = createHash('sha256').update(data + encryptionKey).digest('hex');
-  return iv.toString('hex') + ':' + cipher;
+  if (typeof window === 'undefined' && crypto) {
+    // Servidor: usar crypto nativo
+    const hash = crypto.createHash('sha256').update(encryptionKey).digest();
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createHash('sha256').update(data + encryptionKey).digest('hex');
+    return iv.toString('hex') + ':' + cipher;
+  } else {
+    // Cliente: implementação simples para desenvolvimento
+    const timestamp = Date.now().toString();
+    const simpleHash = btoa(data + encryptionKey + timestamp);
+    return timestamp + ':' + simpleHash;
+  }
 };
 
 // Função para descriptografar dados sensíveis
 export const decryptSensitiveData = (encryptedData: string, key?: string): string => {
   try {
-    const encryptionKey = key || process.env.DOCUMENT_ENCRYPTION_KEY || 'default-key-change-in-production';
+    const encryptionKey = key || (typeof process !== 'undefined' ? process.env.DOCUMENT_ENCRYPTION_KEY : null) || 'default-key-change-in-production';
     const parts = encryptedData.split(':');
     
     if (parts.length !== 2) {
