@@ -145,7 +145,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-gradient-to-b from-orange-100 to-orange-200 text-slate-900">
-      <div className="flex h-16 items-center justify-between px-6">
+      {/* Header fixo */}
+      <div className="flex h-16 items-center justify-between px-6 flex-shrink-0">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white text-orange-400">
             <span className="font-bold text-lg">A</span>
@@ -163,8 +164,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         </Button>
       </div>
       
-      <ScrollArea className="flex-1 px-3">
-        <nav className="space-y-2" role="navigation" aria-label="Navegação principal">
+      {/* Área rolável para navegação */}
+      <ScrollArea className="flex-1 px-3 py-2 overflow-hidden">
+        <nav className="space-y-2 pb-4" role="navigation" aria-label="Navegação principal">
           {navigation.map((item) => (
             <div key={item.name}>
               {item.children ? (
@@ -234,8 +236,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         </nav>
       </ScrollArea>
 
-      {/* Footer da Sidebar */}
-      <div className="border-t border-black/10 p-4">
+      {/* Footer fixo da Sidebar */}
+      <div className="border-t border-black/10 p-4 flex-shrink-0">
         <div className="flex items-center space-x-3 text-slate-900">
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-orange-400">
             <span className="text-sm font-medium">A</span>
