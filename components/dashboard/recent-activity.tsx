@@ -77,23 +77,23 @@ export function RecentActivity() {
 
   return (
     <div className="space-y-3">
-      {activities.slice(0, 10).map((activity) => {
+      {activities.slice(0, 8).map((activity) => {
         const Icon = getActivityIcon(activity.type)
         const colors = getActivityColors(activity.type)
         
         return (
-          <div key={activity.id} className="flex items-start space-x-4 p-4 rounded-2xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm">
-            <div className={`p-2 rounded-full ${colors.bgColor}`}>
+          <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg border border-gray-100 bg-white hover:bg-gray-50 transition-colors">
+            <div className={`p-2 rounded-full ${colors.bgColor} flex-shrink-0`}>
               <Icon className={`h-4 w-4 ${colors.color}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-900">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-sm font-medium text-gray-900 leading-tight">
                   {activity.title}
                 </p>
-                <p className="text-xs text-gray-500 font-medium">{activity.time}</p>
+                <p className="text-xs text-gray-500 font-medium flex-shrink-0">{activity.time}</p>
               </div>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-xs text-gray-600 mt-1 leading-relaxed">
                 {activity.description}
               </p>
             </div>
@@ -101,11 +101,13 @@ export function RecentActivity() {
         )
       })}
       
-      <div className="text-center pt-4">
-        <button className="text-sm text-orange-600 hover:text-orange-700 font-semibold px-4 py-2 rounded-lg hover:bg-orange-50 transition-colors">
-          Ver todas as atividades
+      {activities.length > 8 && (
+        <div className="text-center pt-3 border-t border-gray-100">
+          <button className="text-sm text-orange-600 hover:text-orange-700 font-medium px-4 py-2 rounded-lg hover:bg-orange-50 transition-colors">
+            Ver todas as atividades ({activities.length})
         </button>
       </div>
+      )}
     </div>
   )
 }
