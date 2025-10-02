@@ -223,7 +223,7 @@ export const VerificationsPageContent = () => {
                       placeholder="Buscar por nome, email, telefone..." 
                       value={search} 
                       onChange={(e) => setSearch(e.target.value)}
-                      className="pl-10"
+                      className="pl-12"
                     />
                   </div>
                 </div>

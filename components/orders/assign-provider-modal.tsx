@@ -118,7 +118,7 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
               placeholder="Buscar prestadores..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-12"
             />
           </div>
 

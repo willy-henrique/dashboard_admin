@@ -86,7 +86,7 @@ export const DocumentLogin = () => {
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="pl-12"
                   required
                 />
               </div>
@@ -105,7 +105,7 @@ export const DocumentLogin = () => {
                   placeholder="Sua senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
+                  className="pl-12 pr-10"
                   required
                 />
                 <button

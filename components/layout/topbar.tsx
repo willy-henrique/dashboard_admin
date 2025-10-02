@@ -62,7 +62,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               placeholder="Buscar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-80 h-9 text-sm"
+              className="pl-12 w-80 h-9 text-sm"
               style={{
                 backgroundColor: 'var(--background)',
                 color: 'var(--foreground)',

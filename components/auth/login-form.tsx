@@ -49,7 +49,7 @@ export function LoginForm() {
                 placeholder="admin@appservico.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-12"
                 required
               />
             </div>
@@ -65,7 +65,7 @@ export function LoginForm() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10"
+                className="pl-12"
                 required
               />
             </div>
