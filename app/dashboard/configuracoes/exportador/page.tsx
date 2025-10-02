@@ -223,7 +223,7 @@ export default function ExportadorPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
             <Input 
               placeholder="PROCURAR" 
-              className="pl-16 w-64" 
+              className="pl-20 w-64" 
               aria-label="Buscar exportadores"
             />
           </div>

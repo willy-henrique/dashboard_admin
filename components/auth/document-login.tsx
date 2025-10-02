@@ -105,7 +105,7 @@ export const DocumentLogin = () => {
                   placeholder="Sua senha"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-16 pr-10"
+                  className="pl-20 pr-10"
                   required
                 />
                 <button

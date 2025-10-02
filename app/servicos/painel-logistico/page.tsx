@@ -179,7 +179,7 @@ export default function PainelLogisticoPage() {
                   placeholder="Buscar por protocolo, profissional, cidade..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-16"
+                  className="pl-20"
                 />
               </div>
             </div>

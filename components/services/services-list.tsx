@@ -116,7 +116,7 @@ export function ServicesList({
                 placeholder="Buscar serviços..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-16"
+                className="pl-20"
               />
             </div>
             

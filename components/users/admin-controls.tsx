@@ -221,7 +221,7 @@ export function AdminControls({
                     placeholder="Nome, email, telefone..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-16"
+                    className="pl-20"
                   />
                 </div>
               </div>
