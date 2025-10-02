@@ -154,7 +154,7 @@ export function OrdersTable({ filters, onView, onEdit }: OrdersTableProps) {
               placeholder="Buscar por ID, cliente, prestador ou serviço..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 bg-white border-gray-300 focus:border-orange-500 focus:ring-orange-500"
+              className="pl-14 bg-white border-gray-300 focus:border-orange-500 focus:ring-orange-500"
             />
           </div>
         </div>

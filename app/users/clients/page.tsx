@@ -273,7 +273,7 @@ export default function ClientsPage() {
                     placeholder="Buscar por nome, email, CPF..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-12 h-11 text-base"
+                    className="pl-14 h-11 text-base"
                   />
                 </div>
               </div>

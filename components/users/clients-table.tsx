@@ -135,7 +135,7 @@ export function ClientsTable() {
                 placeholder="Buscar por nome, email ou CPF..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-12"
+                className="pl-14"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
