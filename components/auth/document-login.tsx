@@ -86,7 +86,7 @@ export const DocumentLogin = () => {
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-14"
+                  className="pl-16"
                   required
                 />
               </div>
