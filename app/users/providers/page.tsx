@@ -295,7 +295,7 @@ export default function ProvidersPage() {
                     placeholder="Buscar por nome, email, CPF..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-16 h-11 text-base"
+                    className="pl-20 h-11 text-base"
                   />
                 </div>
               </div>
