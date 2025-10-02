@@ -15,6 +15,7 @@ import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts"
+import { ServicesAnalytics } from "@/components/dashboard/services-analytics"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { useEffect } from "react"
 
@@ -143,7 +144,7 @@ export default function DashboardPage() {
               <h2 id="charts-title" className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Análise de Serviços
               </h2>
-              <DashboardCharts />
+              <ServicesAnalytics />
             </section>
 
             <section aria-labelledby="activity-title">
