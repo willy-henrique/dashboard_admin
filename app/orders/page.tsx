@@ -21,6 +21,7 @@ import {
   Filter,
   Download
 } from "lucide-react"
+import { PageWithBack } from "@/components/layout/page-with-back"
 
 export default function OrdersPage() {
   const { orders, loading, error, updateOrder, deleteOrder, assignProvider, updateOrderStatus } = useOrders()
@@ -98,7 +99,7 @@ export default function OrdersPage() {
 
   return (
     <AppShell>
-      <div className="space-y-8">
+      <PageWithBack backButtonLabel="Voltar para Dashboard">
         {/* Header Profissional */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
@@ -195,7 +196,7 @@ export default function OrdersPage() {
           onUpdateStatus={handleUpdateStatus}
           mode={modalMode}
         />
-      </div>
+      </PageWithBack>
     </AppShell>
   )
 }

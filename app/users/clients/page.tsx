@@ -24,6 +24,7 @@ import {
   Clock
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { PageWithBack } from "@/components/layout/page-with-back"
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("")
@@ -146,7 +147,7 @@ export default function ClientsPage() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <PageWithBack backButtonLabel="Voltar para Dashboard">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
@@ -357,7 +358,7 @@ export default function ClientsPage() {
           onSave={selectedUser ? handleUpdateUser : handleCreateUser}
           mode={selectedUser ? 'edit' : 'create'}
         />
-      </div>
+      </PageWithBack>
     </AppShell>
   )
 }

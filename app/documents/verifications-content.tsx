@@ -33,6 +33,7 @@ import { useDocumentVerification } from "@/hooks/use-document-verification"
 import { DocumentViewer } from "@/components/users/document-viewer"
 import { useDocumentAuth } from "@/hooks/use-document-auth"
 import { useToast } from "@/hooks/use-toast"
+import { PageWithBack } from "@/components/layout/page-with-back"
 
 export const VerificationsPageContent = () => {
   const [search, setSearch] = useState("")
@@ -121,7 +122,7 @@ export const VerificationsPageContent = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <PageWithBack backButtonLabel="Voltar para Dashboard">
       {/* Header com Logout */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
@@ -628,6 +629,6 @@ export const VerificationsPageContent = () => {
           </Card>
         </div>
       )}
-    </div>
+    </PageWithBack>
   )
 }
