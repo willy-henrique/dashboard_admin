@@ -23,8 +23,16 @@ const DocumentAuthContext = createContext<DocumentAuthContextType | undefined>(u
 
 export const useDocumentAuth = (): DocumentAuthContextType => {
   const context = useContext(DocumentAuthContext)
+  // Fallback seguro: permite uso do hook sem o provider (ex.: durante SSR/prerender)
   if (!context) {
-    throw new Error('useDocumentAuth must be used within a DocumentAuthProvider')
+    return {
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+      login: async () => false,
+      logout: () => {},
+      checkAuth: () => {},
+    }
   }
   return context
 }
