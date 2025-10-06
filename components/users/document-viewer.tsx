@@ -148,6 +148,15 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   const parent = target.parentElement
+                  const documentData = document as any
+                  
+                  // Tentar URL alternativa se disponível
+                  if (documentData.urlAlt && target.src !== documentData.urlAlt) {
+                    console.log('🔄 Modal: Tentando URL alternativa:', documentData.urlAlt)
+                    target.src = documentData.urlAlt
+                    return
+                  }
+                  
                   if (parent) {
                     parent.innerHTML = `
                       <div class="text-center p-8 w-full">
@@ -304,6 +313,15 @@ export const DocumentViewer = ({
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         const parent = target.parentElement
+                        const documentData = document as any
+                        
+                        // Tentar URL alternativa se disponível
+                        if (documentData.urlAlt && target.src !== documentData.urlAlt) {
+                          console.log('🔄 Tentando URL alternativa:', documentData.urlAlt)
+                          target.src = documentData.urlAlt
+                          return
+                        }
+                        
                         if (parent) {
                           parent.innerHTML = `
                             <div class="w-full h-full flex items-center justify-center bg-red-50">
@@ -313,8 +331,11 @@ export const DocumentViewer = ({
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                                   </svg>
                                 </div>
-                                <p class="text-xs text-red-600">Erro ao carregar</p>
-                                <p class="text-xs text-red-500">Clique para tentar novamente</p>
+                                <p class="text-xs text-red-600">Erro ao carregar imagem</p>
+                                <p class="text-xs text-red-500">URL: ${document.url}</p>
+                                <button onclick="window.open('${document.url}', '_blank')" class="mt-2 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">
+                                  Abrir em nova aba
+                                </button>
                               </div>
                             </div>
                           `
