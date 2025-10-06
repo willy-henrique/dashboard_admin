@@ -150,10 +150,16 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                   const parent = target.parentElement
                   const documentData = document as any
                   
-                  // Tentar URL alternativa se disponível
+                  // Tentar URLs alternativas em sequência
                   if (documentData.urlAlt && target.src !== documentData.urlAlt) {
                     console.log('🔄 Modal: Tentando URL alternativa:', documentData.urlAlt)
                     target.src = documentData.urlAlt
+                    return
+                  }
+                  
+                  if (documentData.urlDirect && target.src !== documentData.urlDirect) {
+                    console.log('🔄 Modal: Tentando URL direta:', documentData.urlDirect)
+                    target.src = documentData.urlDirect
                     return
                   }
                   
@@ -315,10 +321,16 @@ export const DocumentViewer = ({
                         const parent = target.parentElement
                         const documentData = document as any
                         
-                        // Tentar URL alternativa se disponível
+                        // Tentar URLs alternativas em sequência
                         if (documentData.urlAlt && target.src !== documentData.urlAlt) {
                           console.log('🔄 Tentando URL alternativa:', documentData.urlAlt)
                           target.src = documentData.urlAlt
+                          return
+                        }
+                        
+                        if (documentData.urlDirect && target.src !== documentData.urlDirect) {
+                          console.log('🔄 Tentando URL direta:', documentData.urlDirect)
+                          target.src = documentData.urlDirect
                           return
                         }
                         
