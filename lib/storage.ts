@@ -100,7 +100,7 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
 export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => {
   // Em produção, buscar via API interna (Admin SDK), para não depender de regras públicas
   try {
-    const res = await fetch('/api/providers/direct-access', { cache: 'no-store' })
+    const res = await fetch('/api/providers/firebase-real', { cache: 'no-store' })
     if (!res.ok) return []
     const data = await res.json()
     const providers: ProviderDocuments[] = (data.providers || []).map((p: any) => ({
