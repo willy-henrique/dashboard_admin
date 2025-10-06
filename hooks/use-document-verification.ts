@@ -66,16 +66,28 @@ export const useDocumentVerification = () => {
         const existingVerification = verificationsData.find(v => v.providerId === provider.providerId)
         if (!existingVerification) {
           try {
-            // Buscar dados do usuário no Firestore
+            // Buscar dados do usuário no Firestore usando o providerId como UID
             const userData = await getDocument('users', provider.providerId)
+            
+            // Se não encontrar no Firestore, tentar buscar por email ou outros campos
+            let finalUserData = userData
+            if (!finalUserData) {
+              // Buscar na coleção de usuários por providerId
+              const usersCollection = await getCollection('users')
+              finalUserData = usersCollection.find((user: any) => 
+                user.uid === provider.providerId || 
+                user.id === provider.providerId ||
+                user.providerId === provider.providerId
+              )
+            }
             
             // Criar nova verificação
             const newVerification: DocumentVerification = {
               id: `verification_${provider.providerId}`,
               providerId: provider.providerId,
-              providerName: userData?.name || `Prestador ${provider.providerId.slice(-6)}`,
-              providerEmail: userData?.email || `prestador${provider.providerId.slice(-6)}@email.com`,
-              providerPhone: userData?.phone || '(11) 99999-9999',
+              providerName: finalUserData?.name || finalUserData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
+              providerEmail: finalUserData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
+              providerPhone: finalUserData?.phone || finalUserData?.phoneNumber || '(11) 99999-9999',
               status: 'pending',
               documents: provider.documents,
               submittedAt: provider.uploadedAt,
@@ -91,6 +103,7 @@ export const useDocumentVerification = () => {
             })
             
             verificationsData.push(newVerification)
+            console.log(`✅ Nova verificação criada para prestador ${provider.providerId}`)
           } catch (error) {
             console.error(`Erro ao processar novo prestador ${provider.providerId}:`, error)
           }

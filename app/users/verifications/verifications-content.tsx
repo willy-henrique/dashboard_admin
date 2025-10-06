@@ -47,6 +47,7 @@ import { useDocumentVerification } from "@/hooks/use-document-verification"
 import { DocumentViewer } from "@/components/users/document-viewer"
 import { VerificationHistory } from "@/components/users/verification-history"
 import { ServiceAcceptanceDocs } from "@/components/users/service-acceptance-docs"
+import { UserDocumentsStructure } from "@/components/users/user-documents-structure"
 import { useDocumentAuth } from "@/hooks/use-document-auth"
 import { useToast } from "@/hooks/use-toast"
 import { PageWithBack } from "@/components/layout/page-with-back"
@@ -782,8 +783,9 @@ export const VerificationsPageContent = () => {
 
                 {/* Tabs para Documentos e Documentação */}
                 <Tabs value={modalTab} onValueChange={setModalTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="documents">Documentos</TabsTrigger>
+                    <TabsTrigger value="structure">Estrutura</TabsTrigger>
                     <TabsTrigger value="acceptance">Aceitação</TabsTrigger>
                     <TabsTrigger value="history">Histórico</TabsTrigger>
                   </TabsList>
@@ -806,6 +808,15 @@ export const VerificationsPageContent = () => {
                         </div>
                       )
                     })}
+                  </TabsContent>
+                  
+                  <TabsContent value="structure" className="mt-6">
+                    <UserDocumentsStructure
+                      providerId={selectedVerification.providerId}
+                      providerName={selectedVerification.providerName}
+                      documents={selectedVerification.documents}
+                      submittedAt={selectedVerification.submittedAt}
+                    />
                   </TabsContent>
                   
                   <TabsContent value="acceptance" className="mt-6">
