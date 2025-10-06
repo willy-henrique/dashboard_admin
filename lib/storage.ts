@@ -1,7 +1,6 @@
 import { getStorage, ref, getDownloadURL, listAll, getMetadata } from 'firebase/storage';
 import { app } from './firebase';
 import { StorageDocument, ProviderDocuments } from '@/types/verification';
-import { generateClientCode, validateClientCode, encryptSensitiveData } from './auth-documents';
 
 // Inicializar Firebase Storage
 const storage = app ? getStorage(app) : null;

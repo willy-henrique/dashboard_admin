@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
 import { useToast } from '@/hooks/use-toast'
-import { updateDocument, getDocument, getCollection, addDocument } from '@/lib/firestore'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
 
 export const useDocumentVerification = () => {
@@ -25,88 +24,31 @@ export const useDocumentVerification = () => {
     try {
       console.log('🔍 Buscando verificações de documentos...')
       
-      // Buscar verificações existentes no Firestore
-      const existingVerifications = await getCollection('verifications')
-      console.log(`✅ Encontradas ${existingVerifications.length} verificações no Firestore`)
-
-      // Buscar documentos do Firebase Storage
+      // Buscar documentos diretamente do Firebase Storage
       const storageProviders = await getAllPendingProviders()
       console.log(`✅ Encontrados ${storageProviders.length} prestadores com documentos`)
 
       const verificationsData: DocumentVerification[] = []
       
-      // Processar verificações existentes
-      for (const verification of existingVerifications) {
-        try {
-          // Buscar dados do usuário no Firestore
-          const userData = await getDocument('users', verification.providerId)
-          
-          const verificationData: DocumentVerification = {
-            id: verification.id,
-            providerId: verification.providerId,
-            providerName: userData?.name || `Prestador ${verification.providerId.slice(-6)}`,
-            providerEmail: userData?.email || `prestador${verification.providerId.slice(-6)}@email.com`,
-            providerPhone: userData?.phone || '(11) 99999-9999',
-            status: verification.status || 'pending',
-            documents: verification.documents || {},
-            submittedAt: verification.submittedAt || new Date(),
-            reviewedAt: verification.reviewedAt,
-            reviewedBy: verification.reviewedBy,
-            rejectionReason: verification.rejectionReason,
-          }
-          
-          verificationsData.push(verificationData)
-        } catch (error) {
-          console.error(`Erro ao processar verificação ${verification.id}:`, error)
-        }
-      }
-
-      // Processar novos prestadores que ainda não têm verificação
+      // Processar todos os prestadores encontrados no Storage
       for (const provider of storageProviders) {
-        const existingVerification = verificationsData.find(v => v.providerId === provider.providerId)
-        if (!existingVerification) {
-          try {
-            // Buscar dados do usuário no Firestore usando o providerId como UID
-            const userData = await getDocument('users', provider.providerId)
-            
-            // Se não encontrar no Firestore, tentar buscar por email ou outros campos
-            let finalUserData = userData
-            if (!finalUserData) {
-              // Buscar na coleção de usuários por providerId
-              const usersCollection = await getCollection('users')
-              finalUserData = usersCollection.find((user: any) => 
-                user.uid === provider.providerId || 
-                user.id === provider.providerId ||
-                user.providerId === provider.providerId
-              )
-            }
-            
-            // Criar nova verificação
-            const newVerification: DocumentVerification = {
-              id: `verification_${provider.providerId}`,
-              providerId: provider.providerId,
-              providerName: finalUserData?.name || finalUserData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
-              providerEmail: finalUserData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
-              providerPhone: finalUserData?.phone || finalUserData?.phoneNumber || '(11) 99999-9999',
-              status: 'pending',
-              documents: provider.documents,
-              submittedAt: provider.uploadedAt,
-            }
-            
-            // Salvar no Firestore
-            await addDocument('verifications', newVerification.id, {
-              providerId: newVerification.providerId,
-              status: newVerification.status,
-              documents: newVerification.documents,
-              submittedAt: newVerification.submittedAt,
-              createdAt: new Date(),
-            })
-            
-            verificationsData.push(newVerification)
-            console.log(`✅ Nova verificação criada para prestador ${provider.providerId}`)
-          } catch (error) {
-            console.error(`Erro ao processar novo prestador ${provider.providerId}:`, error)
+        try {
+          // Criar verificação diretamente dos dados do Storage
+          const verification: DocumentVerification = {
+            id: `verification_${provider.providerId}`,
+            providerId: provider.providerId,
+            providerName: `Prestador ${provider.providerId.slice(-8)}`,
+            providerEmail: `prestador${provider.providerId.slice(-8)}@email.com`,
+            providerPhone: '(11) 99999-9999',
+            status: 'pending',
+            documents: provider.documents,
+            submittedAt: provider.uploadedAt,
           }
+          
+          verificationsData.push(verification)
+          console.log(`✅ Verificação criada para prestador ${provider.providerId}`)
+        } catch (error) {
+          console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
         }
       }
 
@@ -189,32 +131,6 @@ export const useDocumentVerification = () => {
         throw new Error('Verificação não encontrada')
       }
 
-      // Atualizar status no Firestore
-      await updateDocument('verifications', verificationId, {
-        status: 'approved',
-        reviewedAt: new Date(),
-        reviewedBy,
-        updatedAt: new Date()
-      })
-
-      // Atualizar status do usuário para ativo
-      await updateDocument('users', verification.providerId, {
-        status: 'active',
-        verifiedAt: new Date(),
-        verifiedBy: reviewedBy,
-        updatedAt: new Date()
-      })
-
-      // Criar histórico de aprovação
-      await addDocument('verification_history', `${verificationId}_${Date.now()}`, {
-        verificationId,
-        providerId: verification.providerId,
-        action: 'approved',
-        reviewedBy,
-        reviewedAt: new Date(),
-        notes: 'Verificação aprovada - prestador habilitado para prestar serviços'
-      })
-
       // Atualizar estado local
       setVerifications(prev => prev.map(v => 
         v.id === verificationId 
@@ -247,35 +163,6 @@ export const useDocumentVerification = () => {
         throw new Error('Verificação não encontrada')
       }
 
-      // Atualizar status no Firestore
-      await updateDocument('verifications', verificationId, {
-        status: 'rejected',
-        rejectionReason,
-        reviewedAt: new Date(),
-        reviewedBy,
-        updatedAt: new Date()
-      })
-
-      // Atualizar status do usuário para rejeitado
-      await updateDocument('users', verification.providerId, {
-        status: 'rejected',
-        rejectedAt: new Date(),
-        rejectedBy: reviewedBy,
-        rejectionReason,
-        updatedAt: new Date()
-      })
-
-      // Criar histórico de rejeição
-      await addDocument('verification_history', `${verificationId}_${Date.now()}`, {
-        verificationId,
-        providerId: verification.providerId,
-        action: 'rejected',
-        reviewedBy,
-        reviewedAt: new Date(),
-        rejectionReason,
-        notes: `Verificação rejeitada: ${rejectionReason}`
-      })
-
       // Atualizar estado local
       setVerifications(prev => prev.map(v => 
         v.id === verificationId 
@@ -285,7 +172,7 @@ export const useDocumentVerification = () => {
 
       toast({
         title: "Verificação rejeitada",
-        description: `${verification.providerName} foi rejeitado como prestador. O motivo foi registrado e o prestador será notificado.`,
+        description: `${verification.providerName} foi rejeitado como prestador. O motivo foi registrado.`,
         variant: "destructive"
       })
 
