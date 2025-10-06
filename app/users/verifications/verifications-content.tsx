@@ -48,6 +48,7 @@ import { DocumentViewer } from "@/components/users/document-viewer"
 import { VerificationHistory } from "@/components/users/verification-history"
 import { ServiceAcceptanceDocs } from "@/components/users/service-acceptance-docs"
 import { UserDocumentsStructure } from "@/components/users/user-documents-structure"
+import { StorageDebug } from "@/components/debug/storage-debug"
 import { useDocumentAuth } from "@/hooks/use-document-auth"
 import { useToast } from "@/hooks/use-toast"
 import { PageWithBack } from "@/components/layout/page-with-back"
@@ -248,6 +249,9 @@ export const VerificationsPageContent = () => {
             </div>
           </div>
         </div>
+
+        {/* Debug do Storage */}
+        <StorageDebug />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
