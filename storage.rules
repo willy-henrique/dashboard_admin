@@ -1,0 +1,14 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Permitir acesso total aos documentos para desenvolvimento
+    match /Documentos/{userId}/{allPaths=**} {
+      allow read, write: if true;
+    }
+    
+    // Permitir acesso a outros arquivos se necessário
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
