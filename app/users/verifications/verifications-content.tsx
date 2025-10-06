@@ -195,7 +195,7 @@ export const VerificationsPageContent = () => {
   }
 
   return (
-    <AppShell>
+    <AppShell hideSidebar={true}>
       <div className="space-y-6">
         {/* Header da página */}
         <div className="flex flex-col gap-6">

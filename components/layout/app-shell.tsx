@@ -6,15 +6,16 @@ import { Topbar } from "./topbar"
 
 interface AppShellProps {
   children: React.ReactNode
+  hideSidebar?: boolean
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, hideSidebar = false }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-      <div className="lg:ml-64 min-w-0">
+      {!hideSidebar && <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />}
+      <div className={hideSidebar ? "min-w-0" : "lg:ml-64 min-w-0"}>
         <Topbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="min-w-0">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 max-w-full">
