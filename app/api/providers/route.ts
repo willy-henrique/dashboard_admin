@@ -65,8 +65,8 @@ export async function GET() {
       return NextResponse.json({ providers })
     }
     
-    // Fallback: dados mockados com URLs reais do Firebase Storage
-    console.log('⚠️ Firebase Admin SDK não disponível - usando dados mockados')
+    // Fallback: dados mockados com imagens de teste funcionais
+    console.log('⚠️ Firebase Admin SDK não disponível - usando dados mockados com imagens de teste')
     
     const mockProviders = [
       {
@@ -76,7 +76,7 @@ export async function GET() {
             {
               id: "1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
               name: "1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              url: `https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media`,
+              url: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop",
               type: "image",
               size: 126197,
               uploadedAt: new Date("2025-10-04"),
@@ -85,7 +85,7 @@ export async function GET() {
             {
               id: "1759591593489_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
               name: "1759591593489_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              url: `https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591593489_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media`,
+              url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop",
               type: "image",
               size: 126197,
               uploadedAt: new Date("2025-10-04"),
@@ -94,7 +94,7 @@ export async function GET() {
             {
               id: "1759591602350_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
               name: "1759591602350_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              url: `https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591602350_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media`,
+              url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop",
               type: "image",
               size: 126197,
               uploadedAt: new Date("2025-10-04"),

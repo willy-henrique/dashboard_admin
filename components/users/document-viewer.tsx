@@ -147,8 +147,26 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 }}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                  target.nextElementSibling?.classList.remove('hidden')
+                  const parent = target.parentElement
+                  if (parent) {
+                    parent.innerHTML = `
+                      <div class="text-center p-8 w-full">
+                        <div class="w-16 h-16 mx-auto mb-4 text-red-400">
+                          <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                          </svg>
+                        </div>
+                        <p class="text-red-600 mb-4">Erro ao carregar a imagem</p>
+                        <p class="text-sm text-gray-500 mb-4">URL: ${document.url}</p>
+                        <button onclick="window.open('${document.url}', '_blank')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                          Abrir em nova aba
+                        </button>
+                      </div>
+                    `
+                  }
+                }}
+                onLoad={(e) => {
+                  console.log('✅ Imagem carregada no modal:', document.name)
                 }}
               />
             ) : (
@@ -161,16 +179,6 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 </Button>
               </div>
             )}
-            
-            {/* Fallback para erro de imagem */}
-            <div className="hidden text-center p-8">
-              <AlertCircle className="h-16 w-16 mx-auto text-red-400 mb-4" />
-              <p className="text-red-600 mb-4">Erro ao carregar a imagem</p>
-              <Button onClick={handleDownload} disabled={isLoading}>
-                <Download className="h-4 w-4 mr-2" />
-                {isLoading ? 'Baixando...' : 'Baixar Arquivo'}
-              </Button>
-            </div>
           </div>
 
           {/* Informações do documento */}
@@ -295,7 +303,25 @@ export const DocumentViewer = ({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
-                        target.style.display = 'none'
+                        const parent = target.parentElement
+                        if (parent) {
+                          parent.innerHTML = `
+                            <div class="w-full h-full flex items-center justify-center bg-red-50">
+                              <div class="text-center">
+                                <div class="w-8 h-8 mx-auto mb-2 text-red-400">
+                                  <svg fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                  </svg>
+                                </div>
+                                <p class="text-xs text-red-600">Erro ao carregar</p>
+                                <p class="text-xs text-red-500">Clique para tentar novamente</p>
+                              </div>
+                            </div>
+                          `
+                        }
+                      }}
+                      onLoad={(e) => {
+                        console.log('✅ Imagem carregada:', document.name)
                       }}
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
