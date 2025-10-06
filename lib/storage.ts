@@ -2,7 +2,7 @@ import { getStorage, ref, getDownloadURL, listAll, getMetadata } from 'firebase/
 import { app } from './firebase';
 import { StorageDocument, ProviderDocuments } from '@/types/verification';
 
-// Inicializar Firebase Storage
+// Inicializar Firebase Storage (client) – usado somente em dev/local; no Vercel usaremos a API
 const storage = app ? getStorage(app) : null;
 
 // Buscar documentos de um prestador específico
@@ -98,43 +98,21 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
 
 // Buscar todos os prestadores com documentos pendentes
 export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => {
-  if (!storage) {
-    console.warn('Firebase Storage não inicializado');
-    return [];
-  }
-
+  // Em produção, buscar via API interna (Admin SDK), para não depender de regras públicas
   try {
-    const storagePath = 'Documentos';
-    const folderRef = ref(storage, storagePath);
-    
-    // Listar todas as pastas de prestadores
-    const result = await listAll(folderRef);
-    
-    const providers: ProviderDocuments[] = [];
-    
-    // Para cada pasta de prestador, buscar os documentos
-    for (const prefixRef of result.prefixes) {
-      try {
-        const providerId = prefixRef.name;
-        console.log(`🔍 Processando prestador: ${providerId}`);
-        
-        // Buscar documentos diretamente usando o providerId
-        const documents = await getProviderDocuments(providerId);
-        
-        if (documents) {
-          providers.push(documents);
-          console.log(`✅ Documentos carregados para prestador ${providerId}`);
-        }
-      } catch (error) {
-        console.error(`Erro ao processar prestador ${prefixRef.name}:`, error);
-      }
-    }
-
-    console.log(`✅ Total de prestadores com documentos: ${providers.length}`);
-    return providers;
-  } catch (error) {
-    console.error('Erro ao buscar todos os prestadores:', error);
-    return [];
+    const res = await fetch('/api/providers', { cache: 'no-store' })
+    if (!res.ok) return []
+    const data = await res.json()
+    const providers: ProviderDocuments[] = (data.providers || []).map((p: any) => ({
+      providerId: p.providerId,
+      documents: p.documents,
+      uploadedAt: new Date(p.uploadedAt),
+      status: 'pending',
+    }))
+    return providers
+  } catch (e) {
+    console.error('getAllPendingProviders API error', e)
+    return []
   }
 };
 
