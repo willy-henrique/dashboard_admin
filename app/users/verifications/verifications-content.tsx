@@ -38,7 +38,8 @@ import {
   X,
   ChevronDown,
   ChevronUp,
-  ExternalLink
+  ExternalLink,
+  ArrowLeft
 } from "lucide-react"
 import { formatDistanceToNow, format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -195,42 +196,56 @@ export const VerificationsPageContent = () => {
 
   return (
     <AppShell>
-      <PageWithBack backButtonLabel="Voltar para Usuários">
-        {/* Header */}
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Shield className="h-6 w-6 text-primary" />
+      <div className="space-y-6">
+        {/* Header com botão de voltar integrado */}
+        <div className="flex flex-col gap-4">
+          {/* Botão de voltar */}
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.history.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar para Usuários
+            </Button>
+            <div className="h-6 w-px bg-border" />
+          </div>
+          
+          {/* Título e ações */}
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-xl">
+                <Shield className="h-8 w-8 text-primary" />
               </div>
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+              <div className="space-y-1">
+                <h1 className="text-2xl xl:text-3xl font-bold tracking-tight">
                   Verificações de Prestadores
                 </h1>
-                <p className="text-muted-foreground text-sm lg:text-base">
+                <p className="text-muted-foreground">
                   Gerencie e aprove cadastros de prestadores de serviço
                 </p>
               </div>
             </div>
-          </div>
-          
-          <div className="flex flex-col gap-2 w-full lg:w-auto lg:flex-row lg:items-center">
-            <Button 
-              variant="outline" 
-              onClick={() => refetch()}
-              disabled={loading}
-              className="flex items-center gap-2 w-full lg:w-auto"
-            >
-              <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-              {loading ? "Atualizando..." : "Atualizar"}
-            </Button>
-            <Button 
-              variant="default"
-              className="flex items-center gap-2 w-full lg:w-auto"
-            >
-              <FileCheck className="h-4 w-4" />
-              Relatório
-            </Button>
+            
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <Button 
+                variant="outline" 
+                onClick={() => refetch()}
+                disabled={loading}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+                {loading ? "Atualizando..." : "Atualizar"}
+              </Button>
+              <Button 
+                variant="default"
+                className="flex items-center gap-2"
+              >
+                <FileCheck className="h-4 w-4" />
+                Relatório
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -816,7 +831,7 @@ export const VerificationsPageContent = () => {
             </Card>
           </div>
         )}
-      </PageWithBack>
+      </div>
     </AppShell>
   )
 }
