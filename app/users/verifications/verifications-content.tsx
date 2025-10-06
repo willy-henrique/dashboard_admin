@@ -647,198 +647,232 @@ export const VerificationsPageContent = () => {
 
         {/* Verification Details Modal */}
         {showDetails && selectedVerification && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
-            <Card className="w-full max-w-7xl max-h-[95vh] overflow-hidden bg-background shadow-2xl">
-              <CardHeader className="bg-muted/50 border-b p-6">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[9999]">
+            <div className="w-full max-w-7xl max-h-[95vh] bg-white rounded-xl shadow-2xl overflow-hidden">
+              {/* Header do Modal */}
+              <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                      <span className="font-semibold text-primary-foreground">
-                        {selectedVerification.providerName.charAt(0).toUpperCase()}
-                      </span>
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="flex items-center gap-2 text-xl">
-                        <Shield className="h-5 w-5" />
-                        Documentos do Prestador
-                      </CardTitle>
-                      <p className="text-muted-foreground">{selectedVerification.providerName}</p>
+                      <h2 className="text-2xl font-bold">Documentos do Prestador</h2>
+                      <p className="text-orange-100">{selectedVerification.providerName}</p>
                     </div>
                   </div>
                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => setShowDetails(false)}
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0 text-white hover:bg-white/20"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5" />
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6 overflow-y-auto max-h-[calc(95vh-120px)]">
+              </div>
+              
+              {/* Conteúdo do Modal */}
+              <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(95vh-140px)] bg-gray-50">
                 {/* Provider Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Nome</p>
-                      <p className="font-semibold text-sm">{selectedVerification.providerName}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Email</p>
-                      <p className="font-semibold text-sm">{selectedVerification.providerEmail}</p>
-                    </div>
-                  </div>
-                  {selectedVerification.providerPhone && (
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <User className="h-5 w-5 text-orange-600" />
+                    Informações do Prestador
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="flex items-center gap-3">
-                      <Phone className="h-5 w-5 text-muted-foreground" />
+                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                        <User className="h-5 w-5 text-orange-600" />
+                      </div>
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground">Telefone</p>
-                        <p className="font-semibold text-sm">{selectedVerification.providerPhone}</p>
+                        <p className="text-sm font-medium text-gray-500">Nome</p>
+                        <p className="font-semibold text-gray-900">{selectedVerification.providerName}</p>
                       </div>
                     </div>
-                  )}
-                  <div className="flex items-center gap-3">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Enviado</p>
-                      <p className="font-semibold text-sm">
-                        {format(selectedVerification.submittedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Mail className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Email</p>
+                        <p className="font-semibold text-gray-900">{selectedVerification.providerEmail}</p>
+                      </div>
+                    </div>
+                    {selectedVerification.providerPhone && (
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <Phone className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-500">Telefone</p>
+                          <p className="font-semibold text-gray-900">{selectedVerification.providerPhone}</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Calendar className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Enviado</p>
+                        <p className="font-semibold text-gray-900">
+                          {format(selectedVerification.submittedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Status e Ações Rápidas */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between p-4 bg-muted/20 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">Status:</span>
-                    {getStatusBadge(selectedVerification.status)}
-                  </div>
-                  {selectedVerification.status === 'pending' && (
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          handleApprove(selectedVerification.id)
-                          setShowDetails(false)
-                        }}
-                        className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-                      >
-                        <CheckCircle className="h-4 w-4" />
-                        Aprovar Prestador
-                      </Button>
-                      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            className="flex items-center gap-2"
-                          >
-                            <XCircle className="h-4 w-4" />
-                            Rejeitar Prestador
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-md">
-                          <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                              <AlertTriangle className="h-5 w-5 text-red-500" />
-                              Rejeitar Verificação
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <p className="text-sm text-muted-foreground">
-                              Informe o motivo da rejeição para <strong>{selectedVerification.providerName}</strong>:
-                            </p>
-                            <Textarea
-                              placeholder="Ex: Documentos ilegíveis, informações incompletas, etc."
-                              value={rejectionReason}
-                              onChange={(e) => setRejectionReason(e.target.value)}
-                              rows={4}
-                            />
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                onClick={() => {
-                                  setShowRejectDialog(false)
-                                  setRejectionReason("")
-                                }}
-                              >
-                                Cancelar
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                onClick={() => handleReject(selectedVerification.id)}
-                              >
-                                Confirmar Rejeição
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                <div className="bg-white rounded-lg p-6 shadow-sm border">
+                  <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg font-medium text-gray-700">Status da Verificação:</span>
+                        {getStatusBadge(selectedVerification.status)}
+                      </div>
                     </div>
-                  )}
+                    {selectedVerification.status === 'pending' && (
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <Button
+                          onClick={() => {
+                            handleApprove(selectedVerification.id)
+                            setShowDetails(false)
+                          }}
+                          className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-3"
+                        >
+                          <CheckCircle className="h-5 w-5" />
+                          Aprovar Prestador
+                        </Button>
+                        <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              className="flex items-center gap-2 px-6 py-3"
+                            >
+                              <XCircle className="h-5 w-5" />
+                              Rejeitar Prestador
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-red-500" />
+                                Rejeitar Verificação
+                              </DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <p className="text-sm text-muted-foreground">
+                                Informe o motivo da rejeição para <strong>{selectedVerification.providerName}</strong>:
+                              </p>
+                              <Textarea
+                                placeholder="Ex: Documentos ilegíveis, informações incompletas, etc."
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                rows={4}
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    setShowRejectDialog(false)
+                                    setRejectionReason("")
+                                  }}
+                                >
+                                  Cancelar
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => handleReject(selectedVerification.id)}
+                                >
+                                  Confirmar Rejeição
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Tabs para Documentos e Documentação */}
-                <Tabs value={modalTab} onValueChange={setModalTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="documents">Documentos</TabsTrigger>
-                    <TabsTrigger value="structure">Estrutura</TabsTrigger>
-                    <TabsTrigger value="acceptance">Aceitação</TabsTrigger>
-                    <TabsTrigger value="history">Histórico</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="documents" className="space-y-6 mt-6">
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                      <FileText className="h-5 w-5" />
-                      Documentos Enviados
-                    </h3>
-                    {Object.entries(selectedVerification.documents).map(([type, documents]) => {
-                      if (!documents || !Array.isArray(documents) || documents.length === 0) return null
+                <div className="bg-white rounded-lg shadow-sm border">
+                  <Tabs value={modalTab} onValueChange={setModalTab} className="w-full">
+                    <div className="p-6 pb-0">
+                      <TabsList className="grid w-full grid-cols-4 bg-gray-100">
+                        <TabsTrigger value="documents" className="data-[state=active]:bg-white data-[state=active]:text-orange-600">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Documentos
+                        </TabsTrigger>
+                        <TabsTrigger value="structure" className="data-[state=active]:bg-white data-[state=active]:text-orange-600">
+                          <Building className="h-4 w-4 mr-2" />
+                          Estrutura
+                        </TabsTrigger>
+                        <TabsTrigger value="acceptance" className="data-[state=active]:bg-white data-[state=active]:text-orange-600">
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Aceitação
+                        </TabsTrigger>
+                        <TabsTrigger value="history" className="data-[state=active]:bg-white data-[state=active]:text-orange-600">
+                          <Clock className="h-4 w-4 mr-2" />
+                          Histórico
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+                    
+                    <div className="p-6">
+                      <TabsContent value="documents" className="space-y-6 mt-0">
+                        <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-800">
+                          <FileText className="h-6 w-6 text-orange-600" />
+                          Documentos Enviados
+                        </h3>
+                        {Object.entries(selectedVerification.documents).map(([type, documents]) => {
+                          if (!documents || !Array.isArray(documents) || documents.length === 0) return null
+                          
+                          return (
+                            <div key={type} className="bg-gray-50 rounded-lg p-6">
+                              <DocumentViewer
+                                documents={documents as any[]}
+                                documentType={type}
+                                showActions={false}
+                              />
+                            </div>
+                          )
+                        })}
+                      </TabsContent>
                       
-                      return (
-                        <div key={type} className="border rounded-lg p-4">
-                          <DocumentViewer
-                            documents={documents as any[]}
-                            documentType={type}
-                            showActions={false}
-                          />
-                        </div>
-                      )
-                    })}
-                  </TabsContent>
-                  
-                  <TabsContent value="structure" className="mt-6">
-                    <UserDocumentsStructure
-                      providerId={selectedVerification.providerId}
-                      providerName={selectedVerification.providerName}
-                      documents={selectedVerification.documents}
-                      submittedAt={selectedVerification.submittedAt}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="acceptance" className="mt-6">
-                    <ServiceAcceptanceDocs
-                      verification={selectedVerification}
-                      onAccept={() => {
-                        handleApprove(selectedVerification.id)
-                        setShowDetails(false)
-                      }}
-                      onReject={() => setShowRejectDialog(true)}
-                    />
-                  </TabsContent>
-                  
-                  <TabsContent value="history" className="mt-6">
-                    <VerificationHistory
-                      verificationId={selectedVerification.id}
-                      providerName={selectedVerification.providerName}
-                    />
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
+                      <TabsContent value="structure" className="mt-0">
+                        <UserDocumentsStructure
+                          providerId={selectedVerification.providerId}
+                          providerName={selectedVerification.providerName}
+                          documents={selectedVerification.documents}
+                          submittedAt={selectedVerification.submittedAt}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="acceptance" className="mt-0">
+                        <ServiceAcceptanceDocs
+                          verification={selectedVerification}
+                          onAccept={() => {
+                            handleApprove(selectedVerification.id)
+                            setShowDetails(false)
+                          }}
+                          onReject={() => setShowRejectDialog(true)}
+                        />
+                      </TabsContent>
+                      
+                      <TabsContent value="history" className="mt-0">
+                        <VerificationHistory
+                          verificationId={selectedVerification.id}
+                          providerName={selectedVerification.providerName}
+                        />
+                      </TabsContent>
+                    </div>
+                  </Tabs>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
