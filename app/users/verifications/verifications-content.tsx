@@ -197,8 +197,8 @@ export const VerificationsPageContent = () => {
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Header com botão de voltar integrado */}
-        <div className="flex flex-col gap-4">
+        {/* Header da página */}
+        <div className="flex flex-col gap-6">
           {/* Botão de voltar */}
           <div className="flex items-center gap-4">
             <Button 
@@ -209,17 +209,16 @@ export const VerificationsPageContent = () => {
               <ArrowLeft className="h-4 w-4" />
               Voltar para Usuários
             </Button>
-            <div className="h-6 w-px bg-border" />
           </div>
           
           {/* Título e ações */}
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-primary/10 rounded-xl">
                 <Shield className="h-8 w-8 text-primary" />
               </div>
               <div className="space-y-1">
-                <h1 className="text-2xl xl:text-3xl font-bold tracking-tight">
+                <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
                   Verificações de Prestadores
                 </h1>
                 <p className="text-muted-foreground">
@@ -228,7 +227,7 @@ export const VerificationsPageContent = () => {
               </div>
             </div>
             
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button 
                 variant="outline" 
                 onClick={() => refetch()}
