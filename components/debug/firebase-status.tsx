@@ -20,9 +20,23 @@ export function FirebaseStatus() {
   const testFirebaseAccess = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/test-storage-access')
+      // Testar API principal
+      const response = await fetch('/api/providers/proxy-images')
       const data = await response.json()
-      setStatus(data.results || [])
+      
+      // Testar URLs específicas
+      const testResponse = await fetch('/api/test-storage-access')
+      const testData = await testResponse.json()
+      
+      setStatus(testData.results || [])
+      
+      // Log do status principal
+      console.log('📊 Status Principal:', {
+        firebaseWorking: data.firebaseWorking,
+        message: data.message,
+        providersCount: data.providers?.length || 0
+      })
+      
     } catch (error) {
       console.error('Erro ao testar Firebase:', error)
     } finally {

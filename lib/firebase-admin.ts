@@ -1,11 +1,17 @@
-import admin from 'firebase-admin'
+import * as admin from 'firebase-admin'
 
 const getServiceAccount = () => {
   const json = process.env.FIREBASE_SERVICE_ACCOUNT
-  if (!json) return null
+  if (!json) {
+    console.warn('⚠️ FIREBASE_SERVICE_ACCOUNT não configurado')
+    return null
+  }
   try {
-    return JSON.parse(json)
-  } catch {
+    const parsed = JSON.parse(json)
+    console.log('✅ Firebase Service Account carregado')
+    return parsed
+  } catch (error) {
+    console.error('❌ Erro ao parsear FIREBASE_SERVICE_ACCOUNT:', error)
     return null
   }
 }
@@ -13,14 +19,27 @@ const getServiceAccount = () => {
 if (!admin.apps.length) {
   const serviceAccount = getServiceAccount()
   if (serviceAccount) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    })
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'aplicativoservico-143c2.appspot.com',
+      })
+      console.log('✅ Firebase Admin SDK inicializado com sucesso')
+    } catch (error) {
+      console.error('❌ Erro ao inicializar Firebase Admin SDK:', error)
+    }
+  } else {
+    console.warn('⚠️ Firebase Admin SDK não inicializado - sem service account')
   }
 }
 
 export const adminApp = admin.apps.length ? admin.app() : null
 export const adminStorage = adminApp ? adminApp.storage().bucket() : null
+
+console.log('🔍 Firebase Admin Status:', {
+  app: !!adminApp,
+  storage: !!adminStorage,
+  serviceAccount: !!getServiceAccount()
+})
 
 
