@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
 import { useToast } from '@/hooks/use-toast'
-import { updateDocument } from '@/lib/firestore'
+import { updateDocument, getDocument, getCollection, addDocument } from '@/lib/firestore'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
 
 export const useDocumentVerification = () => {
@@ -25,31 +25,75 @@ export const useDocumentVerification = () => {
     try {
       console.log('🔍 Buscando verificações de documentos...')
       
+      // Buscar verificações existentes no Firestore
+      const existingVerifications = await getCollection('verifications')
+      console.log(`✅ Encontradas ${existingVerifications.length} verificações no Firestore`)
+
       // Buscar documentos do Firebase Storage
       const storageProviders = await getAllPendingProviders()
       console.log(`✅ Encontrados ${storageProviders.length} prestadores com documentos`)
 
-      // Buscar dados dos usuários do Firestore para completar as informações
       const verificationsData: DocumentVerification[] = []
       
-      for (const provider of storageProviders) {
+      // Processar verificações existentes
+      for (const verification of existingVerifications) {
         try {
-          // Aqui você buscaria os dados do usuário do Firestore
-          // Por enquanto, vamos usar dados mockados baseados no ID do prestador
-          const verification: DocumentVerification = {
-            id: `verification_${provider.providerId}`,
-            providerId: provider.providerId,
-            providerName: `Prestador ${provider.providerId.slice(-6)}`, // Mock
-            providerEmail: `prestador${provider.providerId.slice(-6)}@email.com`, // Mock
-            providerPhone: '(11) 99999-9999', // Mock
-            status: 'pending',
-            documents: provider.documents,
-            submittedAt: provider.uploadedAt,
+          // Buscar dados do usuário no Firestore
+          const userData = await getDocument('users', verification.providerId)
+          
+          const verificationData: DocumentVerification = {
+            id: verification.id,
+            providerId: verification.providerId,
+            providerName: userData?.name || `Prestador ${verification.providerId.slice(-6)}`,
+            providerEmail: userData?.email || `prestador${verification.providerId.slice(-6)}@email.com`,
+            providerPhone: userData?.phone || '(11) 99999-9999',
+            status: verification.status || 'pending',
+            documents: verification.documents || {},
+            submittedAt: verification.submittedAt || new Date(),
+            reviewedAt: verification.reviewedAt,
+            reviewedBy: verification.reviewedBy,
+            rejectionReason: verification.rejectionReason,
           }
           
-          verificationsData.push(verification)
+          verificationsData.push(verificationData)
         } catch (error) {
-          console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
+          console.error(`Erro ao processar verificação ${verification.id}:`, error)
+        }
+      }
+
+      // Processar novos prestadores que ainda não têm verificação
+      for (const provider of storageProviders) {
+        const existingVerification = verificationsData.find(v => v.providerId === provider.providerId)
+        if (!existingVerification) {
+          try {
+            // Buscar dados do usuário no Firestore
+            const userData = await getDocument('users', provider.providerId)
+            
+            // Criar nova verificação
+            const newVerification: DocumentVerification = {
+              id: `verification_${provider.providerId}`,
+              providerId: provider.providerId,
+              providerName: userData?.name || `Prestador ${provider.providerId.slice(-6)}`,
+              providerEmail: userData?.email || `prestador${provider.providerId.slice(-6)}@email.com`,
+              providerPhone: userData?.phone || '(11) 99999-9999',
+              status: 'pending',
+              documents: provider.documents,
+              submittedAt: provider.uploadedAt,
+            }
+            
+            // Salvar no Firestore
+            await addDocument('verifications', newVerification.id, {
+              providerId: newVerification.providerId,
+              status: newVerification.status,
+              documents: newVerification.documents,
+              submittedAt: newVerification.submittedAt,
+              createdAt: new Date(),
+            })
+            
+            verificationsData.push(newVerification)
+          } catch (error) {
+            console.error(`Erro ao processar novo prestador ${provider.providerId}:`, error)
+          }
         }
       }
 
@@ -140,6 +184,24 @@ export const useDocumentVerification = () => {
         updatedAt: new Date()
       })
 
+      // Atualizar status do usuário para ativo
+      await updateDocument('users', verification.providerId, {
+        status: 'active',
+        verifiedAt: new Date(),
+        verifiedBy: reviewedBy,
+        updatedAt: new Date()
+      })
+
+      // Criar histórico de aprovação
+      await addDocument('verification_history', `${verificationId}_${Date.now()}`, {
+        verificationId,
+        providerId: verification.providerId,
+        action: 'approved',
+        reviewedBy,
+        reviewedAt: new Date(),
+        notes: 'Verificação aprovada - prestador habilitado para prestar serviços'
+      })
+
       // Atualizar estado local
       setVerifications(prev => prev.map(v => 
         v.id === verificationId 
@@ -149,7 +211,7 @@ export const useDocumentVerification = () => {
 
       toast({
         title: "Verificação aprovada",
-        description: `${verification.providerName} foi aprovado como prestador.`,
+        description: `${verification.providerName} foi aprovado como prestador e está habilitado para prestar serviços.`,
       })
 
       return true
@@ -181,6 +243,26 @@ export const useDocumentVerification = () => {
         updatedAt: new Date()
       })
 
+      // Atualizar status do usuário para rejeitado
+      await updateDocument('users', verification.providerId, {
+        status: 'rejected',
+        rejectedAt: new Date(),
+        rejectedBy: reviewedBy,
+        rejectionReason,
+        updatedAt: new Date()
+      })
+
+      // Criar histórico de rejeição
+      await addDocument('verification_history', `${verificationId}_${Date.now()}`, {
+        verificationId,
+        providerId: verification.providerId,
+        action: 'rejected',
+        reviewedBy,
+        reviewedAt: new Date(),
+        rejectionReason,
+        notes: `Verificação rejeitada: ${rejectionReason}`
+      })
+
       // Atualizar estado local
       setVerifications(prev => prev.map(v => 
         v.id === verificationId 
@@ -190,7 +272,7 @@ export const useDocumentVerification = () => {
 
       toast({
         title: "Verificação rejeitada",
-        description: `${verification.providerName} foi rejeitado como prestador.`,
+        description: `${verification.providerName} foi rejeitado como prestador. O motivo foi registrado e o prestador será notificado.`,
         variant: "destructive"
       })
 
