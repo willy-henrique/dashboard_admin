@@ -6,27 +6,23 @@ import { generateClientCode, validateClientCode, encryptSensitiveData } from './
 // Inicializar Firebase Storage
 const storage = app ? getStorage(app) : null;
 
-// Buscar documentos de um prestador específico usando código criptografado
-export const getProviderDocuments = async (encryptedClientCode: string): Promise<ProviderDocuments | null> => {
+// Buscar documentos de um prestador específico
+export const getProviderDocuments = async (providerId: string): Promise<ProviderDocuments | null> => {
   if (!storage) {
     console.warn('Firebase Storage não inicializado');
     return null;
   }
 
   try {
-    // Validar e descriptografar código do cliente
-    const validation = validateClientCode(encryptedClientCode);
-    if (!validation.valid || !validation.clientId) {
-      console.warn('Código de cliente inválido');
-      return null;
-    }
-
-    const clientId = validation.clientId;
-    const storagePath = `Documentos/${clientId}`;
+    console.log(`🔍 Buscando documentos para prestador: ${providerId}`);
+    
+    const storagePath = `Documentos/${providerId}`;
     const folderRef = ref(storage, storagePath);
     
     // Listar todos os arquivos na pasta do prestador
     const result = await listAll(folderRef);
+    
+    console.log(`📁 Encontrados ${result.items.length} arquivos na pasta ${storagePath}`);
     
     if (result.items.length === 0) {
       console.log(`Nenhum documento encontrado para o prestador ${providerId}`);
@@ -34,7 +30,7 @@ export const getProviderDocuments = async (encryptedClientCode: string): Promise
     }
 
     const documents: ProviderDocuments = {
-      providerId: clientId,
+      providerId: providerId,
       documents: {},
       uploadedAt: new Date(),
       status: 'pending'
@@ -52,15 +48,20 @@ export const getProviderDocuments = async (encryptedClientCode: string): Promise
         // Determinar o tipo de documento baseado no nome do arquivo
         let docType: 'cpf' | 'cnh' | 'comprovante_residencia' | 'certificado' | 'outros' = 'outros';
         
-        if (fileName.includes('cpf') || fileName.includes('rg')) {
+        if (fileName.includes('cpf') || fileName.includes('rg') || fileName.includes('identidade')) {
           docType = 'cpf';
-        } else if (fileName.includes('cnh') || fileName.includes('habilitacao')) {
+        } else if (fileName.includes('cnh') || fileName.includes('habilitacao') || fileName.includes('carteira')) {
           docType = 'cnh';
-        } else if (fileName.includes('residencia') || fileName.includes('endereco') || fileName.includes('comprovante')) {
+        } else if (fileName.includes('residencia') || fileName.includes('endereco') || fileName.includes('comprovante') || fileName.includes('conta')) {
           docType = 'comprovante_residencia';
-        } else if (fileName.includes('certificado') || fileName.includes('curso') || fileName.includes('diploma')) {
+        } else if (fileName.includes('certificado') || fileName.includes('curso') || fileName.includes('diploma') || fileName.includes('formacao')) {
           docType = 'certificado';
+        } else {
+          // Se não conseguir identificar pelo nome, classificar como 'outros'
+          docType = 'outros';
         }
+        
+        console.log(`📄 Arquivo: ${itemRef.name} -> Tipo: ${docType}`);
 
         const document: StorageDocument = {
           id: itemRef.name,
@@ -77,6 +78,7 @@ export const getProviderDocuments = async (encryptedClientCode: string): Promise
           documents.documents[docType] = [];
         }
         documents.documents[docType]!.push(document);
+        console.log(`✅ Documento adicionado: ${document.name} (${docType})`);
 
         // Atualizar data de upload mais recente
         if (document.uploadedAt > documents.uploadedAt) {
@@ -114,16 +116,15 @@ export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => 
     // Para cada pasta de prestador, buscar os documentos
     for (const prefixRef of result.prefixes) {
       try {
-        const clientId = prefixRef.name;
+        const providerId = prefixRef.name;
+        console.log(`🔍 Processando prestador: ${providerId}`);
         
-        // Gerar código criptografado para este cliente
-        const encryptedClientCode = generateClientCode(clientId);
-        
-        // Buscar documentos usando código criptografado
-        const documents = await getProviderDocuments(encryptedClientCode);
+        // Buscar documentos diretamente usando o providerId
+        const documents = await getProviderDocuments(providerId);
         
         if (documents) {
           providers.push(documents);
+          console.log(`✅ Documentos carregados para prestador ${providerId}`);
         }
       } catch (error) {
         console.error(`Erro ao processar prestador ${prefixRef.name}:`, error);
@@ -174,8 +175,8 @@ export const downloadDocument = async (url: string, filename: string): Promise<v
 };
 
 // Verificar se um prestador tem documentos
-export const hasProviderDocuments = async (encryptedClientCode: string): Promise<boolean> => {
-  const documents = await getProviderDocuments(encryptedClientCode);
+export const hasProviderDocuments = async (providerId: string): Promise<boolean> => {
+  const documents = await getProviderDocuments(providerId);
   return documents !== null && Object.keys(documents.documents).length > 0;
 };
 
