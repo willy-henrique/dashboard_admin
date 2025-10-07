@@ -6,24 +6,15 @@ export async function GET() {
   try {
     console.log('🔍 API /api/providers/firebase-real - tentando Firebase Storage real')
     
-    // Tentar diferentes formatos de URL para o Firebase Storage
-    const firebaseUrls = [
-      // Formato 1: URL direta com encoding
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media",
-      
-      // Formato 2: URL sem encoding extra
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media",
-      
-      // Formato 3: URL com token
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media&token=public"
-    ]
+    // Removido: não testar URLs fixas; rota manterá apenas fallback de teste.
+    const firebaseUrls: string[] = []
     
     // Testar qual URL funciona
     let workingUrl = null
     for (const url of firebaseUrls) {
       try {
-        const response = await fetch(url, { method: 'HEAD' })
-        if (response.status === 200) {
+        const response = await fetch(url, { method: 'GET', headers: { Range: 'bytes=0-0' } })
+        if (response.status === 200 || response.status === 206) {
           workingUrl = url
           console.log('✅ URL funcionando:', url)
           break

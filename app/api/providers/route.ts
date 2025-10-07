@@ -65,51 +65,9 @@ export async function GET() {
       return NextResponse.json({ providers })
     }
     
-    // Fallback: URLs diretas do Firebase Storage (sem Admin SDK)
-    console.log('⚠️ Firebase Admin SDK não disponível - usando URLs diretas do Firebase Storage')
-    
-    const mockProviders = [
-      {
-        providerId: "zxyg0HWXZ8TWHEp1DTutmjA7BBz1",
-        documents: {
-          outros: [
-            {
-              id: "1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              name: "1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              url: "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media&token=direct",
-              type: "image",
-              size: 126197,
-              uploadedAt: new Date("2025-10-04"),
-              path: "Documentos/zxyg0HWXZ8TWHEp1DTutmjA7BBz1/1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png"
-            },
-            {
-              id: "1759591593489_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              name: "1759591593489_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              url: "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591593489_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media&token=direct",
-              type: "image",
-              size: 126197,
-              uploadedAt: new Date("2025-10-04"),
-              path: "Documentos/zxyg0HWXZ8TWHEp1DTutmjA7BBz1/1759591593489_Naruto_Uzumaki_%28Parte_I_-_HD%29.png"
-            },
-            {
-              id: "1759591602350_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              name: "1759591602350_Naruto_Uzumaki_%28Parte_I_-_HD%29.png",
-              url: "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591602350_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media&token=direct",
-              type: "image",
-              size: 126197,
-              uploadedAt: new Date("2025-10-04"),
-              path: "Documentos/zxyg0HWXZ8TWHEp1DTutmjA7BBz1/1759591602350_Naruto_Uzumaki_%28Parte_I_-_HD%29.png"
-            }
-          ]
-        },
-        uploadedAt: new Date("2025-10-04")
-      }
-    ]
-    
-    return NextResponse.json({ 
-      providers: mockProviders,
-      message: "Dados mockados com URLs reais do Firebase Storage"
-    })
+    // Fallback removido: sem dados mockados. A UI deve usar lib/storage.ts com getDownloadURL.
+    console.log('⚠️ Firebase Admin SDK não disponível - retornando lista vazia (sem mocks)')
+    return NextResponse.json({ providers: [] })
     
   } catch (e) {
     console.error('API providers error', e)

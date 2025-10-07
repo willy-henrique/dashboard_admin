@@ -6,12 +6,8 @@ export async function GET() {
   try {
     console.log('🔍 API /api/providers/proxy-images - usando proxy para imagens')
     
-    // URLs das imagens reais do Firebase Storage
-    const firebaseUrls = [
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media",
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591593489_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media",
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591602350_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media"
-    ]
+    // Removido: não usar URLs fixas. Esta rota mantém apenas fallback de teste.
+    const firebaseUrls: string[] = []
     
     // Testar se as URLs funcionam
     const workingUrls = []
