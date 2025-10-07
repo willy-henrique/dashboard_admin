@@ -5,7 +5,7 @@ import { StorageDocument, ProviderDocuments } from '@/types/verification';
 // Inicializar Firebase Storage (client) – usado somente em dev/local; no Vercel usaremos a API
 const storage = app ? getStorage(app) : null;
 
-// Buscar documentos de um prestador específico
+// Buscar documentos de um prestador específico pelo ID (sem montar URL manual)
 export const getProviderDocuments = async (providerId: string): Promise<ProviderDocuments | null> => {
   if (!storage) {
     console.warn('Firebase Storage não inicializado');
@@ -14,7 +14,6 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
 
   try {
     console.log(`🔍 Buscando documentos para prestador: ${providerId}`);
-    
     const storagePath = `Documentos/${providerId}`;
     const folderRef = ref(storage, storagePath);
     
@@ -29,7 +28,7 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
     }
 
     const documents: ProviderDocuments = {
-      providerId: providerId,
+      providerId,
       documents: {},
       uploadedAt: new Date(),
       status: 'pending'
@@ -88,7 +87,7 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
       }
     }
 
-    console.log(`✅ Documentos carregados para prestador ${clientId}:`, documents);
+    console.log(`✅ Documentos carregados para prestador ${providerId}:`, documents);
     return documents;
   } catch (error) {
     console.error(`Erro ao buscar documentos do prestador:`, error);
@@ -100,19 +99,35 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
 export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => {
   // Em produção, buscar via API interna (Admin SDK), para não depender de regras públicas
   try {
-    const res = await fetch('/api/providers/proxy-images', { cache: 'no-store' })
-    if (!res.ok) return []
-    const data = await res.json()
-    const providers: ProviderDocuments[] = (data.providers || []).map((p: any) => ({
-      providerId: p.providerId,
-      documents: p.documents,
-      uploadedAt: new Date(p.uploadedAt),
-      status: 'pending',
-    }))
-    return providers
-  } catch (e) {
-    console.error('getAllPendingProviders API error', e)
-    return []
+    const storagePath = 'Documentos';
+    const folderRef = ref(storage, storagePath);
+    
+    // Listar todas as pastas de prestadores
+    const result = await listAll(folderRef);
+    
+    const providers: ProviderDocuments[] = [];
+    
+    // Para cada pasta de prestador, buscar os documentos
+    for (const prefixRef of result.prefixes) {
+      try {
+        const clientId = prefixRef.name;
+
+        // Buscar documentos usando o ID do prestador diretamente
+        const documents = await getProviderDocuments(clientId);
+        
+        if (documents) {
+          providers.push(documents);
+        }
+      } catch (error) {
+        console.error(`Erro ao processar prestador ${prefixRef.name}:`, error);
+      }
+    }
+
+    console.log(`✅ Total de prestadores com documentos: ${providers.length}`);
+    return providers;
+  } catch (error) {
+    console.error('Erro ao buscar todos os prestadores:', error);
+    return [];
   }
 };
 
