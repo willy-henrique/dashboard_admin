@@ -6,30 +6,21 @@ export async function GET() {
   try {
     console.log('🔍 Testando acesso ao Firebase Storage...')
     
-    // URLs de teste com diferentes formatos
+    // URL de teste (codificação simples: encodeURIComponent no caminho inteiro)
     const testUrls = [
-      // Formato 1: URL direta com alt=media
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media",
-      
-      // Formato 2: URL com encoding diferente
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%252Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%252F1759591584119_Naruto_Uzumaki_%252528Parte_I_-_HD%252529.png?alt=media",
-      
-      // Formato 3: URL sem encoding
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos/zxyg0HWXZ8TWHEp1DTutmjA7BBz1/1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png?alt=media",
-      
-      // Formato 4: URL com token v4 (pode funcionar)
-      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%2528Parte_I_-_HD%2529.png?alt=media&token=test"
+      "https://firebasestorage.googleapis.com/v0/b/aplicativoservico-143c2.appspot.com/o/Documentos%2Fzxyg0HWXZ8TWHEp1DTutmjA7BBz1%2F1759591584119_Naruto_Uzumaki_%28Parte_I_-_HD%29.png?alt=media"
     ]
     
     const results = []
     
     for (const url of testUrls) {
       try {
-        const response = await fetch(url, { method: 'HEAD' })
+        // Usar GET com Range para checagem leve (HEAD não é suportado pelo endpoint alt=media)
+        const response = await fetch(url, { method: 'GET', headers: { Range: 'bytes=0-0' } })
         results.push({
           url,
           status: response.status,
-          accessible: response.status === 200,
+          accessible: response.status === 200 || response.status === 206,
           headers: Object.fromEntries(response.headers.entries())
         })
         console.log(`✅ URL testada: ${response.status} - ${url}`)
