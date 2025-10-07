@@ -51,6 +51,8 @@ export const useDocumentVerification = () => {
             providerName: user?.fullName || user?.name || `Prestador ${provider.providerId.slice(-8)}`,
             providerEmail: user?.email || '',
             providerPhone: user?.phone,
+            providerCpf: (user as any)?.cpf || (user as any)?.document || '',
+            providerAddress: (user as any)?.address || (user as any)?.endereco || '',
             status: 'pending',
             documents: provider.documents,
             submittedAt: provider.uploadedAt,

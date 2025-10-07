@@ -513,11 +513,23 @@ export const VerificationsPageContent = () => {
                                     {verification.providerEmail}
                                   </div>
                                   {verification.providerPhone && (
-                                    <div className="flex items-center gap-1">
-                                      <Phone className="h-4 w-4" />
-                                      {verification.providerPhone}
-                                    </div>
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-4 w-4" />
+                                  {verification.providerPhone}
+                                </div>
                                   )}
+                              {verification.providerCpf && (
+                                <div className="flex items-center gap-1">
+                                  <FileText className="h-4 w-4" />
+                                  {verification.providerCpf}
+                                </div>
+                              )}
+                              {verification.providerAddress && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {verification.providerAddress}
+                                </div>
+                              )}
                                 </div>
                               </div>
                             </div>

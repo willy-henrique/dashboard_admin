@@ -27,6 +27,8 @@ export interface DocumentVerification {
   providerName: string;
   providerEmail: string;
   providerPhone?: string;
+  providerCpf?: string;
+  providerAddress?: string;
   status: 'pending' | 'approved' | 'rejected';
   documents: ProviderDocuments['documents'];
   submittedAt: Date;

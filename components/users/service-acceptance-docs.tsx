@@ -135,6 +135,24 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
                 </div>
               </div>
             )}
+            {verification.providerCpf && (
+              <div className="flex items-center gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">CPF</p>
+                  <p className="text-sm text-muted-foreground">{verification.providerCpf}</p>
+                </div>
+              </div>
+            )}
+            {verification.providerAddress && (
+              <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Endereço</p>
+                  <p className="text-sm text-muted-foreground">{verification.providerAddress}</p>
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
