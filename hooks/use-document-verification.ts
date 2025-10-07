@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
 import { useToast } from '@/hooks/use-toast'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
+import { updateDocument } from '@/lib/firestore'
+import { UsersService } from '@/lib/services/users-service'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -129,6 +131,29 @@ export const useDocumentVerification = () => {
       const verification = verifications.find(v => v.id === verificationId)
       if (!verification) {
         throw new Error('Verificação não encontrada')
+      }
+
+      // Persistir aprovação
+      try {
+        await updateDocument('verifications', verificationId, {
+          status: 'approved',
+          reviewedAt: new Date(),
+          reviewedBy,
+          updatedAt: new Date()
+        })
+      } catch (e) {
+        console.warn('Apenas estado local atualizado; coleção verifications pode não existir.', e)
+      }
+
+      // Promover usuário a prestador
+      try {
+        await UsersService.updateUser(verification.providerId, {
+          userType: 'provider',
+          role: 'prestador',
+          verificado: true
+        } as any)
+      } catch (e) {
+        console.error('Erro ao promover usuário a prestador:', e)
       }
 
       // Atualizar estado local
