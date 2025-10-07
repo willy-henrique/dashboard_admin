@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
 import { updateDocument } from '@/lib/firestore'
 import { UsersService } from '@/lib/services/users-service'
+import type { UserData } from '@/lib/services/firestore-analytics'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -35,13 +36,21 @@ export const useDocumentVerification = () => {
       // Processar todos os prestadores encontrados no Storage
       for (const provider of storageProviders) {
         try {
-          // Criar verificação diretamente dos dados do Storage
+          // Buscar dados reais do usuário no Firestore (se existir)
+          let user: UserData | null = null
+          try {
+            user = await UsersService.getUser(provider.providerId)
+          } catch (e) {
+            console.warn('Sem dados de usuário no Firestore para', provider.providerId)
+          }
+
+          // Criar verificação com dados reais quando disponíveis
           const verification: DocumentVerification = {
             id: `verification_${provider.providerId}`,
             providerId: provider.providerId,
-            providerName: `Prestador ${provider.providerId.slice(-8)}`,
-            providerEmail: `prestador${provider.providerId.slice(-8)}@email.com`,
-            providerPhone: '(11) 99999-9999',
+            providerName: user?.fullName || user?.name || `Prestador ${provider.providerId.slice(-8)}`,
+            providerEmail: user?.email || '',
+            providerPhone: user?.phone,
             status: 'pending',
             documents: provider.documents,
             submittedAt: provider.uploadedAt,
