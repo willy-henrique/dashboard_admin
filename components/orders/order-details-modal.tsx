@@ -164,14 +164,12 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold">
-              Detalhes do Pedido
-            </DialogTitle>
+          <DialogTitle className="text-xl font-semibold flex items-center justify-between">
+            Detalhes do Pedido
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
-          </div>
+          </DialogTitle>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">

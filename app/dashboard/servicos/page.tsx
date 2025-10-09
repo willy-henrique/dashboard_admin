@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useOrdersRealtime, useActiveOrders } from "@/hooks/use-orders-realtime"
-import { OrderDetailsModal } from "@/components/orders/order-details-modal"
+import { OrderDetailsModalSimple } from "@/components/orders/order-details-modal-simple"
 import { 
   Package, 
   Clock, 
@@ -483,7 +483,7 @@ export default function ServicosPage() {
       </Tabs>
 
       {/* Modal de Detalhes do Pedido */}
-      <OrderDetailsModal
+      <OrderDetailsModalSimple
         order={selectedOrder}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
