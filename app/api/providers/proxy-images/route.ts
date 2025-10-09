@@ -4,9 +4,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    console.log('🔍 API /api/providers/proxy-images - usando proxy para imagens')
-    
-    // Removido: não usar URLs fixas. Esta rota mantém apenas fallback de teste.
+    // API Proxy para imagens do Firebase Storage
     const firebaseUrls: string[] = []
     
     // Testar se as URLs funcionam
@@ -16,12 +14,9 @@ export async function GET() {
         const response = await fetch(url, { method: 'HEAD' })
         if (response.status === 200) {
           workingUrls.push(url)
-          console.log('✅ URL funcionando:', url)
-        } else {
-          console.log('❌ URL não funciona:', response.status, url)
         }
       } catch (error) {
-        console.log('❌ Erro ao testar URL:', error.message)
+        // URL não acessível, continuar testando outras
       }
     }
     
@@ -113,15 +108,15 @@ export async function GET() {
     
     return NextResponse.json({ 
       providers: fallbackProviders,
-      message: "Fallback: imagens de teste (Firebase Storage não acessível)",
+      message: "Utilizando imagens de fallback",
       firebaseWorking: false
     })
 
   } catch (error) {
-    console.error('❌ Erro na API proxy-images:', error)
+    console.error('Erro ao processar imagens:', error)
     return NextResponse.json({ 
       providers: [],
-      message: "Erro interno",
+      message: "Erro ao carregar imagens",
       firebaseWorking: false
     }, { status: 500 })
   }

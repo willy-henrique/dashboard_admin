@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
 import { useToast } from '@/hooks/use-toast'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
-import { updateDocument } from '@/lib/firestore'
-import { UsersService } from '@/lib/services/users-service'
-import type { UserData } from '@/lib/services/firestore-analytics'
+import { db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -36,30 +35,30 @@ export const useDocumentVerification = () => {
       // Processar todos os prestadores encontrados no Storage
       for (const provider of storageProviders) {
         try {
-          // Buscar dados reais do usuário no Firestore (se existir)
-          let user: UserData | null = null
-          try {
-            user = await UsersService.getUser(provider.providerId)
-          } catch (e) {
-            console.warn('Sem dados de usuário no Firestore para', provider.providerId)
-          }
-
-          // Criar verificação com dados reais quando disponíveis
+          // Buscar dados reais do usuário no Firestore
+          const userDoc = await getDoc(doc(db, 'users', provider.providerId))
+          const userData = userDoc.exists() ? userDoc.data() : null
+          
+          // Criar verificação com dados reais do Firestore
           const verification: DocumentVerification = {
             id: `verification_${provider.providerId}`,
             providerId: provider.providerId,
-            providerName: user?.fullName || user?.name || `Prestador ${provider.providerId.slice(-8)}`,
-            providerEmail: user?.email || '',
-            providerPhone: user?.phone,
-            providerCpf: (user as any)?.cpf || (user as any)?.document || '',
-            providerAddress: (user as any)?.address || (user as any)?.endereco || '',
+            providerName: userData?.fullName || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
+            providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
+            providerPhone: userData?.phone || userData?.phoneNumber || '',
+            providerCpf: userData?.cpf || userData?.document || '',
+            providerRg: userData?.rg || '',
+            providerAddress: userData?.address?.street 
+              ? `${userData.address.street}, ${userData.address.number || 'S/N'} - ${userData.address.city || ''}, ${userData.address.state || ''}`
+              : userData?.address || '',
+            providerBirthDate: userData?.birthDate || '',
             status: 'pending',
             documents: provider.documents,
             submittedAt: provider.uploadedAt,
           }
           
           verificationsData.push(verification)
-          console.log(`✅ Verificação criada para prestador ${provider.providerId}`)
+          console.log(`✅ Verificação criada para prestador ${verification.providerName} (${provider.providerId})`)
         } catch (error) {
           console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
         }
@@ -110,12 +109,22 @@ export const useDocumentVerification = () => {
       const documents = await getProviderDocuments(providerId)
       if (!documents) return null
 
+      // Buscar dados reais do usuário no Firestore
+      const userDoc = await getDoc(doc(db, 'users', providerId))
+      const userData = userDoc.exists() ? userDoc.data() : null
+
       return {
         id: `verification_${providerId}`,
         providerId,
-        providerName: `Prestador ${providerId.slice(-6)}`, // Mock
-        providerEmail: `prestador${providerId.slice(-6)}@email.com`, // Mock
-        providerPhone: '(11) 99999-9999', // Mock
+        providerName: userData?.fullName || userData?.displayName || `Prestador ${providerId.slice(-6)}`,
+        providerEmail: userData?.email || `prestador${providerId.slice(-6)}@email.com`,
+        providerPhone: userData?.phone || userData?.phoneNumber || '',
+        providerCpf: userData?.cpf || userData?.document || '',
+        providerRg: userData?.rg || '',
+        providerAddress: userData?.address?.street 
+          ? `${userData.address.street}, ${userData.address.number || 'S/N'} - ${userData.address.city || ''}, ${userData.address.state || ''}`
+          : userData?.address || '',
+        providerBirthDate: userData?.birthDate || '',
         status: 'pending',
         documents: documents.documents,
         submittedAt: documents.uploadedAt,
@@ -142,29 +151,6 @@ export const useDocumentVerification = () => {
       const verification = verifications.find(v => v.id === verificationId)
       if (!verification) {
         throw new Error('Verificação não encontrada')
-      }
-
-      // Persistir aprovação
-      try {
-        await updateDocument('verifications', verificationId, {
-          status: 'approved',
-          reviewedAt: new Date(),
-          reviewedBy,
-          updatedAt: new Date()
-        })
-      } catch (e) {
-        console.warn('Apenas estado local atualizado; coleção verifications pode não existir.', e)
-      }
-
-      // Promover usuário a prestador
-      try {
-        await UsersService.updateUser(verification.providerId, {
-          userType: 'provider',
-          role: 'prestador',
-          verificado: true
-        } as any)
-      } catch (e) {
-        console.error('Erro ao promover usuário a prestador:', e)
       }
 
       // Atualizar estado local
@@ -237,7 +223,9 @@ export const useDocumentVerification = () => {
       filtered = filtered.filter(v => 
         v.providerName.toLowerCase().includes(searchLower) ||
         v.providerEmail.toLowerCase().includes(searchLower) ||
-        v.providerPhone?.includes(searchLower)
+        v.providerPhone?.includes(searchLower) ||
+        v.providerCpf?.toLowerCase().includes(searchLower) ||
+        v.providerRg?.toLowerCase().includes(searchLower)
       )
     }
 

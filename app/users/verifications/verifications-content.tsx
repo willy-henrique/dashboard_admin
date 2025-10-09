@@ -358,7 +358,7 @@ export const VerificationsPageContent = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar por nome, email, telefone..." 
+                  placeholder="Buscar por nome, email, telefone, CPF, RG..." 
                   value={search} 
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10"
@@ -513,23 +513,26 @@ export const VerificationsPageContent = () => {
                                     {verification.providerEmail}
                                   </div>
                                   {verification.providerPhone && (
-                                <div className="flex items-center gap-1">
-                                  <Phone className="h-4 w-4" />
-                                  {verification.providerPhone}
-                                </div>
+                                    <div className="flex items-center gap-1">
+                                      <Phone className="h-4 w-4" />
+                                      {verification.providerPhone}
+                                    </div>
                                   )}
-                              {verification.providerCpf && (
-                                <div className="flex items-center gap-1">
-                                  <FileText className="h-4 w-4" />
-                                  {verification.providerCpf}
                                 </div>
-                              )}
-                              {verification.providerAddress && (
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="h-4 w-4" />
-                                  {verification.providerAddress}
-                                </div>
-                              )}
+                                {/* CPF e RG em destaque */}
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {verification.providerCpf && (
+                                    <div className="flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+                                      <FileText className="h-4 w-4 text-blue-600" />
+                                      <span className="text-sm font-semibold text-blue-700">CPF: {verification.providerCpf}</span>
+                                    </div>
+                                  )}
+                                  {verification.providerRg && (
+                                    <div className="flex items-center gap-1 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+                                      <FileText className="h-4 w-4 text-purple-600" />
+                                      <span className="text-sm font-semibold text-purple-700">RG: {verification.providerRg}</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -735,6 +738,74 @@ export const VerificationsPageContent = () => {
                         </p>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Credenciais e Documentos Pessoais - DESTAQUE */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 shadow-sm border-2 border-blue-200">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-blue-800">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    Credenciais e Documentos Pessoais
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {selectedVerification.providerCpf && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm border border-blue-200">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                            <FileText className="h-6 w-6 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase">CPF</p>
+                            <p className="text-lg font-bold text-blue-900">{selectedVerification.providerCpf}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedVerification.providerRg && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm border border-purple-200">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <FileText className="h-6 w-6 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase">RG</p>
+                            <p className="text-lg font-bold text-purple-900">{selectedVerification.providerRg}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedVerification.providerBirthDate && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                            <Calendar className="h-6 w-6 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase">Data de Nascimento</p>
+                            <p className="text-lg font-bold text-green-900">{selectedVerification.providerBirthDate}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedVerification.providerAddress && (
+                      <div className="bg-white rounded-lg p-4 shadow-sm border border-orange-200 md:col-span-2 lg:col-span-3">
+                        <div className="flex items-center gap-3">
+                          <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                            <MapPin className="h-6 w-6 text-orange-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-gray-500 uppercase">Endereço</p>
+                            <p className="text-base font-semibold text-orange-900">{selectedVerification.providerAddress}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {!selectedVerification.providerCpf && !selectedVerification.providerRg && !selectedVerification.providerBirthDate && !selectedVerification.providerAddress && (
+                      <div className="col-span-full text-center py-4 text-gray-500">
+                        <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                        <p>Nenhuma credencial adicional cadastrada</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

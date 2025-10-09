@@ -4,9 +4,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    console.log('🔍 API /api/providers/firebase-real - tentando Firebase Storage real')
-    
-    // Removido: não testar URLs fixas; rota manterá apenas fallback de teste.
+    // Firebase Storage Real - Rota de fallback para documentos
     const firebaseUrls: string[] = []
     
     // Testar qual URL funciona
@@ -16,11 +14,10 @@ export async function GET() {
         const response = await fetch(url, { method: 'GET', headers: { Range: 'bytes=0-0' } })
         if (response.status === 200 || response.status === 206) {
           workingUrl = url
-          console.log('✅ URL funcionando:', url)
           break
         }
       } catch (error) {
-        console.log('❌ URL não funciona:', url)
+        // URL não acessível, tentar próxima
       }
     }
     
@@ -62,16 +59,17 @@ export async function GET() {
       }
     ]
     
-    console.log(workingUrl ? '✅ Usando Firebase Storage real' : '⚠️ Usando fallback Unsplash')
-    
     return NextResponse.json({ 
       providers: realProviders,
-      message: workingUrl ? "Firebase Storage real funcionando" : "Fallback para imagens de teste",
+      message: workingUrl ? "Firebase Storage conectado com sucesso" : "Utilizando imagens de fallback",
       firebaseWorking: !!workingUrl
     })
 
-  } catch (e) {
-    console.error('❌ Erro na API firebase-real:', e)
-    return NextResponse.json({ providers: [] }, { status: 500 })
+  } catch (error) {
+    console.error('Erro ao acessar Firebase Storage:', error)
+    return NextResponse.json({ 
+      providers: [], 
+      message: "Erro ao carregar prestadores" 
+    }, { status: 500 })
   }
 }

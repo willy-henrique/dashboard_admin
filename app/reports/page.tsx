@@ -353,20 +353,6 @@ export default function ReportsPage() {
           </TabsContent>
         </Tabs>
 
-        {/* Chat Widget */}
-        <div className="fixed bottom-4 right-4">
-          <div className="bg-blue-600 text-white p-3 rounded-lg shadow-lg max-w-sm">
-            <div className="flex items-center space-x-2 mb-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold">A</span>
-              </div>
-              <div>
-                <div className="font-semibold text-sm">Mas só pra te passar uma explicação...</div>
-                <div className="text-xs opacity-75">Ana • Agora</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </AdminLayout>
   )

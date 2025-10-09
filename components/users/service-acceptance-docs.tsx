@@ -115,15 +115,15 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
             <div className="flex items-center gap-3">
               <User className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Nome</p>
-                <p className="text-sm text-muted-foreground">{verification.providerName}</p>
+                <p className="text-sm font-medium">Nome Completo</p>
+                <p className="text-sm font-semibold text-gray-900">{verification.providerName}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Email</p>
-                <p className="text-sm text-muted-foreground">{verification.providerEmail}</p>
+                <p className="text-sm font-semibold text-gray-900">{verification.providerEmail}</p>
               </div>
             </div>
             {verification.providerPhone && (
@@ -131,37 +131,92 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
                 <Phone className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Telefone</p>
-                  <p className="text-sm text-muted-foreground">{verification.providerPhone}</p>
-                </div>
-              </div>
-            )}
-            {verification.providerCpf && (
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">CPF</p>
-                  <p className="text-sm text-muted-foreground">{verification.providerCpf}</p>
-                </div>
-              </div>
-            )}
-            {verification.providerAddress && (
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Endereço</p>
-                  <p className="text-sm text-muted-foreground">{verification.providerAddress}</p>
+                  <p className="text-sm font-semibold text-gray-900">{verification.providerPhone}</p>
                 </div>
               </div>
             )}
             <div className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Cadastro</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">Data de Cadastro</p>
+                <p className="text-sm font-semibold text-gray-900">
                   {format(verification.submittedAt, "dd/MM/yyyy", { locale: ptBR })}
                 </p>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Credenciais e Documentos Pessoais - DESTAQUE */}
+      <Card className="border-2 border-blue-200 shadow-md bg-gradient-to-br from-blue-50 to-indigo-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg text-blue-800">
+            <Shield className="h-5 w-5 text-blue-600" />
+            Credenciais e Documentos de Identidade
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {verification.providerCpf && (
+              <div className="bg-white rounded-lg p-4 shadow-sm border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">CPF</p>
+                    <p className="text-lg font-bold text-blue-900">{verification.providerCpf}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {verification.providerRg && (
+              <div className="bg-white rounded-lg p-4 shadow-sm border border-purple-200">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">RG</p>
+                    <p className="text-lg font-bold text-purple-900">{verification.providerRg}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {verification.providerBirthDate && (
+              <div className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <Calendar className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Data de Nascimento</p>
+                    <p className="text-lg font-bold text-green-900">{verification.providerBirthDate}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {verification.providerAddress && (
+              <div className="bg-white rounded-lg p-4 shadow-sm border border-orange-200 md:col-span-2">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Endereço Completo</p>
+                    <p className="text-base font-semibold text-orange-900">{verification.providerAddress}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            {!verification.providerCpf && !verification.providerRg && !verification.providerBirthDate && !verification.providerAddress && (
+              <div className="col-span-full text-center py-6 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
+                <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
+                <p className="font-semibold">Atenção: Credenciais não cadastradas</p>
+                <p className="text-sm mt-1">O prestador não forneceu CPF, RG ou outros dados pessoais no cadastro.</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

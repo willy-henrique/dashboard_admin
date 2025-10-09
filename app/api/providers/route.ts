@@ -5,11 +5,8 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    console.log('🔍 API /api/providers chamada')
-    
-    // Tentar usar Firebase Admin SDK se disponível
+    // Buscar prestadores via Firebase Admin SDK
     if (adminStorage) {
-      console.log('✅ Usando Firebase Admin SDK')
       
       const [files] = await adminStorage.getFiles({ prefix: 'Documentos/' })
       const dirMap = new Map<string, any[]>()
@@ -65,12 +62,17 @@ export async function GET() {
       return NextResponse.json({ providers })
     }
     
-    // Fallback removido: sem dados mockados. A UI deve usar lib/storage.ts com getDownloadURL.
-    console.log('⚠️ Firebase Admin SDK não disponível - retornando lista vazia (sem mocks)')
-    return NextResponse.json({ providers: [] })
+    // Firebase Admin SDK não disponível
+    return NextResponse.json({ 
+      providers: [],
+      message: "Firebase Admin SDK não configurado" 
+    })
     
-  } catch (e) {
-    console.error('API providers error', e)
-    return NextResponse.json({ providers: [] }, { status: 200 })
+  } catch (error) {
+    console.error('Erro ao buscar prestadores:', error)
+    return NextResponse.json({ 
+      providers: [],
+      message: "Erro ao carregar prestadores"
+    }, { status: 200 })
   }
 }
