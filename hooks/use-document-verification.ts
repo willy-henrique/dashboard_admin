@@ -59,7 +59,8 @@ export const useDocumentVerification = () => {
             cpf: userData?.cpf,
             telefone: userData?.phone || userData?.telefone,
             email: userData?.email,
-            endereco: userData?.address || userData?.endereco
+            endereco: userData?.address || userData?.endereco,
+            enderecoTipo: typeof userData?.address
           })
           
           // Criar verificação com dados reais do Firestore
@@ -71,7 +72,10 @@ export const useDocumentVerification = () => {
             providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
             providerCpf: userData?.cpf || userData?.document || '',
             providerRg: userData?.rg || '',
-            providerAddress: userData?.address || userData?.endereco || '',
+            providerAddress: typeof userData?.address === 'string' ? userData.address : 
+                           typeof userData?.address === 'object' && userData?.address ? 
+                           `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
+                           userData?.endereco || '',
             providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
             status: 'pending',
             documents: provider.documents,
@@ -151,7 +155,10 @@ export const useDocumentVerification = () => {
         providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
         providerCpf: userData?.cpf || userData?.document || '',
         providerRg: userData?.rg || '',
-        providerAddress: userData?.address || userData?.endereco || '',
+        providerAddress: typeof userData?.address === 'string' ? userData.address : 
+                       typeof userData?.address === 'object' && userData?.address ? 
+                       `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
+                       userData?.endereco || '',
         providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
         status: 'pending',
         documents: documents.documents,
