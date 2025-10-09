@@ -76,6 +76,11 @@ export default function ServicosPage() {
     setSelectedOrder(null)
   }
 
+  const handleOrderUpdated = () => {
+    // A página já atualiza automaticamente via useOrdersRealtime
+    // Esta função é chamada quando o status é atualizado
+  }
+
   const getStatusBadge = (order: any) => {
     const status = order.status || 'pending'
     
@@ -487,6 +492,7 @@ export default function ServicosPage() {
         order={selectedOrder}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        onOrderUpdated={handleOrderUpdated}
       />
     </div>
   )

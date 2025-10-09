@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { UpdateStatusModal } from "./update-status-modal"
 import { 
   X, 
   User, 
@@ -13,21 +14,32 @@ import {
   Package, 
   AlertTriangle,
   MessageSquare,
-  Eye
+  Eye,
+  Edit3
 } from "lucide-react"
 
 interface OrderDetailsModalProps {
   order: any
   isOpen: boolean
   onClose: () => void
+  onOrderUpdated?: () => void
 }
 
-export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsModalProps) {
+export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated }: OrderDetailsModalProps) {
+  const [showUpdateStatus, setShowUpdateStatus] = useState(false)
+
   if (!isOpen || !order) return null
 
   const handleViewChat = () => {
     const chatUrl = `/dashboard/controle/chat?orderId=${order.id}&protocolo=${order.id.slice(-8)}`
     window.open(chatUrl, '_blank')
+  }
+
+  const handleStatusUpdated = () => {
+    if (onOrderUpdated) {
+      onOrderUpdated()
+    }
+    setShowUpdateStatus(false)
   }
 
   const getStatusColor = (status: string) => {
@@ -200,8 +212,12 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
                   <MessageSquare className="h-4 w-4" />
                   Abrir Chat
                 </Button>
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Package className="h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                  onClick={() => setShowUpdateStatus(true)}
+                >
+                  <Edit3 className="h-4 w-4" />
                   Atualizar Status
                 </Button>
                 <Button variant="outline" className="flex items-center gap-2">
@@ -213,6 +229,14 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
           </Card>
         </div>
       </div>
+
+      {/* Modal de Atualização de Status */}
+      <UpdateStatusModal
+        order={order}
+        isOpen={showUpdateStatus}
+        onClose={() => setShowUpdateStatus(false)}
+        onStatusUpdated={handleStatusUpdated}
+      />
     </div>
   )
 }
