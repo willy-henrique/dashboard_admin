@@ -43,15 +43,13 @@ export const useDocumentVerification = () => {
           const verification: DocumentVerification = {
             id: `verification_${provider.providerId}`,
             providerId: provider.providerId,
-            providerName: userData?.fullName || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
+            providerName: userData?.nome || userData?.fullName || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
             providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
-            providerPhone: userData?.phone || userData?.phoneNumber || '',
+            providerPhone: userData?.telefone || userData?.phone || userData?.phoneNumber || '',
             providerCpf: userData?.cpf || userData?.document || '',
             providerRg: userData?.rg || '',
-            providerAddress: userData?.address?.street 
-              ? `${userData.address.street}, ${userData.address.number || 'S/N'} - ${userData.address.city || ''}, ${userData.address.state || ''}`
-              : userData?.address || '',
-            providerBirthDate: userData?.birthDate || '',
+            providerAddress: userData?.endereco || userData?.address || '',
+            providerBirthDate: userData?.dataNascimento || userData?.birthDate || '',
             status: 'pending',
             documents: provider.documents,
             submittedAt: provider.uploadedAt,
@@ -116,15 +114,13 @@ export const useDocumentVerification = () => {
       return {
         id: `verification_${providerId}`,
         providerId,
-        providerName: userData?.fullName || userData?.displayName || `Prestador ${providerId.slice(-6)}`,
+        providerName: userData?.nome || userData?.fullName || userData?.displayName || `Prestador ${providerId.slice(-6)}`,
         providerEmail: userData?.email || `prestador${providerId.slice(-6)}@email.com`,
-        providerPhone: userData?.phone || userData?.phoneNumber || '',
+        providerPhone: userData?.telefone || userData?.phone || userData?.phoneNumber || '',
         providerCpf: userData?.cpf || userData?.document || '',
         providerRg: userData?.rg || '',
-        providerAddress: userData?.address?.street 
-          ? `${userData.address.street}, ${userData.address.number || 'S/N'} - ${userData.address.city || ''}, ${userData.address.state || ''}`
-          : userData?.address || '',
-        providerBirthDate: userData?.birthDate || '',
+        providerAddress: userData?.endereco || userData?.address || '',
+        providerBirthDate: userData?.dataNascimento || userData?.birthDate || '',
         status: 'pending',
         documents: documents.documents,
         submittedAt: documents.uploadedAt,
