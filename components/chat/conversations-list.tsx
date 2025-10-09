@@ -20,27 +20,29 @@ interface ConversationsListProps {
   selectedConversationId?: string
   initialProtocolo?: string | null
   initialServicoId?: string | null
+  initialOrderId?: string | null
   compact?: boolean
 }
 
-export function ConversationsList({ onSelectConversation, selectedConversationId, initialProtocolo, initialServicoId, compact = false }: ConversationsListProps) {
+export function ConversationsList({ onSelectConversation, selectedConversationId, initialProtocolo, initialServicoId, initialOrderId, compact = false }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("")
   
   const { conversations, loading, error } = useChatConversations({ searchTerm })
 
   // Selecionar automaticamente a conversa baseada nos parâmetros iniciais
   useEffect(() => {
-    if (initialProtocolo && conversations.length > 0) {
+    if ((initialProtocolo || initialOrderId) && conversations.length > 0) {
       const matchingConversation = conversations.find(conv => 
         conv.orderProtocol === initialProtocolo || 
-        conv.orderId === initialServicoId
+        conv.orderId === initialServicoId ||
+        conv.orderId === initialOrderId
       )
       
       if (matchingConversation && matchingConversation.id !== selectedConversationId) {
         onSelectConversation(matchingConversation)
       }
     }
-  }, [initialProtocolo, initialServicoId, conversations, selectedConversationId, onSelectConversation])
+  }, [initialProtocolo, initialServicoId, initialOrderId, conversations, selectedConversationId, onSelectConversation])
   
   const { updateConversationStatus, updateConversationPriority, assignConversation } = useChatActions()
 

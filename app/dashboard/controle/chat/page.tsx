@@ -8,11 +8,13 @@ function ChatPageContent() {
   const searchParams = useSearchParams()
   const protocolo = searchParams.get('protocolo')
   const servicoId = searchParams.get('servico')
+  const orderId = searchParams.get('orderId')
 
   return (
     <ChatDashboard 
       initialProtocolo={protocolo} 
       initialServicoId={servicoId}
+      initialOrderId={orderId}
     />
   )
 }

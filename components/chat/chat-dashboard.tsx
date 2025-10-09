@@ -36,9 +36,10 @@ import { cn } from "@/lib/utils"
 interface ChatDashboardProps {
   initialProtocolo?: string | null
   initialServicoId?: string | null
+  initialOrderId?: string | null
 }
 
-export function ChatDashboard({ initialProtocolo, initialServicoId }: ChatDashboardProps) {
+export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrderId }: ChatDashboardProps) {
   const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
   const [activeTab, setActiveTab] = useState("overview")
 
@@ -160,6 +161,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId }: ChatDashbo
                     selectedConversationId={selectedConversation?.id}
                     initialProtocolo={initialProtocolo}
                     initialServicoId={initialServicoId}
+                    initialOrderId={initialOrderId}
                     compact={true}
                   />
                 </div>
@@ -226,6 +228,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId }: ChatDashbo
                     selectedConversationId={selectedConversation?.id}
                     initialProtocolo={initialProtocolo}
                     initialServicoId={initialServicoId}
+                    initialOrderId={initialOrderId}
                     compact={false}
                   />
                 </div>
