@@ -78,10 +78,6 @@ const navigation = [
     icon: ShoppingCart,
     children: [
       { name: "Todos os Pedidos", href: "/orders", icon: ShoppingCart },
-      { name: "Pedidos Pendentes", href: "/orders/pending", icon: Clock },
-      { name: "Pedidos Ativos", href: "/orders/active", icon: Activity },
-      { name: "Pedidos Concluídos", href: "/orders/completed", icon: CheckCircle },
-      { name: "Chat de Suporte", href: "/orders/chat", icon: MessageSquare },
     ],
   },
   {
