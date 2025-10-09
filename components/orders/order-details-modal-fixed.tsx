@@ -115,7 +115,7 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{zIndex: 50}}>
       <div className="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
@@ -148,34 +148,6 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className="font-medium">Status:</span>
-                  <Select 
-                    value={order.status || 'pending'} 
-                    onValueChange={handleStatusChange}
-                    disabled={loading}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue>
-                        <div className="flex items-center gap-2">
-                          {statusOptions.find(s => s.value === (order.status || 'pending'))?.icon}
-                          <span>{statusOptions.find(s => s.value === (order.status || 'pending'))?.label}</span>
-                        </div>
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className="z-[100]">
-                      {statusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          <div className="flex items-center gap-2">
-                            {status.icon}
-                            <span>{status.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex justify-between items-center">
                   <span className="font-medium">Emergência:</span>
                   <Badge variant={order.isEmergency ? "destructive" : "secondary"}>
                     {order.isEmergency ? "Sim" : "Não"}
@@ -187,6 +159,34 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
                   <p className="text-sm text-gray-600 mt-2 p-3 bg-gray-50 rounded-lg border">
                     {order.description || 'Descrição não disponível'}
                   </p>
+                </div>
+
+                <div>
+                  <span className="font-medium">Status:</span>
+                  <Select 
+                    value={order.status || 'pending'} 
+                    onValueChange={handleStatusChange}
+                    disabled={loading}
+                  >
+                    <SelectTrigger className="w-full mt-2">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          {statusOptions.find(s => s.value === (order.status || 'pending'))?.icon}
+                          <span>{statusOptions.find(s => s.value === (order.status || 'pending'))?.label}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className="z-[9999]" style={{zIndex: 9999}}>
+                      {statusOptions.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          <div className="flex items-center gap-2">
+                            {status.icon}
+                            <span>{status.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>
