@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { 
   X, 
   CheckCircle,
@@ -60,7 +59,6 @@ const statusOptions = [
 
 export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: UpdateStatusModalProps) {
   const [selectedStatus, setSelectedStatus] = useState(order?.status || "pending")
-  const [reason, setReason] = useState("")
   const [loading, setLoading] = useState(false)
 
   const currentStatus = statusOptions.find(s => s.value === (order?.status || "pending"))
@@ -80,17 +78,11 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
       if (selectedStatus === "cancelled") {
         updateData.cancelledAt = new Date()
         updateData.cancelledBy = "admin"
-        updateData.cancellationReason = reason || "Cancelado pelo administrador"
       } else if (selectedStatus === "in_progress") {
         updateData.distributionStartedAt = new Date()
       } else if (selectedStatus === "completed") {
         updateData.completedAt = new Date()
         updateData.completedBy = "admin"
-      }
-
-      // Adicionar observação se fornecida
-      if (reason.trim()) {
-        updateData.notes = reason.trim()
       }
 
       await updateDoc(orderRef, updateData)
@@ -191,26 +183,6 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
             </CardContent>
           </Card>
 
-          {/* Observações */}
-          <Card className="border-gray-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg">Observações (Opcional)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                placeholder="Adicione observações sobre a mudança de status..."
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                className="min-h-[100px]"
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                {selectedStatus === "cancelled" 
-                  ? "Este campo será usado como motivo do cancelamento."
-                  : "Observações sobre a mudança de status."
-                }
-              </p>
-            </CardContent>
-          </Card>
 
           {/* Ações */}
           <div className="flex gap-3 justify-end">
