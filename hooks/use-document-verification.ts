@@ -35,44 +35,44 @@ export const useDocumentVerification = () => {
       // Processar todos os prestadores encontrados no Storage
       for (const provider of storageProviders) {
         try {
-          // Buscar dados reais do usuário no Firestore (collection 'users')
+          // Buscar dados reais do prestador no Firestore (collection 'providers')
           let userData = null
           let dataSource = ''
           
-          const userDoc = await getDoc(doc(db, 'users', provider.providerId))
-          if (userDoc.exists()) {
-            userData = userDoc.data()
-            dataSource = 'users'
+          const providerDoc = await getDoc(doc(db, 'providers', provider.providerId))
+          if (providerDoc.exists()) {
+            userData = providerDoc.data()
+            dataSource = 'providers'
           } else {
-            // Tentar buscar na collection 'providers' como fallback
-            const providerDoc = await getDoc(doc(db, 'providers', provider.providerId))
-            if (providerDoc.exists()) {
-              userData = providerDoc.data()
-              dataSource = 'providers'
+            // Tentar buscar na collection 'users' como fallback
+            const userDoc = await getDoc(doc(db, 'users', provider.providerId))
+            if (userDoc.exists()) {
+              userData = userDoc.data()
+              dataSource = 'users'
             }
           }
           
           // Log para debug - mostrar dados encontrados
           console.log(`📊 Dados do prestador ${provider.providerId}:`, {
             source: dataSource,
-            nome: userData?.nome,
+            nome: userData?.fullName || userData?.nome,
             cpf: userData?.cpf,
-            telefone: userData?.telefone,
+            telefone: userData?.phone || userData?.telefone,
             email: userData?.email,
-            endereco: userData?.endereco
+            endereco: userData?.address || userData?.endereco
           })
           
           // Criar verificação com dados reais do Firestore
           const verification: DocumentVerification = {
             id: `verification_${provider.providerId}`,
             providerId: provider.providerId,
-            providerName: userData?.nome || userData?.fullName || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
+            providerName: userData?.fullName || userData?.nome || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
             providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
-            providerPhone: userData?.telefone || userData?.phone || userData?.phoneNumber || '',
+            providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
             providerCpf: userData?.cpf || userData?.document || '',
             providerRg: userData?.rg || '',
-            providerAddress: userData?.endereco || userData?.address || '',
-            providerBirthDate: userData?.dataNascimento || userData?.birthDate || '',
+            providerAddress: userData?.address || userData?.endereco || '',
+            providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
             status: 'pending',
             documents: provider.documents,
             submittedAt: provider.uploadedAt,
@@ -130,29 +130,29 @@ export const useDocumentVerification = () => {
       const documents = await getProviderDocuments(providerId)
       if (!documents) return null
 
-      // Buscar dados reais do usuário no Firestore (collection 'users')
+      // Buscar dados reais do prestador no Firestore (collection 'providers')
       let userData = null
-      const userDoc = await getDoc(doc(db, 'users', providerId))
-      if (userDoc.exists()) {
-        userData = userDoc.data()
+      const providerDoc = await getDoc(doc(db, 'providers', providerId))
+      if (providerDoc.exists()) {
+        userData = providerDoc.data()
       } else {
-        // Tentar buscar na collection 'providers' como fallback
-        const providerDoc = await getDoc(doc(db, 'providers', providerId))
-        if (providerDoc.exists()) {
-          userData = providerDoc.data()
+        // Tentar buscar na collection 'users' como fallback
+        const userDoc = await getDoc(doc(db, 'users', providerId))
+        if (userDoc.exists()) {
+          userData = userDoc.data()
         }
       }
 
       return {
         id: `verification_${providerId}`,
         providerId,
-        providerName: userData?.nome || userData?.fullName || userData?.displayName || `Prestador ${providerId.slice(-6)}`,
+        providerName: userData?.fullName || userData?.nome || userData?.displayName || `Prestador ${providerId.slice(-6)}`,
         providerEmail: userData?.email || `prestador${providerId.slice(-6)}@email.com`,
-        providerPhone: userData?.telefone || userData?.phone || userData?.phoneNumber || '',
+        providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
         providerCpf: userData?.cpf || userData?.document || '',
         providerRg: userData?.rg || '',
-        providerAddress: userData?.endereco || userData?.address || '',
-        providerBirthDate: userData?.dataNascimento || userData?.birthDate || '',
+        providerAddress: userData?.address || userData?.endereco || '',
+        providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
         status: 'pending',
         documents: documents.documents,
         submittedAt: documents.uploadedAt,
