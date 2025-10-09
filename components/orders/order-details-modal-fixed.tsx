@@ -162,7 +162,7 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
                         </div>
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[100]">
                       {statusOptions.map((status) => (
                         <SelectItem key={status.value} value={status.value}>
                           <div className="flex items-center gap-2">
