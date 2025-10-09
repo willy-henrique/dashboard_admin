@@ -41,12 +41,15 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-bold">Detalhes do Pedido - {order.clientName}</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Detalhes do Pedido</h2>
+            <p className="text-sm text-gray-600 mt-1">Cliente: {order.clientName}</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-gray-100">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -55,9 +58,9 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
         <div className="p-6 space-y-6">
           {/* Informações Básicas */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100/50">
+                <CardTitle className="text-lg flex items-center gap-2 text-blue-900">
                   <Package className="h-5 w-5" />
                   Informações do Pedido
                 </CardTitle>
@@ -93,9 +96,9 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-green-100/50">
+                <CardTitle className="text-lg flex items-center gap-2 text-green-900">
                   <User className="h-5 w-5" />
                   Informações do Cliente
                 </CardTitle>
@@ -149,9 +152,12 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
 
           {/* Imagens */}
           {order.images && order.images.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Imagens do Pedido</CardTitle>
+            <Card className="border-gray-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100/50">
+                <CardTitle className="text-lg flex items-center gap-2 text-purple-900">
+                  <Eye className="h-5 w-5" />
+                  Imagens do Pedido
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -181,9 +187,9 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose }: OrderDetailsM
           )}
 
           {/* Ações */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100/50">
+              <CardTitle className="text-lg flex items-center gap-2 text-orange-900">
                 <MessageSquare className="h-5 w-5" />
                 Ações Disponíveis
               </CardTitle>
