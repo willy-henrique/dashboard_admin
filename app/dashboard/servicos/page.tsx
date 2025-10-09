@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useOrdersRealtime, useActiveOrders } from "@/hooks/use-orders-realtime"
+import { OrderDetailsModal } from "@/components/orders/order-details-modal"
 import { 
   Package, 
   Clock, 
@@ -36,6 +37,8 @@ export default function ServicosPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [activeTab, setActiveTab] = useState("overview")
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   
   const { orders: allOrders, stats, loading: statsLoading } = useOrdersRealtime()
   const { orders: activeOrders, loading: activeLoading } = useActiveOrders()
@@ -64,8 +67,13 @@ export default function ServicosPage() {
   }
 
   const handleViewOrder = (order: any) => {
-    // Aqui você pode implementar um modal ou navegação para detalhes
-    console.log('Visualizar pedido:', order.id)
+    setSelectedOrder(order)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedOrder(null)
   }
 
   const getStatusBadge = (order: any) => {
@@ -473,6 +481,13 @@ export default function ServicosPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Detalhes do Pedido */}
+      <OrderDetailsModal
+        order={selectedOrder}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   )
 }
