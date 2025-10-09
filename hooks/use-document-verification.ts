@@ -35,9 +35,32 @@ export const useDocumentVerification = () => {
       // Processar todos os prestadores encontrados no Storage
       for (const provider of storageProviders) {
         try {
-          // Buscar dados reais do usuário no Firestore
+          // Buscar dados reais do usuário no Firestore (collection 'users')
+          let userData = null
+          let dataSource = ''
+          
           const userDoc = await getDoc(doc(db, 'users', provider.providerId))
-          const userData = userDoc.exists() ? userDoc.data() : null
+          if (userDoc.exists()) {
+            userData = userDoc.data()
+            dataSource = 'users'
+          } else {
+            // Tentar buscar na collection 'providers' como fallback
+            const providerDoc = await getDoc(doc(db, 'providers', provider.providerId))
+            if (providerDoc.exists()) {
+              userData = providerDoc.data()
+              dataSource = 'providers'
+            }
+          }
+          
+          // Log para debug - mostrar dados encontrados
+          console.log(`📊 Dados do prestador ${provider.providerId}:`, {
+            source: dataSource,
+            nome: userData?.nome,
+            cpf: userData?.cpf,
+            telefone: userData?.telefone,
+            email: userData?.email,
+            endereco: userData?.endereco
+          })
           
           // Criar verificação com dados reais do Firestore
           const verification: DocumentVerification = {
@@ -56,7 +79,7 @@ export const useDocumentVerification = () => {
           }
           
           verificationsData.push(verification)
-          console.log(`✅ Verificação criada para prestador ${verification.providerName} (${provider.providerId})`)
+          console.log(`✅ Verificação criada: ${verification.providerName} | CPF: ${verification.providerCpf || 'não cadastrado'}`)
         } catch (error) {
           console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
         }
@@ -107,9 +130,18 @@ export const useDocumentVerification = () => {
       const documents = await getProviderDocuments(providerId)
       if (!documents) return null
 
-      // Buscar dados reais do usuário no Firestore
+      // Buscar dados reais do usuário no Firestore (collection 'users')
+      let userData = null
       const userDoc = await getDoc(doc(db, 'users', providerId))
-      const userData = userDoc.exists() ? userDoc.data() : null
+      if (userDoc.exists()) {
+        userData = userDoc.data()
+      } else {
+        // Tentar buscar na collection 'providers' como fallback
+        const providerDoc = await getDoc(doc(db, 'providers', providerId))
+        if (providerDoc.exists()) {
+          userData = providerDoc.data()
+        }
+      }
 
       return {
         id: `verification_${providerId}`,
