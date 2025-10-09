@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useChatConversations, useChatActions } from "@/hooks/use-chat"
@@ -18,12 +18,28 @@ import { ptBR } from "date-fns/locale"
 interface ConversationsListProps {
   onSelectConversation: (conversation: LegacyChatConversation) => void
   selectedConversationId?: string
+  initialProtocolo?: string | null
+  initialServicoId?: string | null
 }
 
-export function ConversationsList({ onSelectConversation, selectedConversationId }: ConversationsListProps) {
+export function ConversationsList({ onSelectConversation, selectedConversationId, initialProtocolo, initialServicoId }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("")
   
   const { conversations, loading, error } = useChatConversations({ searchTerm })
+
+  // Selecionar automaticamente a conversa baseada nos parâmetros iniciais
+  useEffect(() => {
+    if (initialProtocolo && conversations.length > 0) {
+      const matchingConversation = conversations.find(conv => 
+        conv.orderProtocol === initialProtocolo || 
+        conv.orderId === initialServicoId
+      )
+      
+      if (matchingConversation && matchingConversation.id !== selectedConversationId) {
+        onSelectConversation(matchingConversation)
+      }
+    }
+  }, [initialProtocolo, initialServicoId, conversations, selectedConversationId, onSelectConversation])
   
   const { updateConversationStatus, updateConversationPriority, assignConversation } = useChatActions()
 

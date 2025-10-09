@@ -27,7 +27,8 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  MoreHorizontal
+  MoreHorizontal,
+  MessageSquare
 } from "lucide-react"
 import Link from "next/link"
 import { useAnalytics } from "@/hooks/use-analytics"
@@ -56,6 +57,14 @@ export default function ServicosPage() {
   const handleRefresh = () => {
     trackUserAction('atualizar_servicos', 'servicos')
     refetch()
+  }
+
+  const handleViewChat = (service: any) => {
+    trackUserAction('visualizar_chat_servico', 'servicos')
+    
+    // Navegar para o chat com o protocolo do serviço como parâmetro
+    const chatUrl = `/dashboard/controle/chat?protocolo=${service.protocolo}&servico=${service.id}`
+    window.open(chatUrl, '_blank')
   }
 
   // Filtrar serviços
@@ -386,6 +395,15 @@ export default function ServicosPage() {
                       <div className="flex items-center space-x-2">
                         {getStatusBadge(service.status)}
                         {service.prioridade && getPriorityBadge(service.prioridade)}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewChat(service)}
+                          className="flex items-center gap-1"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          Chat
+                        </Button>
                         <Button variant="ghost" size="sm">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>

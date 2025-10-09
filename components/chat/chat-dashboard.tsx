@@ -14,7 +14,12 @@ import { ChatStatsCards } from "./chat-stats-cards"
 import { ConversationsList } from "./conversations-list"
 import { ChatMessages } from "./chat-messages"
 
-export function ChatDashboard() {
+interface ChatDashboardProps {
+  initialProtocolo?: string | null
+  initialServicoId?: string | null
+}
+
+export function ChatDashboard({ initialProtocolo, initialServicoId }: ChatDashboardProps) {
   const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
 
   const handleSelectConversation = (conversation: LegacyChatConversation) => {
@@ -86,6 +91,8 @@ export function ChatDashboard() {
               <ConversationsList 
                 onSelectConversation={handleSelectConversation}
                 selectedConversationId={selectedConversation?.id}
+                initialProtocolo={initialProtocolo}
+                initialServicoId={initialServicoId}
               />
             </CardContent>
           </Card>
