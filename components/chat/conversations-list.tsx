@@ -20,9 +20,10 @@ interface ConversationsListProps {
   selectedConversationId?: string
   initialProtocolo?: string | null
   initialServicoId?: string | null
+  compact?: boolean
 }
 
-export function ConversationsList({ onSelectConversation, selectedConversationId, initialProtocolo, initialServicoId }: ConversationsListProps) {
+export function ConversationsList({ onSelectConversation, selectedConversationId, initialProtocolo, initialServicoId, compact = false }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("")
   
   const { conversations, loading, error } = useChatConversations({ searchTerm })
