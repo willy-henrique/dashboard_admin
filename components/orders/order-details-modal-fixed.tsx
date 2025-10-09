@@ -4,7 +4,10 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { UpdateStatusModal } from "./update-status-modal"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { updateDoc, doc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
+import { toast } from "sonner"
 import { 
   X, 
   User, 
@@ -15,7 +18,10 @@ import {
   AlertTriangle,
   MessageSquare,
   Eye,
-  Edit3
+  CheckCircle,
+  Clock,
+  Truck,
+  XCircle
 } from "lucide-react"
 
 interface OrderDetailsModalProps {
@@ -25,8 +31,35 @@ interface OrderDetailsModalProps {
   onOrderUpdated?: () => void
 }
 
+const statusOptions = [
+  {
+    value: "pending",
+    label: "Pendente",
+    icon: <Clock className="h-4 w-4" />,
+    color: "bg-yellow-100 text-yellow-800"
+  },
+  {
+    value: "in_progress",
+    label: "Em Andamento",
+    icon: <Truck className="h-4 w-4" />,
+    color: "bg-blue-100 text-blue-800"
+  },
+  {
+    value: "completed",
+    label: "Concluído",
+    icon: <CheckCircle className="h-4 w-4" />,
+    color: "bg-green-100 text-green-800"
+  },
+  {
+    value: "cancelled",
+    label: "Cancelado",
+    icon: <XCircle className="h-4 w-4" />,
+    color: "bg-red-100 text-red-800"
+  }
+]
+
 export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated }: OrderDetailsModalProps) {
-  const [showUpdateStatus, setShowUpdateStatus] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   if (!isOpen || !order) return null
 
@@ -35,11 +68,40 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
     window.open(chatUrl, '_blank')
   }
 
-  const handleStatusUpdated = () => {
-    if (onOrderUpdated) {
-      onOrderUpdated()
+  const handleStatusChange = async (newStatus: string) => {
+    if (!order?.id || newStatus === order.status) return
+
+    setLoading(true)
+    try {
+      const orderRef = doc(db, 'orders', order.id)
+      const updateData: any = {
+        status: newStatus,
+        updatedAt: new Date()
+      }
+
+      // Adicionar campos específicos baseado no status
+      if (newStatus === "cancelled") {
+        updateData.cancelledAt = new Date()
+        updateData.cancelledBy = "admin"
+      } else if (newStatus === "in_progress") {
+        updateData.distributionStartedAt = new Date()
+      } else if (newStatus === "completed") {
+        updateData.completedAt = new Date()
+        updateData.completedBy = "admin"
+      }
+
+      await updateDoc(orderRef, updateData)
+
+      toast.success("Status atualizado com sucesso!")
+      if (onOrderUpdated) {
+        onOrderUpdated()
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar status:", error)
+      toast.error("Erro ao atualizar status do pedido")
+    } finally {
+      setLoading(false)
     }
-    setShowUpdateStatus(false)
   }
 
   const getStatusColor = (status: string) => {
@@ -87,9 +149,30 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
                 
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Status:</span>
-                  <Badge className={getStatusColor(order.status || 'pending')}>
-                    {order.status || 'Pendente'}
-                  </Badge>
+                  <Select 
+                    value={order.status || 'pending'} 
+                    onValueChange={handleStatusChange}
+                    disabled={loading}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue>
+                        <div className="flex items-center gap-2">
+                          {statusOptions.find(s => s.value === (order.status || 'pending'))?.icon}
+                          <span>{statusOptions.find(s => s.value === (order.status || 'pending'))?.label}</span>
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          <div className="flex items-center gap-2">
+                            {status.icon}
+                            <span>{status.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -212,14 +295,6 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
                   <MessageSquare className="h-4 w-4" />
                   Abrir Chat
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="flex items-center gap-2"
-                  onClick={() => setShowUpdateStatus(true)}
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Atualizar Status
-                </Button>
                 <Button variant="outline" className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
                   Marcar Urgência
@@ -230,13 +305,6 @@ export function OrderDetailsModalFixed({ order, isOpen, onClose, onOrderUpdated 
         </div>
       </div>
 
-      {/* Modal de Atualização de Status */}
-      <UpdateStatusModal
-        order={order}
-        isOpen={showUpdateStatus}
-        onClose={() => setShowUpdateStatus(false)}
-        onStatusUpdated={handleStatusUpdated}
-      />
     </div>
   )
 }
