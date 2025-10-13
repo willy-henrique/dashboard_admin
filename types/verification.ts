@@ -17,7 +17,10 @@ export interface ProviderDocuments {
     certificado?: StorageDocument[];
     outros?: StorageDocument[];
   };
+  // uploadedAt mantém compatibilidade (último upload)
   uploadedAt: Date;
+  // firstUploadedAt registra a data/hora do primeiro arquivo enviado
+  firstUploadedAt: Date;
   status: 'pending' | 'approved' | 'rejected';
 }
 

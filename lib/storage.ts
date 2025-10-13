@@ -1,13 +1,14 @@
-import { ref, getDownloadURL, listAll, getMetadata } from 'firebase/storage';
-import { storage as firebaseStorage } from './firebase';
+import { ref, getDownloadURL, listAll, getMetadata, type FirebaseStorage } from 'firebase/storage';
+import * as firebaseModule from './firebase';
+const storageInstance = firebaseModule.storage as FirebaseStorage | null;
 import { StorageDocument, ProviderDocuments } from '@/types/verification';
 
 // Inicializar Firebase Storage (reaproveitando instância exportada de lib/firebase)
-const storage = firebaseStorage;
+// "storage" já é tipado a partir de lib/firebase; pode ser null em ambiente sem Firebase
 
 // Buscar documentos de um prestador específico pelo ID (sem montar URL manual)
 export const getProviderDocuments = async (providerId: string): Promise<ProviderDocuments | null> => {
-  if (!storage) {
+  if (!storageInstance) {
     console.warn('Firebase Storage não inicializado');
     return null;
   }
@@ -15,7 +16,7 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
   try {
     console.log(`🔍 Buscando documentos para prestador: ${providerId}`);
     const storagePath = `Documentos/${providerId}`;
-    const folderRef = ref(storage, storagePath);
+    const folderRef = ref(storageInstance, storagePath);
     
     // Listar todos os arquivos na pasta do prestador
     const result = await listAll(folderRef);
@@ -31,6 +32,7 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
       providerId,
       documents: {},
       uploadedAt: new Date(),
+      firstUploadedAt: new Date(),
       status: 'pending'
     };
 
@@ -76,6 +78,8 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
     }));
 
     // Agregar resultados no objeto de saída
+    let minDate: Date | null = null
+    let maxDate: Date | null = null
     for (const entry of processed) {
       if (!entry) continue;
       const { docType, document } = entry;
@@ -83,10 +87,14 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
         documents.documents[docType] = [];
       }
       documents.documents[docType]!.push(document);
-      if (document.uploadedAt > documents.uploadedAt) {
-        documents.uploadedAt = document.uploadedAt;
-      }
+      // rastrear menor e maior datas
+      if (!minDate || document.uploadedAt < minDate) minDate = document.uploadedAt;
+      if (!maxDate || document.uploadedAt > maxDate) maxDate = document.uploadedAt;
     }
+
+    // definir primeiro e último upload
+    if (minDate) documents.firstUploadedAt = minDate;
+    if (maxDate) documents.uploadedAt = maxDate;
 
     console.log(`✅ Documentos carregados para prestador ${providerId}:`, documents);
     return documents;
@@ -100,12 +108,12 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
 export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => {
   // Em produção, buscar via API interna (Admin SDK), para não depender de regras públicas
   try {
-    if (!storage) {
+    if (!storageInstance) {
       console.warn('Firebase Storage não inicializado');
       return [];
     }
     const storagePath = 'Documentos';
-    const folderRef = ref(storage, storagePath);
+    const folderRef = ref(storageInstance, storagePath);
     
     // Listar todas as pastas de prestadores
     const result = await listAll(folderRef);

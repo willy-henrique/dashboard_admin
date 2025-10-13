@@ -99,7 +99,7 @@ export const useDocumentVerification = () => {
               providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
               status: currentStatus,
               documents: provider.documents,
-              submittedAt: submittedAtOverride || provider.uploadedAt,
+              submittedAt: submittedAtOverride || provider.firstUploadedAt || provider.uploadedAt,
             }
 
             console.log(`✅ Verificação criada: ${verification.providerName} | CPF: ${verification.providerCpf || 'não cadastrado'}`)
