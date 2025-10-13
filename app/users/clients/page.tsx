@@ -149,9 +149,9 @@ export default function ClientsPage() {
     <AppShell>
       <PageWithBack backButtonLabel="Voltar para Dashboard">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 px-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-3" style={{ color: 'var(--foreground)' }}>
+            <h1 className="text-2xl sm:text-4xl font-bold flex items-center gap-3" style={{ color: 'var(--foreground)' }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--primary)' }}>
                 <UsersIcon className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
               </div>
@@ -161,10 +161,11 @@ export default function ClientsPage() {
               Gerencie todos os clientes do aplicativo
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Button 
               variant="outline" 
               onClick={() => { refetch(); refetchDebug(); }}
+              className="w-full sm:w-auto"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Atualizar
@@ -172,12 +173,14 @@ export default function ClientsPage() {
             <Button 
               variant="outline"
               onClick={() => setShowDebug(!showDebug)}
+              className="w-full sm:w-auto"
             >
               <Filter className="h-4 w-4 mr-2" />
               Debug
             </Button>
             <Button 
               variant="outline"
+              className="w-full sm:w-auto"
             >
               <Download className="h-4 w-4 mr-2" />
               Exportar
@@ -198,7 +201,7 @@ export default function ClientsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4">
           <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -257,7 +260,7 @@ export default function ClientsPage() {
         </div>
 
         {/* Filters */}
-        <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
+        <Card className="border-0 shadow-lg mx-4" style={{ backgroundColor: 'var(--card)' }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
               <Filter className="h-5 w-5" />

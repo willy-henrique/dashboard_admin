@@ -33,23 +33,23 @@ export default function AutEMMobilePage() {
   }
 
   return (
-    <main className="flex-1 space-y-6 p-6" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
+    <main className="flex-1 space-y-6 p-4 sm:p-6" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3 flex-col sm:flex-row">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">AutEM Mobile</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">AutEM Mobile</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">
             Controle e monitoramento do aplicativo móvel
           </p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
           <Activity className="h-4 w-4 mr-2" />
           Status do Sistema
         </Button>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card style={{ backgroundColor: 'var(--card)', color: 'var(--card-foreground)', borderColor: 'var(--border)' }}>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">

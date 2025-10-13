@@ -38,14 +38,14 @@ export default function DashboardPage() {
     <div className="w-full" role="main" aria-label="Dashboard principal">
       {/* Header */}
       <header className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-1">
               Visão geral do sistema de prestação de serviços
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <Button 
               variant="outline" 
               size="sm" 
@@ -68,18 +68,19 @@ export default function DashboardPage() {
       </header>
 
       {/* Tabs para diferentes visualizações */}
+      <div className="container mx-auto px-4">
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg mb-6">
+        <TabsList className="w-full bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto flex gap-2">
           <TabsTrigger 
             value="overview" 
-            className="flex items-center gap-2 font-medium py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            className="flex items-center gap-2 font-medium py-3 whitespace-nowrap data-[state=active]:bg-orange-500 data-[state=active]:text-white"
           >
             <Navigation className="h-4 w-4" />
             Visão Geral
           </TabsTrigger>
           <TabsTrigger 
             value="analytics" 
-            className="flex items-center gap-2 font-medium py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white"
+            className="flex items-center gap-2 font-medium py-3 whitespace-nowrap data-[state=active]:bg-orange-500 data-[state=active]:text-white"
           >
             <Settings className="h-4 w-4" />
             Analytics Detalhado
@@ -141,7 +142,7 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="h-96 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
+                <div className="h-[50vh] max-h-[480px] sm:h-96 rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
                   <ProvidersMap />
                 </div>
               </CardContent>
@@ -153,6 +154,7 @@ export default function DashboardPage() {
           <AnalyticsDashboard />
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   )
 }

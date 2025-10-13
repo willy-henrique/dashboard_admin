@@ -81,7 +81,7 @@ export default function ServicosPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 container mx-auto px-4">
       {/* Header */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-1">
@@ -99,7 +99,7 @@ export default function ServicosPage() {
       </div>
 
       {/* Estatísticas Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card className="bg-white hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
