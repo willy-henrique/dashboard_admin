@@ -248,3 +248,36 @@ export function useUsersWithRecentLogin() {
     refetch: fetchUsersWithRecentLogin
   }
 }
+
+export function useAllClients() {
+  const [clients, setClients] = useState<UserData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchAllClients = async () => {
+    try {
+      console.log('🔍 [useAllClients] Iniciando busca de clientes...')
+      setLoading(true)
+      setError(null)
+      const data = await UsersService.getAllClients()
+      console.log('✅ [useAllClients] Clientes carregados:', data.length)
+      setClients(data)
+    } catch (err) {
+      console.error('❌ [useAllClients] Erro ao buscar clientes:', err)
+      setError('Erro ao carregar clientes')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAllClients()
+  }, [])
+
+  return {
+    clients,
+    loading,
+    error,
+    refetch: fetchAllClients
+  }
+}

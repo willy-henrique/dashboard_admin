@@ -37,7 +37,14 @@ export class UsersService {
         }
         
         if (filters.userType) {
-          users = users.filter(user => user.userType === filters.userType)
+          // Buscar por userType ou role equivalente
+          users = users.filter(user => {
+            const matchesUserType = user.userType === filters.userType
+            const matchesRole = user.role === filters.userType || 
+                               (filters.userType === 'client' && user.role === 'cliente') ||
+                               (filters.userType === 'provider' && user.role === 'prestador')
+            return matchesUserType || matchesRole
+          })
           console.log(`👥 Usuários filtrados por userType '${filters.userType}':`, users.length)
         }
         
@@ -236,6 +243,40 @@ export class UsersService {
       return await this.getUsers({ role })
     } catch (error) {
       console.error('Erro ao buscar usuários por role:', error)
+      throw error
+    }
+  }
+
+  // Buscar todos os clientes (múltiplas formas de identificação)
+  static async getAllClients() {
+    try {
+      console.log('🔍 [CLIENTS] Buscando todos os clientes...')
+      const allUsers = await getCollection('users')
+      console.log('📊 [CLIENTS] Total de usuários no banco:', allUsers.length)
+      
+      const clients = allUsers.filter(user => {
+        const isClient = user.userType === 'client' || 
+                        user.role === 'cliente' || 
+                        user.role === 'client' ||
+                        (user.userType === 'client')
+        
+        if (isClient) {
+          console.log('👤 [CLIENTS] Cliente encontrado:', {
+            id: user.id,
+            userType: user.userType,
+            role: user.role,
+            name: user.fullName || user.name || user.nome,
+            email: user.email
+          })
+        }
+        
+        return isClient
+      })
+      
+      console.log('✅ [CLIENTS] Total de clientes encontrados:', clients.length)
+      return clients as UserData[]
+    } catch (error) {
+      console.error('❌ [CLIENTS] Erro ao buscar clientes:', error)
       throw error
     }
   }

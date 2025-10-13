@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UsersTable } from "@/components/users/users-table"
 import { UserModal } from "@/components/users/user-modal"
-import { useUsers } from "@/hooks/use-users"
+import { useUsers, useAllClients } from "@/hooks/use-users"
 import { useUsersDebug } from "@/hooks/use-users-debug"
 import { Badge } from "@/components/ui/badge"
 import { 
@@ -36,6 +36,9 @@ export default function ClientsPage() {
 
   // Hook de debug para ver todos os usuários
   const { allUsers, loading: debugLoading, refetch: refetchDebug } = useUsersDebug()
+  
+  // Hook específico para buscar todos os clientes
+  const { clients: allClients, loading: clientsLoading, refetch: refetchClients } = useAllClients()
 
   const filters = {
     userType: 'client',
@@ -55,12 +58,78 @@ export default function ClientsPage() {
     unblockUser 
   } = useUsers(filters)
 
-  // Buscar clientes manualmente se não encontrar via filtro
-  const clientUsers = users.length > 0 ? users : allUsers.filter(user => 
-    user.userType === 'client' || 
-    (user.role === 'cliente' && !user.userType) ||
-    (user.userType === 'client')
-  )
+  // Buscar clientes de múltiplas formas para garantir que todos sejam encontrados
+  const clientUsers = useMemo(() => {
+    // Prioridade 1: Usar hook específico de clientes se disponível
+    if (allClients.length > 0) {
+      let filteredClients = allClients
+      
+      // Aplicar filtro de busca se existir
+      if (search) {
+        const searchLower = search.toLowerCase()
+        filteredClients = filteredClients.filter(user => 
+          user.fullName?.toLowerCase().includes(searchLower) ||
+          user.name?.toLowerCase().includes(searchLower) ||
+          user.nome?.toLowerCase().includes(searchLower) ||
+          user.email?.toLowerCase().includes(searchLower) ||
+          user.cpf?.toLowerCase().includes(searchLower) ||
+          user.document?.toLowerCase().includes(searchLower)
+        )
+      }
+      
+      // Aplicar filtro de status se não for "all"
+      if (statusFilter !== "all") {
+        const isActive = statusFilter === "active"
+        filteredClients = filteredClients.filter(user => 
+          (user.isActive !== false) === isActive
+        )
+      }
+      
+      console.log('✅ [CLIENTS] Usando hook específico - Clientes encontrados:', filteredClients.length)
+      return filteredClients
+    }
+    
+    // Prioridade 2: Usar usuários filtrados se existirem
+    if (users.length > 0) {
+      console.log('✅ [CLIENTS] Usando filtro normal - Clientes encontrados:', users.length)
+      return users
+    }
+    
+    // Prioridade 3: Buscar manualmente em todos os usuários
+    const manualClients = allUsers.filter(user => {
+      const isClient = user.userType === 'client' || 
+                      user.role === 'cliente' || 
+                      user.role === 'client' ||
+                      (user.userType === 'client')
+      
+      // Aplicar filtro de busca se existir
+      if (search) {
+        const searchLower = search.toLowerCase()
+        const matchesSearch = user.fullName?.toLowerCase().includes(searchLower) ||
+                             user.name?.toLowerCase().includes(searchLower) ||
+                             user.nome?.toLowerCase().includes(searchLower) ||
+                             user.email?.toLowerCase().includes(searchLower) ||
+                             user.cpf?.toLowerCase().includes(searchLower) ||
+                             user.document?.toLowerCase().includes(searchLower)
+        return isClient && matchesSearch
+      }
+      
+      // Aplicar filtro de status se não for "all"
+      if (statusFilter !== "all") {
+        const isActive = user.isActive !== false
+        return isClient && (statusFilter === "active" ? isActive : !isActive)
+      }
+      
+      return isClient
+    })
+    
+    console.log('🔍 [CLIENTS] Usuários filtrados:', users.length)
+    console.log('🔍 [CLIENTS] Clientes específicos:', allClients.length)
+    console.log('🔍 [CLIENTS] Clientes manuais encontrados:', manualClients.length)
+    console.log('🔍 [CLIENTS] Total de usuários no banco:', allUsers.length)
+    
+    return manualClients
+  }, [users, allClients, allUsers, search, statusFilter])
 
   const selectedUser = useMemo(() => clientUsers.find(u => u.id === selectedUserId) || null, [clientUsers, selectedUserId])
 
@@ -164,7 +233,7 @@ export default function ClientsPage() {
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <Button 
               variant="outline" 
-              onClick={() => { refetch(); refetchDebug(); }}
+              onClick={() => { refetch(); refetchDebug(); refetchClients(); }}
               className="w-full sm:w-auto"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -344,7 +413,7 @@ export default function ClientsPage() {
         {/* Users Table */}
         <UsersTable 
           users={clientUsers}
-          loading={loading || debugLoading}
+          loading={loading || debugLoading || clientsLoading}
           onView={(id) => { setSelectedUserId(id); setModalOpen(true) }}
           onEdit={(id) => { setSelectedUserId(id); setModalOpen(true) }}
           onDelete={handleDeleteUser}
