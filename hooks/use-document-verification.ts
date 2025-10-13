@@ -20,6 +20,15 @@ export const useDocumentVerification = () => {
   })
   const { toast } = useToast()
 
+  const mapStatus = (status: any): 'pending' | 'approved' | 'rejected' => {
+    if (!status) return 'pending'
+    const s = String(status).toUpperCase()
+    if (s === 'APPROVED' || s === 'APPROVADO' || s === 'APPROVED_STATUS') return 'approved'
+    if (s === 'REJECTED' || s === 'REJEITADO') return 'rejected'
+    // UNDER_REVIEW, PENDING, etc
+    return 'pending'
+  }
+
   // Buscar todas as verificações
   const fetchVerifications = useCallback(async () => {
     setLoading(true)
@@ -50,6 +59,21 @@ export const useDocumentVerification = () => {
               }
             }
 
+            // Buscar status atual em provider_verifications
+            let currentStatus: 'pending' | 'approved' | 'rejected' = 'pending'
+            let submittedAtOverride: Date | undefined
+            const verificationsRef = collection(db, 'provider_verifications')
+            const statusSnap = await getDocs(query(verificationsRef, where('providerId', '==', provider.providerId)))
+            if (!statusSnap.empty) {
+              const vData = statusSnap.docs[0].data() as any
+              currentStatus = mapStatus(vData?.status)
+              if (vData?.submittedAt?.toDate) {
+                submittedAtOverride = vData.submittedAt.toDate()
+              }
+            } else if (userData?.verificationStatus) {
+              currentStatus = mapStatus(userData.verificationStatus)
+            }
+
             console.log(`📊 Dados do prestador ${provider.providerId}:`, {
               source: dataSource,
               nome: userData?.fullName || userData?.nome,
@@ -73,9 +97,9 @@ export const useDocumentVerification = () => {
                              `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
                              userData?.endereco || '',
               providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
-              status: 'pending',
+              status: currentStatus,
               documents: provider.documents,
-              submittedAt: provider.uploadedAt,
+              submittedAt: submittedAtOverride || provider.uploadedAt,
             }
 
             console.log(`✅ Verificação criada: ${verification.providerName} | CPF: ${verification.providerCpf || 'não cadastrado'}`)
