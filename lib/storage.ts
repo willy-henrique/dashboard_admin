@@ -1,9 +1,9 @@
-import { getStorage, ref, getDownloadURL, listAll, getMetadata } from 'firebase/storage';
-import { app } from './firebase';
+import { ref, getDownloadURL, listAll, getMetadata } from 'firebase/storage';
+import { storage as firebaseStorage } from './firebase';
 import { StorageDocument, ProviderDocuments } from '@/types/verification';
 
-// Inicializar Firebase Storage (client) – usado somente em dev/local; no Vercel usaremos a API
-const storage = app ? getStorage(app) : null;
+// Inicializar Firebase Storage (reaproveitando instância exportada de lib/firebase)
+const storage = firebaseStorage;
 
 // Buscar documentos de um prestador específico pelo ID (sem montar URL manual)
 export const getProviderDocuments = async (providerId: string): Promise<ProviderDocuments | null> => {
@@ -34,18 +34,18 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
       status: 'pending'
     };
 
-    // Processar cada arquivo encontrado
-    for (const itemRef of result.items) {
+    // Processar arquivos em paralelo para acelerar
+    const processed = await Promise.all(result.items.map(async (itemRef) => {
       try {
-        const metadata = await getMetadata(itemRef);
-        const downloadURL = await getDownloadURL(itemRef);
-        
+        const [metadata, downloadURL] = await Promise.all([
+          getMetadata(itemRef),
+          getDownloadURL(itemRef),
+        ]);
+
         const fileName = itemRef.name.toLowerCase();
         const fileExtension = fileName.split('.').pop() || '';
-        
-        // Determinar o tipo de documento baseado no nome do arquivo
+
         let docType: 'cpf' | 'cnh' | 'comprovante_residencia' | 'certificado' | 'outros' = 'outros';
-        
         if (fileName.includes('cpf') || fileName.includes('rg') || fileName.includes('identidade')) {
           docType = 'cpf';
         } else if (fileName.includes('cnh') || fileName.includes('habilitacao') || fileName.includes('carteira')) {
@@ -54,11 +54,8 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
           docType = 'comprovante_residencia';
         } else if (fileName.includes('certificado') || fileName.includes('curso') || fileName.includes('diploma') || fileName.includes('formacao')) {
           docType = 'certificado';
-        } else {
-          // Se não conseguir identificar pelo nome, classificar como 'outros'
-          docType = 'outros';
         }
-        
+
         console.log(`📄 Arquivo: ${itemRef.name} -> Tipo: ${docType}`);
 
         const document: StorageDocument = {
@@ -71,19 +68,23 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
           path: itemRef.fullPath
         };
 
-        // Adicionar ao tipo correto
-        if (!documents.documents[docType]) {
-          documents.documents[docType] = [];
-        }
-        documents.documents[docType]!.push(document);
-        console.log(`✅ Documento adicionado: ${document.name} (${docType})`);
-
-        // Atualizar data de upload mais recente
-        if (document.uploadedAt > documents.uploadedAt) {
-          documents.uploadedAt = document.uploadedAt;
-        }
+        return { docType, document } as const;
       } catch (error) {
         console.error(`Erro ao processar arquivo ${itemRef.name}:`, error);
+        return null;
+      }
+    }));
+
+    // Agregar resultados no objeto de saída
+    for (const entry of processed) {
+      if (!entry) continue;
+      const { docType, document } = entry;
+      if (!documents.documents[docType]) {
+        documents.documents[docType] = [];
+      }
+      documents.documents[docType]!.push(document);
+      if (document.uploadedAt > documents.uploadedAt) {
+        documents.uploadedAt = document.uploadedAt;
       }
     }
 
@@ -99,32 +100,31 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
 export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => {
   // Em produção, buscar via API interna (Admin SDK), para não depender de regras públicas
   try {
+    if (!storage) {
+      console.warn('Firebase Storage não inicializado');
+      return [];
+    }
     const storagePath = 'Documentos';
     const folderRef = ref(storage, storagePath);
     
     // Listar todas as pastas de prestadores
     const result = await listAll(folderRef);
     
-    const providers: ProviderDocuments[] = [];
-    
-    // Para cada pasta de prestador, buscar os documentos
-    for (const prefixRef of result.prefixes) {
+    // Buscar documentos para todos os prestadores em paralelo
+    const providers = await Promise.all(result.prefixes.map(async (prefixRef) => {
       try {
         const clientId = prefixRef.name;
-
-        // Buscar documentos usando o ID do prestador diretamente
         const documents = await getProviderDocuments(clientId);
-        
-        if (documents) {
-          providers.push(documents);
-        }
+        return documents;
       } catch (error) {
         console.error(`Erro ao processar prestador ${prefixRef.name}:`, error);
+        return null;
       }
-    }
+    }));
 
-    console.log(`✅ Total de prestadores com documentos: ${providers.length}`);
-    return providers;
+    const filtered = providers.filter((p): p is ProviderDocuments => p !== null);
+    console.log(`✅ Total de prestadores com documentos: ${filtered.length}`);
+    return filtered;
   } catch (error) {
     console.error('Erro ao buscar todos os prestadores:', error);
     return [];

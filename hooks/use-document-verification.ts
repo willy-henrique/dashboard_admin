@@ -5,7 +5,7 @@ import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasPro
 import { useToast } from '@/hooks/use-toast'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
 import { db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -30,64 +30,64 @@ export const useDocumentVerification = () => {
       const storageProviders = await getAllPendingProviders()
       console.log(`✅ Encontrados ${storageProviders.length} prestadores com documentos`)
 
-      const verificationsData: DocumentVerification[] = []
-      
-      // Processar todos os prestadores encontrados no Storage
-      for (const provider of storageProviders) {
-        try {
-          // Buscar dados reais do prestador no Firestore (collection 'providers')
-          let userData = null
-          let dataSource = ''
-          
-          const providerDoc = await getDoc(doc(db, 'providers', provider.providerId))
-          if (providerDoc.exists()) {
-            userData = providerDoc.data()
-            dataSource = 'providers'
-          } else {
-            // Tentar buscar na collection 'users' como fallback
-            const userDoc = await getDoc(doc(db, 'users', provider.providerId))
-            if (userDoc.exists()) {
-              userData = userDoc.data()
-              dataSource = 'users'
+      // Processar todos os prestadores em paralelo para acelerar
+      const verificationsDataArray = await Promise.all(
+        storageProviders.map(async (provider) => {
+          try {
+            // Busca em providers primeiro; se não existir, busca em users
+            let userData: any = null
+            let dataSource = ''
+
+            const providerSnap = await getDoc(doc(db, 'providers', provider.providerId))
+            if (providerSnap.exists()) {
+              userData = providerSnap.data()
+              dataSource = 'providers'
+            } else {
+              const userSnap = await getDoc(doc(db, 'users', provider.providerId))
+              if (userSnap.exists()) {
+                userData = userSnap.data()
+                dataSource = 'users'
+              }
             }
+
+            console.log(`📊 Dados do prestador ${provider.providerId}:`, {
+              source: dataSource,
+              nome: userData?.fullName || userData?.nome,
+              cpf: userData?.cpf,
+              telefone: userData?.phone || userData?.telefone,
+              email: userData?.email,
+              endereco: userData?.address || userData?.endereco,
+              enderecoTipo: typeof userData?.address
+            })
+
+            const verification: DocumentVerification = {
+              id: `verification_${provider.providerId}`,
+              providerId: provider.providerId,
+              providerName: userData?.fullName || userData?.nome || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
+              providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
+              providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
+              providerCpf: userData?.cpf || userData?.document || '',
+              providerRg: userData?.rg || '',
+              providerAddress: typeof userData?.address === 'string' ? userData.address : 
+                             typeof userData?.address === 'object' && userData?.address ? 
+                             `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
+                             userData?.endereco || '',
+              providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
+              status: 'pending',
+              documents: provider.documents,
+              submittedAt: provider.uploadedAt,
+            }
+
+            console.log(`✅ Verificação criada: ${verification.providerName} | CPF: ${verification.providerCpf || 'não cadastrado'}`)
+            return verification
+          } catch (error) {
+            console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
+            return null
           }
-          
-          // Log para debug - mostrar dados encontrados
-          console.log(`📊 Dados do prestador ${provider.providerId}:`, {
-            source: dataSource,
-            nome: userData?.fullName || userData?.nome,
-            cpf: userData?.cpf,
-            telefone: userData?.phone || userData?.telefone,
-            email: userData?.email,
-            endereco: userData?.address || userData?.endereco,
-            enderecoTipo: typeof userData?.address
-          })
-          
-          // Criar verificação com dados reais do Firestore
-          const verification: DocumentVerification = {
-            id: `verification_${provider.providerId}`,
-            providerId: provider.providerId,
-            providerName: userData?.fullName || userData?.nome || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
-            providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
-            providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
-            providerCpf: userData?.cpf || userData?.document || '',
-            providerRg: userData?.rg || '',
-            providerAddress: typeof userData?.address === 'string' ? userData.address : 
-                           typeof userData?.address === 'object' && userData?.address ? 
-                           `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
-                           userData?.endereco || '',
-            providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
-            status: 'pending',
-            documents: provider.documents,
-            submittedAt: provider.uploadedAt,
-          }
-          
-          verificationsData.push(verification)
-          console.log(`✅ Verificação criada: ${verification.providerName} | CPF: ${verification.providerCpf || 'não cadastrado'}`)
-        } catch (error) {
-          console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
-        }
-      }
+        })
+      )
+
+      const verificationsData: DocumentVerification[] = verificationsDataArray.filter((v): v is DocumentVerification => v !== null)
 
       setVerifications(verificationsData)
       
@@ -188,6 +188,59 @@ export const useDocumentVerification = () => {
         throw new Error('Verificação não encontrada')
       }
 
+      // Persistir no Firestore
+      if (!db) throw new Error('Firestore não inicializado')
+
+      // 1) Atualizar/registrar em provider_verifications (status em UPPERCASE)
+      const verificationsRef = collection(db, 'provider_verifications')
+      const q = query(verificationsRef, where('providerId', '==', verification.providerId))
+      const snap = await getDocs(q)
+
+      if (!snap.empty) {
+        // Atualiza o(s) documento(s) existente(s)
+        await Promise.all(
+          snap.docs.map(d => updateDoc(d.ref, {
+            status: 'APPROVED',
+            reviewedAt: serverTimestamp(),
+            reviewedBy,
+          }))
+        )
+      } else {
+        // Cria um novo registro se não existir
+        await addDoc(verificationsRef, {
+          providerId: verification.providerId,
+          status: 'APPROVED',
+          createdAt: serverTimestamp(),
+          submittedAt: verification.submittedAt || serverTimestamp(),
+          reviewedAt: serverTimestamp(),
+          reviewedBy,
+          id: verificationId,
+          notes: '',
+        })
+      }
+
+      // 2) Atualizar provider (status em lowercase)
+      const providerRef = doc(db, 'providers', verification.providerId)
+      const providerSnap = await getDoc(providerRef)
+      if (providerSnap.exists()) {
+        await updateDoc(providerRef, {
+          verificationStatus: 'approved',
+          isVerified: true,
+          updatedAt: serverTimestamp(),
+        })
+      } else {
+        // fallback: tentar em users se for esse o cadastro ativo
+        const userRef = doc(db, 'users', verification.providerId)
+        const userSnap = await getDoc(userRef)
+        if (userSnap.exists()) {
+          await updateDoc(userRef, {
+            verificationStatus: 'approved',
+            isVerified: true,
+            updatedAt: serverTimestamp(),
+          })
+        }
+      }
+
       // Atualizar estado local
       setVerifications(prev => prev.map(v => 
         v.id === verificationId 
@@ -218,6 +271,56 @@ export const useDocumentVerification = () => {
       const verification = verifications.find(v => v.id === verificationId)
       if (!verification) {
         throw new Error('Verificação não encontrada')
+      }
+
+      // Persistir no Firestore
+      if (!db) throw new Error('Firestore não inicializado')
+
+      // 1) Atualizar/registrar em provider_verifications (status em UPPERCASE)
+      const verificationsRef = collection(db, 'provider_verifications')
+      const q = query(verificationsRef, where('providerId', '==', verification.providerId))
+      const snap = await getDocs(q)
+
+      if (!snap.empty) {
+        await Promise.all(
+          snap.docs.map(d => updateDoc(d.ref, {
+            status: 'REJECTED',
+            reviewedAt: serverTimestamp(),
+            reviewedBy,
+            rejectionReason,
+          }))
+        )
+      } else {
+        await addDoc(verificationsRef, {
+          providerId: verification.providerId,
+          status: 'REJECTED',
+          createdAt: serverTimestamp(),
+          submittedAt: verification.submittedAt || serverTimestamp(),
+          reviewedAt: serverTimestamp(),
+          reviewedBy,
+          id: verificationId,
+          notes: '',
+          rejectionReason,
+        })
+      }
+
+      // 2) Atualizar provider (status em lowercase)
+      const providerRef = doc(db, 'providers', verification.providerId)
+      const providerSnap = await getDoc(providerRef)
+      if (providerSnap.exists()) {
+        await updateDoc(providerRef, {
+          verificationStatus: 'rejected',
+          updatedAt: serverTimestamp(),
+        })
+      } else {
+        const userRef = doc(db, 'users', verification.providerId)
+        const userSnap = await getDoc(userRef)
+        if (userSnap.exists()) {
+          await updateDoc(userRef, {
+            verificationStatus: 'rejected',
+            updatedAt: serverTimestamp(),
+          })
+        }
       }
 
       // Atualizar estado local
