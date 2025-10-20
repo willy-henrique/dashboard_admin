@@ -86,12 +86,7 @@ const navigation = [
     icon: DollarSign,
     children: [
       { name: "Dashboard", href: "/dashboard/financeiro", icon: BarChart3 },
-      { name: "Contas", href: "/dashboard/financeiro/contas", icon: DollarSign },
       { name: "Faturamento", href: "/dashboard/financeiro/faturamento", icon: FileText },
-      { name: "Movimento de Caixa", href: "/dashboard/financeiro/movimento-caixa", icon: TrendingUp },
-      { name: "Folha de Pagamento", href: "/dashboard/financeiro/folha-pagamento", icon: Users },
-      { name: "Fechamento", href: "/dashboard/financeiro/fechamento", icon: Calendar },
-      { name: "Relatórios", href: "/dashboard/financeiro/relatorios", icon: BarChart3 },
     ],
   },
   {
