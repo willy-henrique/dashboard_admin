@@ -6,43 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Plus, Edit, Eye, Download, FileText } from "lucide-react"
+import { Search, Plus, Edit, Eye, Download, FileText, RefreshCw } from "lucide-react"
+import { useMemo, useState } from "react"
+import { usePagarmeCharges, usePagarmeOrders } from "@/hooks/use-pagarme"
+import { PagarmeService } from "@/lib/services/pagarme-service"
 
-const invoices = [
-  {
-    id: "1",
-    numero: "FAT-2025-001",
-    cliente: "João Silva",
-    dataEmissao: "2025-01-15",
-    dataVencimento: "2025-02-15",
-    valor: 1250.0,
-    status: "pago",
-    dataPagamento: "2025-01-10",
-    servicos: 5,
-  },
-  {
-    id: "2",
-    numero: "FAT-2025-002",
-    cliente: "Maria Santos",
-    dataEmissao: "2025-01-12",
-    dataVencimento: "2025-02-12",
-    valor: 850.0,
-    status: "pendente",
-    dataPagamento: null,
-    servicos: 3,
-  },
-  {
-    id: "3",
-    numero: "FAT-2025-003",
-    cliente: "Pedro Costa",
-    dataEmissao: "2025-01-10",
-    dataVencimento: "2025-01-25",
-    valor: 2100.0,
-    status: "vencido",
-    dataPagamento: null,
-    servicos: 8,
-  },
-]
+// Usaremos cobranças (charges) e pedidos (orders) do Pagar.me como "faturas"
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -60,11 +29,39 @@ const getStatusColor = (status: string) => {
 }
 
 export default function FaturamentoPage() {
+  const [search, setSearch] = useState("")
+  const { charges, loading: chargesLoading, refetch: refetchCharges } = usePagarmeCharges({ autoRefresh: true })
+  const { orders, loading: ordersLoading, refetch: refetchOrders } = usePagarmeOrders({ autoRefresh: true })
+
+  // Montar "faturas" a partir de orders/charges
+  const invoices = useMemo(() => {
+    const list = (orders || []).map((o) => {
+      const firstCharge = o.charges?.[0]
+      return {
+        id: o.id,
+        numero: o.code || o.id,
+        cliente: o.customer?.name || "—",
+        dataEmissao: new Date(o.created_at).toISOString().split('T')[0],
+        dataVencimento: new Date(o.updated_at).toISOString().split('T')[0],
+        valor: PagarmeService.fromCents(o.amount),
+        status:
+          o.status === 'paid' ? 'pago' :
+          o.status === 'pending' ? 'pendente' :
+          o.status === 'canceled' ? 'cancelado' : 'pendente',
+        dataPagamento: firstCharge?.paid_at || null,
+        servicos: o.items?.reduce((sum, it) => sum + (it.quantity || 1), 0) || 1,
+      }
+    })
+    // filtro simples por busca
+    return list.filter(inv =>
+      inv.numero.toLowerCase().includes(search.toLowerCase()) ||
+      inv.cliente.toLowerCase().includes(search.toLowerCase())
+    )
+  }, [orders, search])
+
   const totalFaturado = invoices.reduce((sum, invoice) => sum + invoice.valor, 0)
   const totalPago = invoices.filter((inv) => inv.status === "pago").reduce((sum, invoice) => sum + invoice.valor, 0)
-  const totalPendente = invoices
-    .filter((inv) => inv.status === "pendente")
-    .reduce((sum, invoice) => sum + invoice.valor, 0)
+  const totalPendente = invoices.filter((inv) => inv.status === "pendente").reduce((sum, invoice) => sum + invoice.valor, 0)
 
   return (
     <AppShell>
@@ -132,8 +129,11 @@ export default function FaturamentoPage() {
             </Button>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input placeholder="Buscar faturas..." className="pl-20 w-64" />
+              <Input placeholder="Buscar faturas..." className="pl-20 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
+            <Button variant="outline" onClick={() => { refetchOrders(); refetchCharges(); }}>
+              <RefreshCw className="h-4 w-4 mr-2" /> Atualizar
+            </Button>
           </div>
         </div>
 
@@ -168,7 +168,7 @@ export default function FaturamentoPage() {
                       <Badge className={getStatusColor(invoice.status)}>{invoice.status}</Badge>
                     </TableCell>
                     <TableCell>{invoice.servicos}</TableCell>
-                    <TableCell>{invoice.dataPagamento || "---"}</TableCell>
+                    <TableCell>{invoice.dataPagamento ? new Date(invoice.dataPagamento).toLocaleDateString('pt-BR') : "---"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Button size="sm" variant="outline">

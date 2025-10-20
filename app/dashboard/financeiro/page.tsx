@@ -121,28 +121,8 @@ export default function FinanceiroPage() {
         </Card>
       </div>
 
-      {/* Cards de Navegação */}
+      {/* Card de Navegação - apenas Faturamento */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <DollarSign className="h-5 w-5" />
-              Contas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Gerencie contas bancárias, saldos e movimentações
-            </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{(analytics?.activeAccounts ?? 0) || 3}</span>
-              <Button variant="ghost" size="sm">
-                Ver todas →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         <Card className="cursor-pointer hover:shadow-lg transition-shadow">
           <CardHeader>
             <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
@@ -155,93 +135,9 @@ export default function FinanceiroPage() {
               Controle de faturas, recebimentos e inadimplência
             </p>
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>156</span>
-              <Button variant="ghost" size="sm">
-                Ver todas →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Activity className="h-5 w-5" />
-              Movimento de Caixa
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Acompanhe entradas, saídas e fluxo de caixa
-            </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>245</span>
-              <Button variant="ghost" size="sm">
-                Ver todas →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Users className="h-5 w-5" />
-              Folha de Pagamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Gestão de salários, benefícios e impostos
-            </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>12</span>
-              <Button variant="ghost" size="sm">
-                Ver todos →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Calendar className="h-5 w-5" />
-              Fechamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Fechamentos mensais, trimestrais e anuais
-            </p>
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>12</span>
-              <Button variant="ghost" size="sm">
-                Ver todos →
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <BarChart3 className="h-5 w-5" />
-              Relatórios
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-              Relatórios financeiros e análises gerenciais
-            </p>
-            <div className="mt-4 flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-1" />
-                Exportar
-              </Button>
-              <Button variant="outline" size="sm">
-                <BarChart3 className="h-4 w-4 mr-1" />
-                Gerar
+              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{analytics?.status_breakdown?.paid ?? 0}</span>
+              <Button variant="ghost" size="sm" asChild>
+                <a href="/dashboard/financeiro/faturamento">Ver todas →</a>
               </Button>
             </div>
           </CardContent>
