@@ -95,9 +95,6 @@ const navigation = [
     children: [
       { name: "Dashboard Analytics", href: "/reports/analytics", icon: BarChart3 },
       { name: "Performance", href: "/reports/performance", icon: TrendingUp },
-      { name: "Satisfação", href: "/reports/satisfaction", icon: Star },
-      { name: "Geográfico", href: "/reports/geographic", icon: MapPin },
-      { name: "Tempo de Atendimento", href: "/reports/response-time", icon: Clock },
     ],
   },
   {
