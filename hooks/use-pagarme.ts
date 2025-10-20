@@ -1,3 +1,5 @@
+"use client"
+
 /**
  * HOOKS CUSTOMIZADOS PARA PAGAR.ME
  * Facilita o uso da API do Pagar.me nos componentes React
