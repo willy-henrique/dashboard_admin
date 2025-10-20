@@ -107,200 +107,200 @@ export default function FaturamentoPage() {
 
   return (
     <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Faturamento</h1>
-          <p className="text-gray-600">appservico.com › financeiro › faturamento</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Faturamento</h1>
+        <p className="text-gray-600">appservico.com › financeiro › faturamento</p>
+      </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Faturado</p>
-                  <p className="text-2xl font-bold">
-                    R$ {totalFaturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-                <FileText className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Pago</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-                <FileText className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Pendente</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    R$ {totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-                <FileText className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Action Bar */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Fatura
-            </Button>
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input placeholder="Buscar faturas..." className="pl-10 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <Button variant="outline" onClick={() => { refetchOrders(); refetchCharges(); }}>
-              <RefreshCw className="h-4 w-4 mr-2" /> Atualizar
-            </Button>
-          </div>
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-              <span className="text-sm text-gray-500">a</span>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="pago">Pago</SelectItem>
-                <SelectItem value="pendente">Pendente</SelectItem>
-                <SelectItem value="cancelado">Cancelado</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={methodFilter} onValueChange={setMethodFilter}>
-              <SelectTrigger className="w-[200px]"><SelectValue placeholder="Método" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os métodos</SelectItem>
-                <SelectItem value="pix">PIX</SelectItem>
-                <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                <SelectItem value="debit_card">Cartão de Débito</SelectItem>
-                <SelectItem value="boleto">Boleto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Distribuição de Receitas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Bruto Recebido (Pago)</p>
-                  <p className="text-2xl font-bold">
-                    {PagarmeService.formatCurrency(totalPago)}
-                  </p>
-                </div>
-                <Wallet className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Repasse aos Prestadores</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {PagarmeService.formatCurrency(splitTotals.providers)}
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Lucro do App</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {PagarmeService.formatCurrency(splitTotals.app)}
-                  </p>
-                </div>
-                <Percent className="h-8 w-8 text-purple-600" />
-              </div>
-              {splitTotals.baseWithoutSplit > 0 && (
-                <p className="text-xs text-gray-500 mt-2">Aplicada comissão padrão de 10% em vendas sem split</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Invoices Table */}
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Número</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Data Emissão</TableHead>
-                  <TableHead>Data Vencimento</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Serviços</TableHead>
-                  <TableHead>Data Pagamento</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{invoice.numero}</TableCell>
-                    <TableCell>{invoice.cliente}</TableCell>
-                    <TableCell>{invoice.dataEmissao}</TableCell>
-                    <TableCell>{invoice.dataVencimento}</TableCell>
-                    <TableCell className="font-medium">
-                      R$ {invoice.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(invoice.status)}>{invoice.status}</Badge>
-                    </TableCell>
-                    <TableCell>{invoice.servicos}</TableCell>
-                    <TableCell>{invoice.dataPagamento ? new Date(invoice.dataPagamento).toLocaleDateString('pt-BR') : "---"}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Faturado</p>
+                <p className="text-2xl font-bold">
+                  R$ {totalFaturado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <FileText className="h-8 w-8 text-blue-600" />
+            </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Pago</p>
+                <p className="text-2xl font-bold text-green-600">
+                  R$ {totalPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <FileText className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Pendente</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  R$ {totalPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <FileText className="h-8 w-8 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Action Bar */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button className="bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Fatura
+          </Button>
+          <Button variant="outline">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input placeholder="Buscar faturas..." className="pl-10 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
+          </div>
+          <Button variant="outline" onClick={() => { refetchOrders(); refetchCharges(); }}>
+            <RefreshCw className="h-4 w-4 mr-2" /> Atualizar
+          </Button>
+        </div>
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <span className="text-sm text-gray-500">a</span>
+            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px]"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="pago">Pago</SelectItem>
+              <SelectItem value="pendente">Pendente</SelectItem>
+              <SelectItem value="cancelado">Cancelado</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={methodFilter} onValueChange={setMethodFilter}>
+            <SelectTrigger className="w-[200px]"><SelectValue placeholder="Método" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os métodos</SelectItem>
+              <SelectItem value="pix">PIX</SelectItem>
+              <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+              <SelectItem value="debit_card">Cartão de Débito</SelectItem>
+              <SelectItem value="boleto">Boleto</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Distribuição de Receitas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Bruto Recebido (Pago)</p>
+                <p className="text-2xl font-bold">
+                  {PagarmeService.formatCurrency(totalPago)}
+                </p>
+              </div>
+              <Wallet className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Repasse aos Prestadores</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {PagarmeService.formatCurrency(splitTotals.providers)}
+                </p>
+              </div>
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Lucro do App</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {PagarmeService.formatCurrency(splitTotals.app)}
+                </p>
+              </div>
+              <Percent className="h-8 w-8 text-purple-600" />
+            </div>
+            {splitTotals.baseWithoutSplit > 0 && (
+              <p className="text-xs text-gray-500 mt-2">Aplicada comissão padrão de 10% em vendas sem split</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Invoices Table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Número</TableHead>
+                <TableHead>Cliente</TableHead>
+                <TableHead>Data Emissão</TableHead>
+                <TableHead>Data Vencimento</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Serviços</TableHead>
+                <TableHead>Data Pagamento</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell className="font-medium">{invoice.numero}</TableCell>
+                  <TableCell>{invoice.cliente}</TableCell>
+                  <TableCell>{invoice.dataEmissao}</TableCell>
+                  <TableCell>{invoice.dataVencimento}</TableCell>
+                  <TableCell className="font-medium">
+                    R$ {invoice.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(invoice.status)}>{invoice.status}</Badge>
+                  </TableCell>
+                  <TableCell>{invoice.servicos}</TableCell>
+                  <TableCell>{invoice.dataPagamento ? new Date(invoice.dataPagamento).toLocaleDateString('pt-BR') : "---"}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
       </div>
     </div>
   )
