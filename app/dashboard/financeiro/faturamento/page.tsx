@@ -111,7 +111,7 @@ export default function FaturamentoPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Faturamento</h1>
-          <p className="text-gray-600">autem.com.br › financeiro › faturamento</p>
+          <p className="text-gray-600">appservico.com › financeiro › faturamento</p>
         </div>
 
         {/* Summary Cards */}
@@ -172,7 +172,7 @@ export default function FaturamentoPage() {
             </Button>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input placeholder="Buscar faturas..." className="pl-20 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Buscar faturas..." className="pl-10 w-64" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
             <Button variant="outline" onClick={() => { refetchOrders(); refetchCharges(); }}>
               <RefreshCw className="h-4 w-4 mr-2" /> Atualizar
