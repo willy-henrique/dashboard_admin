@@ -47,12 +47,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo e Título */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <span className="text-white text-2xl font-bold">A</span>
+          <div className="w-20 h-16 flex items-center justify-center mx-auto mb-4">
+            <img 
+              src="/logo-aquiresolve.svg" 
+              alt="AquiResolve" 
+              className="h-16 w-auto"
+            />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            AppServiço
-          </h1>
           <p className="text-slate-600 dark:text-slate-300 font-medium">
             Painel Administrativo
           </p>
@@ -82,7 +83,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@appservico.com"
+                    placeholder="admin@aquiresolve.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="border-0 bg-transparent pl-0 pr-4 h-11 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-0 focus:border-0 focus:outline-none"
@@ -160,7 +161,7 @@ export default function LoginPage() {
 
         {/* Informações do Sistema */}
         <div className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          <p className="font-medium">Sistema de Administração - AppServiço</p>
+          <p className="font-medium">Sistema de Administração - AquiResolve</p>
           <p>Versão 1.0.0</p>
         </div>
       </div>

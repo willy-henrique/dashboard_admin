@@ -10,10 +10,10 @@ import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AppServiço - Painel Administrativo",
+  title: "AquiResolve - Painel Administrativo",
   description: "Sistema de administração para aplicativo de prestação de serviços",
   keywords: "administração, serviços, prestadores, clientes, dashboard",
-  authors: [{ name: "AppServiço Team" }],
+  authors: [{ name: "AquiResolve Team" }],
 }
 
 export const viewport: Viewport = {

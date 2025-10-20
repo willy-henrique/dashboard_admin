@@ -137,10 +137,11 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       {/* Header fixo */}
       <div className="flex h-16 items-center justify-between px-6 flex-shrink-0">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white text-orange-400">
-            <span className="font-bold text-lg">A</span>
-          </div>
-          <h1 className="text-xl font-bold">AppServiço</h1>
+          <img 
+            src="/logo-aquiresolve.svg" 
+            alt="AquiResolve" 
+            className="h-8 w-auto"
+          />
         </div>
         <Button
           variant="ghost"
@@ -228,12 +229,16 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       {/* Footer fixo da Sidebar */}
       <div className="border-t border-black/10 p-4 flex-shrink-0">
         <div className="flex items-center space-x-3 text-slate-900">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-orange-400">
-            <span className="text-sm font-medium">A</span>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white">
+            <img 
+              src="/logo-aquiresolve.svg" 
+              alt="AquiResolve" 
+              className="h-6 w-auto"
+            />
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs text-slate-600">admin@appservico.com</p>
+            <p className="text-xs text-slate-600">admin@aquiresolve.com</p>
           </div>
           <Button
             variant="ghost"

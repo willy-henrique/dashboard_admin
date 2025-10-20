@@ -61,10 +61,11 @@ export function Header({ onMenuClick }: HeaderProps) {
 
               {/* Logo */}
               <div className="flex items-center space-x-1 sm:space-x-2">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-orange-400 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xs sm:text-sm lg:text-lg">A</span>
-                </div>
-                <span className="text-sm sm:text-base lg:text-lg xl:text-xl font-bold text-gray-900 hidden sm:block">AppServiço</span>
+                <img 
+                  src="/logo-aquiresolve.svg" 
+                  alt="AquiResolve" 
+                  className="h-6 w-auto sm:h-7 lg:h-8"
+                />
               </div>
             </div>
 
@@ -126,7 +127,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{user?.name || "Admin"}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email || "admin@appservico.com"}
+                        {user?.email || "admin@aquiresolve.com"}
                       </p>
                     </div>
                   </DropdownMenuLabel>
