@@ -301,7 +301,6 @@ export default function FaturamentoPage() {
           </Table>
         </CardContent>
       </Card>
-      </div>
     </div>
   )
 }
