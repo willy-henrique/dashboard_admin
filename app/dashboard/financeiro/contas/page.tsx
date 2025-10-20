@@ -1,99 +1,144 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Plus, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, Eye, Download } from "lucide-react"
+import { Search, Plus, Edit, Trash2, DollarSign, TrendingUp, TrendingDown, Eye, Download, RefreshCw, Wallet, CreditCard, Building } from "lucide-react"
+import { useMemo, useState } from "react"
+import { usePagarmeCharges, usePagarmeOrders, usePagarmeBalance } from "@/hooks/use-pagarme"
+import { PagarmeService } from "@/lib/services/pagarme-service"
 
-const accounts = [
-  {
-    id: "1",
-    nome: "Conta Corrente Principal",
-    banco: "Banco do Brasil",
-    agencia: "1234-5",
-    conta: "12345-6",
-    tipo: "corrente",
-    saldo: 15750.5,
-    status: "ativa",
-  },
-  {
-    id: "2",
-    nome: "Conta Poupança",
-    banco: "Caixa Econômica",
-    agencia: "0987-6",
-    conta: "98765-4",
-    tipo: "poupanca",
-    saldo: 8200.0,
-    status: "ativa",
-  },
-  {
-    id: "3",
-    nome: "Conta Investimento",
-    banco: "Itaú",
-    agencia: "5678-9",
-    conta: "56789-0",
-    tipo: "investimento",
-    saldo: 25000.0,
-    status: "ativa",
-  },
-]
-
-const recentTransactions = [
-  {
-    id: "1",
-    data: "2025-01-15",
-    descricao: "Pagamento de serviço #699411371",
-    tipo: "receita",
-    valor: 350.0,
-    conta: "Conta Corrente Principal",
-  },
-  {
-    id: "2",
-    data: "2025-01-15",
-    descricao: "Combustível - Veículo ABC-1234",
-    tipo: "despesa",
-    valor: 120.0,
-    conta: "Conta Corrente Principal",
-  },
-  {
-    id: "3",
-    data: "2025-01-14",
-    descricao: "Pagamento de fornecedor",
-    tipo: "despesa",
-    valor: 850.0,
-    conta: "Conta Corrente Principal",
-  },
-]
-
-const getTipoColor = (tipo: string) => {
-  switch (tipo) {
-    case "corrente":
-      return "bg-blue-100 text-blue-800"
-    case "poupanca":
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "paid":
       return "bg-green-100 text-green-800"
-    case "investimento":
-      return "bg-purple-100 text-purple-800"
+    case "pending":
+      return "bg-yellow-100 text-yellow-800"
+    case "failed":
+      return "bg-red-100 text-red-800"
+    case "canceled":
+      return "bg-gray-100 text-gray-800"
     default:
       return "bg-gray-100 text-gray-800"
   }
 }
 
+const getPaymentMethodIcon = (method: string) => {
+  switch (method) {
+    case "pix":
+      return <Wallet className="h-4 w-4" />
+    case "credit_card":
+    case "debit_card":
+      return <CreditCard className="h-4 w-4" />
+    case "boleto":
+      return <Building className="h-4 w-4" />
+    default:
+      return <DollarSign className="h-4 w-4" />
+  }
+}
+
 export default function ContasPage() {
-  const totalSaldo = accounts.reduce((sum, account) => sum + account.saldo, 0)
+  const [search, setSearch] = useState("")
+  const { balance, loading: balanceLoading, refetch: refetchBalance } = usePagarmeBalance(true)
+  const { charges, loading: chargesLoading, refetch: refetchCharges } = usePagarmeCharges({ autoRefresh: true })
+  const { orders, loading: ordersLoading, refetch: refetchOrders } = usePagarmeOrders({ autoRefresh: true })
+
+  // Calcular estatísticas reais
+  const stats = useMemo(() => {
+    const saldoDisponivel = PagarmeService.fromCents(balance?.available_amount ?? 0)
+    const saldoAReceber = PagarmeService.fromCents(balance?.waiting_funds_amount ?? 0)
+    const saldoTotal = saldoDisponivel + saldoAReceber
+
+    // Receitas do mês atual
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    
+    const receitasMes = charges
+      ?.filter(c => {
+        const chargeDate = new Date(c.created_at)
+        return chargeDate >= firstDay && chargeDate <= lastDay && c.status === 'paid'
+      })
+      ?.reduce((sum, c) => sum + PagarmeService.fromCents(c.paid_amount || c.amount), 0) ?? 0
+
+    // Despesas estimadas (taxas do Pagar.me)
+    const despesasMes = charges
+      ?.filter(c => {
+        const chargeDate = new Date(c.created_at)
+        return chargeDate >= firstDay && chargeDate <= lastDay && c.status === 'paid'
+      })
+      ?.reduce((sum, c) => {
+        const valor = PagarmeService.fromCents(c.paid_amount || c.amount)
+        // Taxa média do Pagar.me: ~3.5%
+        return sum + (valor * 0.035)
+      }, 0) ?? 0
+
+    return {
+      saldoTotal,
+      saldoDisponivel,
+      saldoAReceber,
+      receitasMes,
+      despesasMes,
+      totalContas: 1 // Pagar.me é uma conta principal
+    }
+  }, [balance, charges])
+
+  // Contas virtuais baseadas no Pagar.me
+  const contas = useMemo(() => [
+    {
+      id: "pagarme-principal",
+      nome: "Conta Principal Pagar.me",
+      banco: "Pagar.me",
+      agencia: "N/A",
+      conta: "Conta Digital",
+      tipo: "digital",
+      saldo: stats.saldoDisponivel,
+      status: "ativa",
+      saldoAReceber: stats.saldoAReceber
+    }
+  ], [stats])
+
+  // Movimentações recentes baseadas nas cobranças
+  const movimentacoes = useMemo(() => {
+    return (charges || [])
+      .slice(0, 10)
+      .map(charge => ({
+        id: charge.id,
+        data: new Date(charge.created_at).toLocaleDateString('pt-BR'),
+        descricao: `Pagamento ${charge.payment_method.toUpperCase()} - ${charge.customer.name}`,
+        tipo: charge.status === 'paid' ? 'receita' : 'pendente',
+        valor: PagarmeService.fromCents(charge.paid_amount || charge.amount),
+        conta: "Conta Principal Pagar.me",
+        status: charge.status,
+        metodo: charge.payment_method
+      }))
+  }, [charges])
+
+  const handleRefresh = () => {
+    refetchBalance()
+    refetchCharges()
+    refetchOrders()
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             Gestão de Contas
           </h1>
-          <p className="text-muted-foreground">
-            Gerencie contas bancárias, saldos e movimentações
+          <p className="text-gray-600">
+            Controle de saldos e movimentações via Pagar.me
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Atualizar
+          </Button>
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Exportar
@@ -105,166 +150,188 @@ export default function ContasPage() {
         </div>
       </div>
 
-        {/* Estatísticas */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                Saldo Total
-              </CardTitle>
-              <DollarSign className="h-4 w-4" style={{ color: 'var(--success)' }} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>
-                R$ {totalSaldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-              </div>
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                +12.5% em relação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                Receitas (Mês)
-              </CardTitle>
-              <TrendingUp className="h-4 w-4" style={{ color: 'var(--success)' }} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>R$ 12.450,00</div>
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                +8.3% em relação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                Despesas (Mês)
-              </CardTitle>
-              <TrendingDown className="h-4 w-4" style={{ color: 'var(--destructive)' }} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" style={{ color: 'var(--destructive)' }}>R$ 8.750,00</div>
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                -5.2% em relação ao mês anterior
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                Total de Contas
-              </CardTitle>
-              <DollarSign className="h-4 w-4" style={{ color: 'var(--primary)' }} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>{accounts.length}</div>
-              <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-                Todas ativas
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Barra de Ações */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
-              <Input 
-                placeholder="Buscar contas..." 
-                className="pl-20 w-64" 
-                aria-label="Buscar contas"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Tabela de Contas */}
+      {/* Estatísticas */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle style={{ color: 'var(--foreground)' }}>Contas Bancárias</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Nome</TableHead>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Banco</TableHead>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Agência</TableHead>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Conta</TableHead>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Tipo</TableHead>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Saldo</TableHead>
-                  <TableHead style={{ color: 'var(--foreground)' }}>Status</TableHead>
-                  <TableHead className="text-right" style={{ color: 'var(--foreground)' }}>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {accounts.map((account) => (
-                  <TableRow key={account.id}>
-                    <TableCell className="font-medium" style={{ color: 'var(--foreground)' }}>{account.nome}</TableCell>
-                    <TableCell style={{ color: 'var(--foreground)' }}>{account.banco}</TableCell>
-                    <TableCell style={{ color: 'var(--foreground)' }}>{account.agencia}</TableCell>
-                    <TableCell style={{ color: 'var(--foreground)' }}>{account.conta}</TableCell>
-                    <TableCell>
-                      <Badge className={getTipoColor(account.tipo)}>{account.tipo}</Badge>
-                    </TableCell>
-                    <TableCell className="font-medium" style={{ color: 'var(--foreground)' }}>
-                      R$ {account.saldo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="bg-green-100 text-green-800">{account.status}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" className="text-red-600 bg-transparent">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        {/* Movimentações Recentes */}
-        <Card>
-          <CardHeader>
-            <CardTitle style={{ color: 'var(--foreground)' }}>Movimentações Recentes</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Saldo Total
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between py-2 border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
-                  <div>
-                    <p className="font-medium" style={{ color: 'var(--foreground)' }}>{transaction.descricao}</p>
-                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-                      {transaction.conta} • {transaction.data}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-medium ${transaction.tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
-                      {transaction.tipo === "receita" ? "+" : "-"}R$ {transaction.valor.toFixed(2)}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>{transaction.tipo}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="text-2xl font-bold text-green-600">
+              {PagarmeService.formatCurrency(stats.saldoTotal)}
             </div>
+            <p className="text-xs text-gray-500">
+              Disponível: {PagarmeService.formatCurrency(stats.saldoDisponivel)}
+            </p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Receitas (Mês)
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {PagarmeService.formatCurrency(stats.receitasMes)}
+            </div>
+            <p className="text-xs text-gray-500">
+              Pagamentos confirmados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Taxas (Mês)
+            </CardTitle>
+            <TrendingDown className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {PagarmeService.formatCurrency(stats.despesasMes)}
+            </div>
+            <p className="text-xs text-gray-500">
+              Taxas Pagar.me (~3.5%)
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total de Contas
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{contas.length}</div>
+            <p className="text-xs text-gray-500">
+              Conta digital ativa
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Barra de Ações */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input 
+              placeholder="Buscar contas..." 
+              className="pl-10 w-64" 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Buscar contas"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Tabela de Contas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-gray-900">Contas Bancárias</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-gray-900">Nome</TableHead>
+                <TableHead className="text-gray-900">Banco</TableHead>
+                <TableHead className="text-gray-900">Agência</TableHead>
+                <TableHead className="text-gray-900">Conta</TableHead>
+                <TableHead className="text-gray-900">Tipo</TableHead>
+                <TableHead className="text-gray-900">Saldo Disponível</TableHead>
+                <TableHead className="text-gray-900">A Receber</TableHead>
+                <TableHead className="text-gray-900">Status</TableHead>
+                <TableHead className="text-right text-gray-900">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {contas.map((account) => (
+                <TableRow key={account.id}>
+                  <TableCell className="font-medium text-gray-900">{account.nome}</TableCell>
+                  <TableCell className="text-gray-900">{account.banco}</TableCell>
+                  <TableCell className="text-gray-900">{account.agencia}</TableCell>
+                  <TableCell className="text-gray-900">{account.conta}</TableCell>
+                  <TableCell>
+                    <Badge className="bg-blue-100 text-blue-800">{account.tipo}</Badge>
+                  </TableCell>
+                  <TableCell className="font-medium text-green-600">
+                    {PagarmeService.formatCurrency(account.saldo)}
+                  </TableCell>
+                  <TableCell className="font-medium text-yellow-600">
+                    {PagarmeService.formatCurrency(account.saldoAReceber)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className="bg-green-100 text-green-800">{account.status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Movimentações Recentes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-gray-900">Movimentações Recentes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {movimentacoes.length > 0 ? (
+              movimentacoes.map((transaction) => (
+                <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-full">
+                      {getPaymentMethodIcon(transaction.metodo)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{transaction.descricao}</p>
+                      <p className="text-sm text-gray-500">
+                        {transaction.conta} • {transaction.data}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-medium ${transaction.tipo === "receita" ? "text-green-600" : "text-yellow-600"}`}>
+                      {transaction.tipo === "receita" ? "+" : ""}{PagarmeService.formatCurrency(transaction.valor)}
+                    </p>
+                    <Badge className={getStatusColor(transaction.status)}>
+                      {transaction.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <DollarSign className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Nenhuma movimentação encontrada</p>
+                <p className="text-sm">As transações aparecerão aqui conforme forem processadas</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
