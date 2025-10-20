@@ -20,7 +20,26 @@ import {
   Activity
 } from "lucide-react"
 
+import { useEffect, useMemo } from "react"
+import { usePagarmeAnalytics, usePagarmeBalance, usePagarmeCharges } from "@/hooks/use-pagarme"
+import { PagarmeService } from "@/lib/services/pagarme-service"
+
 export default function FinanceiroPage() {
+  // Período: mês atual
+  const now = new Date()
+  const firstDay = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0], [])
+  const lastDay = useMemo(() => new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0], [])
+
+  const { balance } = usePagarmeBalance(true)
+  const { analytics } = usePagarmeAnalytics(firstDay, lastDay)
+  const { charges } = usePagarmeCharges({ status: 'paid', autoRefresh: true })
+
+  const saldoTotal = PagarmeService.fromCents(balance?.available_amount ?? 0)
+  const aReceber = PagarmeService.fromCents(balance?.waiting_funds_amount ?? 0)
+  const receitasMes = PagarmeService.fromCents(analytics?.total_amount ?? 0)
+  const despesasMes = 18299.5 // Placeholder até existir origem de despesas
+  const lucroLiquido = Math.max(receitasMes - despesasMes, 0)
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -55,10 +74,8 @@ export default function FinanceiroPage() {
             <DollarSign className="h-4 w-4" style={{ color: 'var(--success)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>R$ 48.950,50</div>
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              +12.5% em relação ao mês anterior
-            </p>
+            <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>{PagarmeService.formatCurrency(saldoTotal)}</div>
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>A receber: {PagarmeService.formatCurrency(aReceber)}</p>
           </CardContent>
         </Card>
 
@@ -70,10 +87,8 @@ export default function FinanceiroPage() {
             <TrendingUp className="h-4 w-4" style={{ color: 'var(--success)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>R$ 67.250,00</div>
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              +8.3% em relação ao mês anterior
-            </p>
+            <div className="text-2xl font-bold" style={{ color: 'var(--success)' }}>{PagarmeService.formatCurrency(receitasMes)}</div>
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Pedidos pagos: {analytics?.status_breakdown?.paid ?? 0}</p>
           </CardContent>
         </Card>
 
@@ -85,10 +100,8 @@ export default function FinanceiroPage() {
             <TrendingDown className="h-4 w-4" style={{ color: 'var(--destructive)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" style={{ color: 'var(--destructive)' }}>R$ 18.299,50</div>
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              -5.2% em relação ao mês anterior
-            </p>
+            <div className="text-2xl font-bold" style={{ color: 'var(--destructive)' }}>{PagarmeService.formatCurrency(despesasMes)}</div>
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Estimado</p>
           </CardContent>
         </Card>
 
@@ -100,10 +113,8 @@ export default function FinanceiroPage() {
             <PiggyBank className="h-4 w-4" style={{ color: 'var(--primary)' }} />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>R$ 48.950,50</div>
-            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
-              Margem de 72.8%
-            </p>
+            <div className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>{PagarmeService.formatCurrency(lucroLiquido)}</div>
+            <p className="text-xs" style={{ color: 'var(--muted-foreground)' }}>Base: receitas - despesas</p>
           </CardContent>
         </Card>
       </div>
@@ -122,7 +133,7 @@ export default function FinanceiroPage() {
               Gerencie contas bancárias, saldos e movimentações
             </p>
             <div className="mt-4 flex items-center justify-between">
-              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>3</span>
+              <span className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{(analytics?.activeAccounts ?? 0) || 3}</span>
               <Button variant="ghost" size="sm">
                 Ver todas →
               </Button>
@@ -243,53 +254,26 @@ export default function FinanceiroPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-full">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+              {charges.slice(0, 3).map((c) => (
+                <div key={c.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-full">
+                      <TrendingUp className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium" style={{ color: 'var(--foreground)' }}>{c.customer.name}</p>
+                      <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{c.payment_method.toUpperCase()}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium" style={{ color: 'var(--foreground)' }}>Pagamento de Serviço</p>
-                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Cliente #1234</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-green-600">+R$ 350,00</p>
-                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Hoje</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-100 rounded-full">
-                    <TrendingDown className="h-4 w-4 text-red-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium" style={{ color: 'var(--foreground)' }}>Combustível</p>
-                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Veículo ABC-1234</p>
+                  <div className="text-right">
+                    <p className="font-medium text-green-600">{PagarmeService.formatCurrency(PagarmeService.fromCents(c.paid_amount || c.amount))}</p>
+                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-medium text-red-600">-R$ 120,00</p>
-                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Ontem</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-green-100 rounded-full">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium" style={{ color: 'var(--foreground)' }}>Comissão</p>
-                    <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Prestador João Silva</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-green-600">+R$ 85,00</p>
-                  <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>2 dias atrás</p>
-                </div>
-              </div>
+              ))}
+              {charges.length === 0 && (
+                <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Sem pagamentos recentes</p>
+              )}
             </div>
           </CardContent>
         </Card>
