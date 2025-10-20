@@ -1,6 +1,5 @@
 "use client"
 
-import { AppShell } from "@/components/layout/app-shell"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -107,8 +106,7 @@ export default function FaturamentoPage() {
   }, [charges, appRecipientId])
 
   return (
-    <AppShell>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Faturamento</h1>
           <p className="text-gray-600">appservico.com › financeiro › faturamento</p>
@@ -304,6 +302,6 @@ export default function FaturamentoPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </div>
   )
 }
