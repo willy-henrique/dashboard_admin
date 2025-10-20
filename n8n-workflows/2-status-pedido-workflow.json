@@ -1,0 +1,413 @@
+{
+  "name": "Atualização de Status - Notificações",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "status-pedido",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Status Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "status-pedido-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "status-check",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "status-completed",
+      "name": "Status Concluído?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "status-cancelled",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "cancelled",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "status-cancelled",
+      "name": "Status Cancelado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $json.clientTelegramId || $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "✅ *PEDIDO CONCLUÍDO*\n\n📋 **Pedido:** {{ $json.id }}\n👤 **Cliente:** {{ $json.clientName }}\n📍 **Endereço:** {{ $json.address }}\n💬 **Descrição:** {{ $json.description }}\n⏰ **Concluído em:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n⭐ **Avalie nosso serviço!**\n🔗 [Acessar Dashboard](https://dashboard-admin-bay.vercel.app/dashboard/servicos)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-completed",
+      "name": "Telegram - Concluído",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://api.emailjs.com/api/v1.0/email/send",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "service_id",
+              "value": "{{ $vars.EMAILJS_SERVICE_ID }}"
+            },
+            {
+              "name": "template_id",
+              "value": "{{ $vars.EMAILJS_TEMPLATE_COMPLETED_ID }}"
+            },
+            {
+              "name": "user_id",
+              "value": "{{ $vars.EMAILJS_USER_ID }}"
+            },
+            {
+              "name": "template_params",
+              "value": "{\n  \"to_email\": \"{{ $json.clientEmail }}\",\n  \"subject\": \"✅ Pedido Concluído - {{ $json.id }}\",\n  \"client_name\": \"{{ $json.clientName }}\",\n  \"order_id\": \"{{ $json.id }}\",\n  \"address\": \"{{ $json.address }}\",\n  \"description\": \"{{ $json.description }}\",\n  \"completion_date\": \"{{ $now.format('dd/MM/yyyy HH:mm') }}\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "email-completed",
+      "name": "Email - Concluído",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $json.clientTelegramId || $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "❌ *PEDIDO CANCELADO*\n\n📋 **Pedido:** {{ $json.id }}\n👤 **Cliente:** {{ $json.clientName }}\n📍 **Endereço:** {{ $json.address }}\n💬 **Descrição:** {{ $json.description }}\n📝 **Motivo:** {{ $json.cancellationReason || 'Não informado' }}\n⏰ **Cancelado em:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n🔗 [Acessar Dashboard](https://dashboard-admin-bay.vercel.app/dashboard/servicos)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-cancelled",
+      "name": "Telegram - Cancelado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 600]
+    },
+    {
+      "parameters": {
+        "url": "https://api.emailjs.com/api/v1.0/email/send",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "service_id",
+              "value": "{{ $vars.EMAILJS_SERVICE_ID }}"
+            },
+            {
+              "name": "template_id",
+              "value": "{{ $vars.EMAILJS_TEMPLATE_CANCELLED_ID }}"
+            },
+            {
+              "name": "user_id",
+              "value": "{{ $vars.EMAILJS_USER_ID }}"
+            },
+            {
+              "name": "template_params",
+              "value": "{\n  \"to_email\": \"{{ $json.clientEmail }}\",\n  \"subject\": \"❌ Pedido Cancelado - {{ $json.id }}\",\n  \"client_name\": \"{{ $json.clientName }}\",\n  \"order_id\": \"{{ $json.id }}\",\n  \"address\": \"{{ $json.address }}\",\n  \"description\": \"{{ $json.description }}\",\n  \"cancellation_reason\": \"{{ $json.cancellationReason || 'Não informado' }}\",\n  \"cancellation_date\": \"{{ $now.format('dd/MM/yyyy HH:mm') }}\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "email-cancelled",
+      "name": "Email - Cancelado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 700]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "🔄 *STATUS ATUALIZADO*\n\n📋 **Pedido:** {{ $json.id }}\n👤 **Cliente:** {{ $json.clientName }}\n📍 **Endereço:** {{ $json.address }}\n📊 **Status:** {{ $json.status.toUpperCase() }}\n⏰ **Atualizado em:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n🔗 [Ver no Dashboard](https://dashboard-admin-bay.vercel.app/dashboard/servicos)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-status-update",
+      "name": "Telegram - Atualização",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Status atualizado e notificações enviadas\",\n  \"orderId\": \"{{ $json.id }}\",\n  \"newStatus\": \"{{ $json.status }}\",\n  \"processedAt\": \"{{ $now.toISOString() }}\"\n}"
+      },
+      "id": "response",
+      "name": "Resposta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Webhook - Status Pedido": {
+      "main": [
+        [
+          {
+            "node": "Status Concluído?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Status Cancelado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Concluído?": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Concluído",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email - Concluído",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Atualização",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Cancelado?": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Cancelado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email - Cancelado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Concluído": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Concluído": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Cancelado": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Cancelado": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Atualização": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-15T10:00:00.000Z",
+  "versionId": "1"
+}
+

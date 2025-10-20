@@ -7,115 +7,32 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Download, Eye, RefreshCw, AlertCircle } from "lucide-react"
-import { TransactionModal } from "./transaction-modal"
-
-interface Transaction {
-  id: string
-  orderId: string
-  clientId: string
-  clientName: string
-  providerId: string
-  providerName: string
-  amount: number
-  commission: number
-  status: "pending" | "completed" | "failed" | "refunded"
-  paymentMethod: string
-  createdAt: string
-  completedAt?: string
-  failureReason?: string
-}
-
-const mockTransactions: Transaction[] = [
-  {
-    id: "TXN-001",
-    orderId: "ORD-001",
-    clientId: "1",
-    clientName: "Maria Silva",
-    providerId: "1",
-    providerName: "João Silva",
-    amount: 250.0,
-    commission: 25.0,
-    status: "completed",
-    paymentMethod: "PIX",
-    createdAt: "2024-03-10T14:30:00Z",
-    completedAt: "2024-03-10T14:31:00Z",
-  },
-  {
-    id: "TXN-002",
-    orderId: "ORD-002",
-    clientId: "2",
-    clientName: "João Santos",
-    providerId: "2",
-    providerName: "Maria Santos",
-    amount: 150.0,
-    commission: 15.0,
-    status: "pending",
-    paymentMethod: "Cartão de Crédito",
-    createdAt: "2024-03-11T10:15:00Z",
-  },
-  {
-    id: "TXN-003",
-    orderId: "ORD-003",
-    clientId: "3",
-    clientName: "Ana Costa",
-    providerId: "3",
-    providerName: "Carlos Lima",
-    amount: 300.0,
-    commission: 30.0,
-    status: "completed",
-    paymentMethod: "PIX",
-    createdAt: "2024-03-09T16:20:00Z",
-    completedAt: "2024-03-09T16:21:00Z",
-  },
-  {
-    id: "TXN-004",
-    orderId: "ORD-004",
-    clientId: "4",
-    clientName: "Carlos Lima",
-    providerId: "4",
-    providerName: "Ana Costa",
-    amount: 800.0,
-    commission: 80.0,
-    status: "failed",
-    paymentMethod: "Cartão de Crédito",
-    createdAt: "2024-03-11T09:45:00Z",
-    failureReason: "Cartão recusado",
-  },
-  {
-    id: "TXN-005",
-    orderId: "ORD-005",
-    clientId: "1",
-    clientName: "Maria Silva",
-    providerId: "1",
-    providerName: "João Silva",
-    amount: 200.0,
-    commission: 20.0,
-    status: "refunded",
-    paymentMethod: "PIX",
-    createdAt: "2024-03-08T11:30:00Z",
-    completedAt: "2024-03-08T11:31:00Z",
-  },
-]
+import { Search, Download, Eye, RefreshCw, AlertCircle, Loader2 } from "lucide-react"
+import { usePagarmeOrders, usePagarmeCharges } from "@/hooks/use-pagarme"
+import { PagarmeService } from "@/lib/services/pagarme-service"
+import { PagarmeOrder, PagarmeCharge } from "@/types/pagarme"
 
 export function TransactionsTable() {
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all")
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const filteredTransactions = transactions.filter((transaction) => {
+  // Buscar pedidos e cobranças do Pagar.me
+  const { orders, loading: ordersLoading, refetch: refetchOrders } = usePagarmeOrders({ autoRefresh: true })
+  const { charges, loading: chargesLoading, refetch: refetchCharges, refundCharge, cancelCharge } = usePagarmeCharges({ autoRefresh: true })
+
+  const loading = ordersLoading || chargesLoading
+
+  // Filtrar charges
+  const filteredCharges = charges.filter((charge) => {
     const matchesSearch =
-      transaction.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.providerName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || transaction.status === statusFilter
+      charge.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (charge.code && charge.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      charge.customer.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || charge.status === statusFilter
     const matchesPaymentMethod =
       paymentMethodFilter === "all" ||
-      transaction.paymentMethod.toLowerCase().includes(paymentMethodFilter.toLowerCase())
+      charge.payment_method === paymentMethodFilter
     return matchesSearch && matchesStatus && matchesPaymentMethod
   })
 
@@ -123,52 +40,104 @@ export function TransactionsTable() {
     switch (status) {
       case "pending":
         return <Badge className="bg-orange-100 text-orange-800">Pendente</Badge>
-      case "completed":
-        return <Badge className="bg-green-100 text-green-800">Concluído</Badge>
+      case "paid":
+        return <Badge className="bg-green-100 text-green-800">Pago</Badge>
       case "failed":
         return <Badge className="bg-red-100 text-red-800">Falhou</Badge>
       case "refunded":
         return <Badge className="bg-purple-100 text-purple-800">Reembolsado</Badge>
+      case "processing":
+        return <Badge className="bg-blue-100 text-blue-800">Processando</Badge>
+      case "canceled":
+        return <Badge className="bg-gray-100 text-gray-800">Cancelado</Badge>
       default:
-        return <Badge>Desconhecido</Badge>
+        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>
     }
   }
 
   const getPaymentMethodBadge = (method: string) => {
     const colors = {
-      PIX: "bg-blue-100 text-blue-800",
-      "Cartão de Crédito": "bg-green-100 text-green-800",
-      "Cartão de Débito": "bg-orange-100 text-orange-800",
-      Boleto: "bg-purple-100 text-purple-800",
+      pix: "bg-blue-100 text-blue-800",
+      credit_card: "bg-green-100 text-green-800",
+      debit_card: "bg-orange-100 text-orange-800",
+      boleto: "bg-purple-100 text-purple-800",
+      voucher: "bg-indigo-100 text-indigo-800",
     }
-    return <Badge className={colors[method as keyof typeof colors] || "bg-gray-100 text-gray-800"}>{method}</Badge>
-  }
-
-  const handleViewTransaction = (transaction: Transaction) => {
-    setSelectedTransaction(transaction)
-    setIsModalOpen(true)
-  }
-
-  const handleRetryTransaction = (transactionId: string) => {
-    setTransactions(
-      transactions.map((transaction) =>
-        transaction.id === transactionId ? { ...transaction, status: "pending" } : transaction,
-      ),
+    
+    const labels = {
+      pix: "PIX",
+      credit_card: "Cartão de Crédito",
+      debit_card: "Cartão de Débito",
+      boleto: "Boleto",
+      voucher: "Voucher",
+    }
+    
+    return (
+      <Badge className={colors[method as keyof typeof colors] || "bg-gray-100 text-gray-800"}>
+        {labels[method as keyof typeof labels] || method}
+      </Badge>
     )
   }
 
-  const totalAmount = filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0)
-  const totalCommission = filteredTransactions.reduce((sum, transaction) => sum + transaction.commission, 0)
+  const handleRefund = async (chargeId: string) => {
+    const result = await refundCharge(chargeId)
+    if (result.success) {
+      alert('Reembolso processado com sucesso!')
+    } else {
+      alert('Erro ao processar reembolso: ' + result.error)
+    }
+  }
+
+  const handleCancel = async (chargeId: string) => {
+    const result = await cancelCharge(chargeId)
+    if (result.success) {
+      alert('Cobrança cancelada com sucesso!')
+    } else {
+      alert('Erro ao cancelar cobrança: ' + result.error)
+    }
+  }
+
+  const totalAmount = filteredCharges.reduce((sum, charge) => sum + charge.amount, 0)
+  const totalPaid = filteredCharges
+    .filter(c => c.status === 'paid')
+    .reduce((sum, charge) => sum + (charge.paid_amount || charge.amount), 0)
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Transações</CardTitle>
+          <CardDescription>Carregando transações...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Transações</CardTitle>
-          <CardDescription>
-            {filteredTransactions.length} de {transactions.length} transações • Total: R$ {totalAmount.toLocaleString()}{" "}
-            • Comissões: R$ {totalCommission.toLocaleString()}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Transações do Pagar.me</CardTitle>
+              <CardDescription>
+                {filteredCharges.length} de {charges.length} cobranças • Total: {PagarmeService.formatCurrency(PagarmeService.fromCents(totalAmount))}{" "}
+                • Pago: {PagarmeService.formatCurrency(PagarmeService.fromCents(totalPaid))}
+              </CardDescription>
+            </div>
+            <Button onClick={() => {
+              refetchOrders()
+              refetchCharges()
+            }} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Atualizar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {/* Filters */}
@@ -189,9 +158,11 @@ export function TransactionsTable() {
               <SelectContent>
                 <SelectItem value="all">Todos os Status</SelectItem>
                 <SelectItem value="pending">Pendente</SelectItem>
-                <SelectItem value="completed">Concluído</SelectItem>
+                <SelectItem value="paid">Pago</SelectItem>
                 <SelectItem value="failed">Falhou</SelectItem>
                 <SelectItem value="refunded">Reembolsado</SelectItem>
+                <SelectItem value="processing">Processando</SelectItem>
+                <SelectItem value="canceled">Cancelado</SelectItem>
               </SelectContent>
             </Select>
             <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
@@ -201,7 +172,8 @@ export function TransactionsTable() {
               <SelectContent>
                 <SelectItem value="all">Todos os Métodos</SelectItem>
                 <SelectItem value="pix">PIX</SelectItem>
-                <SelectItem value="cartão">Cartão</SelectItem>
+                <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+                <SelectItem value="debit_card">Cartão de Débito</SelectItem>
                 <SelectItem value="boleto">Boleto</SelectItem>
               </SelectContent>
             </Select>
@@ -216,11 +188,10 @@ export function TransactionsTable() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Transação</TableHead>
+                  <TableHead>ID Cobrança</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Prestador</TableHead>
                   <TableHead>Valor</TableHead>
-                  <TableHead>Comissão</TableHead>
+                  <TableHead>Pago</TableHead>
                   <TableHead>Método</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data</TableHead>
@@ -228,67 +199,85 @@ export function TransactionsTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{transaction.id}</div>
-                        <div className="text-sm text-gray-500">{transaction.orderId}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{transaction.clientName}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">{transaction.providerName}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="font-medium">R$ {transaction.amount.toFixed(2)}</div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">R$ {transaction.commission.toFixed(2)}</div>
-                    </TableCell>
-                    <TableCell>{getPaymentMethodBadge(transaction.paymentMethod)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getStatusBadge(transaction.status)}
-                        {transaction.status === "failed" && <AlertCircle className="h-4 w-4 text-red-500" />}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">{new Date(transaction.createdAt).toLocaleDateString("pt-BR")}</div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(transaction.createdAt).toLocaleTimeString("pt-BR")}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewTransaction(transaction)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {transaction.status === "failed" && (
-                          <Button variant="ghost" size="sm" onClick={() => handleRetryTransaction(transaction.id)}>
-                            <RefreshCw className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                {filteredCharges.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                      Nenhuma transação encontrada
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredCharges.map((charge) => (
+                    <TableRow key={charge.id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium font-mono text-xs">{charge.id.substring(0, 12)}...</div>
+                          {charge.code && (
+                            <div className="text-sm text-gray-500">{charge.code}</div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">{charge.customer.name}</div>
+                        <div className="text-xs text-gray-500">{charge.customer.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-medium">
+                          {PagarmeService.formatCurrency(PagarmeService.fromCents(charge.amount))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-green-600 font-medium">
+                          {charge.paid_amount 
+                            ? PagarmeService.formatCurrency(PagarmeService.fromCents(charge.paid_amount))
+                            : '-'
+                          }
+                        </div>
+                      </TableCell>
+                      <TableCell>{getPaymentMethodBadge(charge.payment_method)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getStatusBadge(charge.status)}
+                          {charge.status === "failed" && <AlertCircle className="h-4 w-4 text-red-500" />}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">{new Date(charge.created_at).toLocaleDateString("pt-BR")}</div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(charge.created_at).toLocaleTimeString("pt-BR")}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          {charge.status === "paid" && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleRefund(charge.id)}
+                              title="Reembolsar"
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {(charge.status === "pending" || charge.status === "processing") && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleCancel(charge.id)}
+                              title="Cancelar"
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
-
-      <TransactionModal
-        transaction={selectedTransaction}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false)
-          setSelectedTransaction(null)
-        }}
-      />
     </>
   )
 }

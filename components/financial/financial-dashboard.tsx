@@ -1,7 +1,8 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, TrendingUp, CreditCard, Percent, ArrowUpRight, ArrowDownRight, Loader2 } from "lucide-react"
+import { DollarSign, TrendingUp, CreditCard, Percent, ArrowUpRight, ArrowDownRight, Loader2, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   LineChart,
   Line,
@@ -16,43 +17,8 @@ import {
   Pie,
   Cell,
 } from "recharts"
-import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
-import { useEffect, useState } from "react"
-
-const financialMetrics = [
-  {
-    title: "Receita Total",
-    value: "R$ 127.450",
-    change: "+15.2%",
-    changeType: "positive" as const,
-    icon: DollarSign,
-    description: "Este mês",
-  },
-  {
-    title: "Comissões Geradas",
-    value: "R$ 12.745",
-    change: "+18.1%",
-    changeType: "positive" as const,
-    icon: Percent,
-    description: "10% média",
-  },
-  {
-    title: "Transações",
-    value: "1,247",
-    change: "+12.5%",
-    changeType: "positive" as const,
-    icon: CreditCard,
-    description: "Este mês",
-  },
-  {
-    title: "Taxa de Sucesso",
-    value: "98.2%",
-    change: "+0.8%",
-    changeType: "positive" as const,
-    icon: TrendingUp,
-    description: "Pagamentos",
-  },
-]
+import { usePagarmeAnalytics, usePagarmeBalance } from "@/hooks/use-pagarme"
+import { PagarmeService } from "@/lib/services/pagarme-service"
 
 const revenueData = [
   { month: "Jan", receita: 85000, comissoes: 8500 },
@@ -63,42 +29,20 @@ const revenueData = [
   { month: "Jun", receita: 134000, comissoes: 13400 },
 ]
 
-const paymentMethodsData = [
-  { name: "PIX", value: 45, color: "#2196F3" },
-  { name: "Cartão de Crédito", value: 35, color: "#4CAF50" },
-  { name: "Cartão de Débito", value: 15, color: "#FF9800" },
-  { name: "Boleto", value: 5, color: "#9C27B0" },
-]
-
-const topProvidersEarnings = [
-  { name: "João Silva", ganhos: 8500 },
-  { name: "Maria Santos", ganhos: 7200 },
-  { name: "Carlos Lima", ganhos: 6800 },
-  { name: "Ana Costa", ganhos: 5900 },
-  { name: "Pedro Oliveira", ganhos: 5400 },
-]
-
 export function FinancialDashboard() {
-  const [firestoreData, setFirestoreData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // Buscar dados do mês atual
+  const now = new Date()
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        const data = await FirestoreAnalyticsService.getDashboardMetrics()
-        setFirestoreData(data)
-      } catch (err) {
-        console.error('Erro ao buscar dados financeiros:', err)
-        setError('Erro ao carregar dados financeiros')
-      } finally {
-        setLoading(false)
-      }
-    }
+  const { analytics, loading: analyticsLoading, error: analyticsError, refetch } = usePagarmeAnalytics(
+    firstDayOfMonth,
+    lastDayOfMonth
+  )
+  
+  const { balance, loading: balanceLoading } = usePagarmeBalance(true) // Auto-refresh
 
-    fetchData()
-  }, [])
+  const loading = analyticsLoading || balanceLoading
 
   if (loading) {
     return (
@@ -107,12 +51,12 @@ export function FinancialDashboard() {
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Loader2 className="h-4 w-24" />
-                <Loader2 className="h-4 w-4" />
+                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
+                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
               </CardHeader>
               <CardContent>
-                <Loader2 className="h-8 w-20 mb-2" />
-                <Loader2 className="h-3 w-16" />
+                <div className="h-8 w-20 bg-gray-200 animate-pulse rounded mb-2" />
+                <div className="h-3 w-16 bg-gray-200 animate-pulse rounded" />
               </CardContent>
             </Card>
           ))}
@@ -121,60 +65,102 @@ export function FinancialDashboard() {
     )
   }
 
-  if (error || !firestoreData) {
+  if (analyticsError) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Erro ao carregar dados financeiros: {error}</p>
+        <p className="text-red-600 mb-4">Erro ao carregar dados financeiros: {analyticsError}</p>
+        <Button onClick={() => refetch()} variant="outline">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Tentar Novamente
+        </Button>
       </div>
     )
   }
 
-  // Calcular métricas financeiras baseadas nos dados do Firestore
-  const totalOrders = firestoreData?.orders?.totalOrders || 0
-  const completedOrders = firestoreData?.orders?.completedOrders || 0
-  const averageOrderValue = 150 // Valor médio por pedido (simulado)
-  const totalRevenue = completedOrders * averageOrderValue
-  const commissionRate = 0.10 // 10% de comissão
-  const totalCommissions = totalRevenue * commissionRate
-  const successRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0
+  // Calcular métricas
+  const totalAmount = analytics?.total_amount || 0
+  const totalOrders = analytics?.total_orders || 0
+  const totalCustomers = analytics?.total_customers || 0
+  const paidOrders = analytics?.status_breakdown?.paid || 0
+  const successRate = totalOrders > 0 ? (paidOrders / totalOrders) * 100 : 0
+
+  // Saldo disponível
+  const availableBalance = balance?.available_amount || 0
+  const waitingFunds = balance?.waiting_funds_amount || 0
 
   const financialMetrics = [
     {
       title: "Receita Total",
-      value: `R$ ${totalRevenue.toLocaleString()}`,
+      value: PagarmeService.formatCurrency(PagarmeService.fromCents(totalAmount)),
       change: "+15.2%",
       changeType: "positive" as const,
       icon: DollarSign,
-      description: "Baseado em pedidos concluídos",
+      description: "Este mês",
     },
     {
-      title: "Comissões Geradas",
-      value: `R$ ${totalCommissions.toLocaleString()}`,
-      change: "+18.1%",
-      changeType: "positive" as const,
-      icon: Percent,
-      description: `${(commissionRate * 100)}% média`,
+      title: "Saldo Disponível",
+      value: PagarmeService.formatCurrency(PagarmeService.fromCents(availableBalance)),
+      change: PagarmeService.formatCurrency(PagarmeService.fromCents(waitingFunds)),
+      changeType: "neutral" as const,
+      icon: DollarSign,
+      description: "A liberar",
     },
     {
       title: "Transações",
       value: totalOrders.toLocaleString(),
-      change: "+12.5%",
+      change: `${totalCustomers} clientes`,
       changeType: "positive" as const,
       icon: CreditCard,
-      description: "Total de pedidos",
+      description: "Este mês",
     },
     {
       title: "Taxa de Sucesso",
       value: `${successRate.toFixed(1)}%`,
-      change: "+0.8%",
+      change: `${paidOrders}/${totalOrders}`,
       changeType: "positive" as const,
       icon: TrendingUp,
-      description: "Pedidos concluídos",
+      description: "Pagamentos aprovados",
     },
   ]
 
+  // Dados dos métodos de pagamento
+  const paymentMethodsData = [
+    { 
+      name: "PIX", 
+      value: analytics?.payment_methods?.pix || 0, 
+      color: "#2196F3" 
+    },
+    { 
+      name: "Cartão de Crédito", 
+      value: analytics?.payment_methods?.credit_card || 0, 
+      color: "#4CAF50" 
+    },
+    { 
+      name: "Cartão de Débito", 
+      value: analytics?.payment_methods?.debit_card || 0, 
+      color: "#FF9800" 
+    },
+    { 
+      name: "Boleto", 
+      value: analytics?.payment_methods?.boleto || 0, 
+      color: "#9C27B0" 
+    },
+  ].filter(item => item.value > 0) // Mostrar apenas métodos utilizados
+
   return (
     <div className="space-y-6">
+      {/* Header com botão de atualizar */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Métricas Financeiras</h2>
+          <p className="text-sm text-gray-500">Dados do Pagar.me em tempo real</p>
+        </div>
+        <Button onClick={() => refetch()} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Atualizar
+        </Button>
+      </div>
+
       {/* Financial Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {financialMetrics.map((metric) => (
@@ -188,14 +174,15 @@ export function FinancialDashboard() {
               <div className="flex items-center space-x-2 text-xs">
                 <span
                   className={`font-medium flex items-center gap-1 ${
-                    metric.changeType === "positive" ? "text-green-600" : "text-red-600"
+                    metric.changeType === "positive" 
+                      ? "text-green-600" 
+                      : metric.changeType === "negative"
+                      ? "text-red-600"
+                      : "text-gray-600"
                   }`}
                 >
-                  {metric.changeType === "positive" ? (
-                    <ArrowUpRight className="h-3 w-3" />
-                  ) : (
-                    <ArrowDownRight className="h-3 w-3" />
-                  )}
+                  {metric.changeType === "positive" && <ArrowUpRight className="h-3 w-3" />}
+                  {metric.changeType === "negative" && <ArrowDownRight className="h-3 w-3" />}
                   {metric.change}
                 </span>
                 <span className="text-gray-500">{metric.description}</span>
@@ -228,50 +215,69 @@ export function FinancialDashboard() {
         </Card>
 
         {/* Payment Methods */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Métodos de Pagamento</CardTitle>
-            <CardDescription>Distribuição por tipo de pagamento</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={paymentMethodsData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {paymentMethodsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {paymentMethodsData.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Métodos de Pagamento</CardTitle>
+              <CardDescription>Distribuição por tipo de pagamento este mês</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={paymentMethodsData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {paymentMethodsData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => [`${value} transações`, ""]} />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Top Providers Earnings */}
+        {/* Status de Pedidos */}
         <Card>
           <CardHeader>
-            <CardTitle>Maiores Ganhos</CardTitle>
-            <CardDescription>Prestadores com maiores ganhos este mês</CardDescription>
+            <CardTitle>Status dos Pedidos</CardTitle>
+            <CardDescription>Distribuição por status</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topProvidersEarnings} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={100} />
-                <Tooltip formatter={(value) => [`R$ ${Number(value).toLocaleString()}`, "Ganhos"]} />
-                <Bar dataKey="ganhos" fill="#2196F3" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Pagos</span>
+                <span className="text-sm font-bold text-green-600">
+                  {analytics?.status_breakdown?.paid || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Pendentes</span>
+                <span className="text-sm font-bold text-orange-600">
+                  {analytics?.status_breakdown?.pending || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Falhados</span>
+                <span className="text-sm font-bold text-red-600">
+                  {analytics?.status_breakdown?.failed || 0}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Cancelados</span>
+                <span className="text-sm font-bold text-gray-600">
+                  {analytics?.status_breakdown?.canceled || 0}
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

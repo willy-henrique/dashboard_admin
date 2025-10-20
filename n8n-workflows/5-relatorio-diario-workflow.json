@@ -1,0 +1,245 @@
+{
+  "name": "Relatório Diário - Analytics",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "value": "0 9 * * 1-5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cron-trigger",
+      "name": "Cron - Dias Úteis 9h",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://dashboard-admin-bay.vercel.app/api/reports/daily-stats",
+        "authentication": "none",
+        "requestMethod": "GET",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $vars.API_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-daily-stats",
+      "name": "Buscar Estatísticas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processar dados do relatório\nconst stats = $input.first().json;\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\n\nconst report = {\n  date: yesterday.toISOString().split('T')[0],\n  totalOrders: stats.totalOrders || 0,\n  completedOrders: stats.completedOrders || 0,\n  pendingOrders: stats.pendingOrders || 0,\n  cancelledOrders: stats.cancelledOrders || 0,\n  emergencyOrders: stats.emergencyOrders || 0,\n  totalRevenue: stats.totalRevenue || 0,\n  averageResponseTime: stats.averageResponseTime || 0,\n  customerSatisfaction: stats.customerSatisfaction || 0,\n  activeProviders: stats.activeProviders || 0,\n  newClients: stats.newClients || 0,\n  chatMessages: stats.chatMessages || 0,\n  topServices: stats.topServices || [],\n  issues: stats.issues || []\n};\n\n// Calcular métricas\nconst completionRate = report.totalOrders > 0 ? (report.completedOrders / report.totalOrders * 100).toFixed(1) : 0;\nconst cancellationRate = report.totalOrders > 0 ? (report.cancelledOrders / report.totalOrders * 100).toFixed(1) : 0;\n\n// Gerar insights\nconst insights = [];\nif (report.emergencyOrders > 0) {\n  insights.push(`🚨 ${report.emergencyOrders} pedidos de emergência`);\n}\nif (parseFloat(completionRate) < 80) {\n  insights.push(`⚠️ Taxa de conclusão baixa: ${completionRate}%`);\n}\nif (parseFloat(cancellationRate) > 10) {\n  insights.push(`⚠️ Taxa de cancelamento alta: ${cancellationRate}%`);\n}\nif (report.chatMessages > 50) {\n  insights.push(`💬 Alto volume de chat: ${report.chatMessages} mensagens`);\n}\n\nreturn {\n  ...report,\n  completionRate,\n  cancellationRate,\n  insights,\n  formattedRevenue: new Intl.NumberFormat('pt-BR', {\n    style: 'currency',\n    currency: 'BRL'\n  }).format(report.totalRevenue)\n};"
+      },
+      "id": "process-data",
+      "name": "Processar Dados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "📊 *RELATÓRIO DIÁRIO - {{ $json.date }}*\n\n📋 **PEDIDOS**\n• Total: {{ $json.totalOrders }}\n• Concluídos: {{ $json.completedOrders }} ({{ $json.completionRate }}%)\n• Pendentes: {{ $json.pendingOrders }}\n• Cancelados: {{ $json.cancelledOrders }} ({{ $json.cancellationRate }}%)\n• Emergência: {{ $json.emergencyOrders }}\n\n💰 **FINANCEIRO**\n• Receita Total: {{ $json.formattedRevenue }}\n\n👥 **USUÁRIOS**\n• Prestadores Ativos: {{ $json.activeProviders }}\n• Novos Clientes: {{ $json.newClients }}\n\n💬 **CHAT**\n• Mensagens: {{ $json.chatMessages }}\n• Tempo Resposta: {{ $json.averageResponseTime }}min\n\n⭐ **SATISFAÇÃO**\n• Avaliação: {{ $json.customerSatisfaction }}/5\n\n🔍 **INSIGHTS**\n{{ $json.insights.join('\\n') || '✅ Tudo funcionando normalmente' }}\n\n📈 [Ver Dashboard](https://dashboard-admin-bay.vercel.app/dashboard)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-report",
+      "name": "Telegram - Relatório",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/{{ $vars.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "📊 Relatório Diário - {{ $json.date }}"
+            },
+            {
+              "name": "blocks",
+              "value": "[\n  {\n    \"type\": \"header\",\n    \"text\": {\n      \"type\": \"plain_text\",\n      \"text\": \"📊 RELATÓRIO DIÁRIO - {{ $json.date }}\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \"*📋 PEDIDOS*\"\n    },\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Total:* {{ $json.totalOrders }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Concluídos:* {{ $json.completedOrders }} ({{ $json.completionRate }}%)\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Pendentes:* {{ $json.pendingOrders }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Cancelados:* {{ $json.cancelledOrders }} ({{ $json.cancellationRate }}%)\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Emergência:* {{ $json.emergencyOrders }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Receita:* {{ $json.formattedRevenue }}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \"*👥 USUÁRIOS* • *💬 CHAT* • *⭐ SATISFAÇÃO*\\n• Prestadores Ativos: {{ $json.activeProviders }}\\n• Novos Clientes: {{ $json.newClients }}\\n• Mensagens: {{ $json.chatMessages }}\\n• Tempo Resposta: {{ $json.averageResponseTime }}min\\n• Avaliação: {{ $json.customerSatisfaction }}/5\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \"*🔍 INSIGHTS*\\n{{ $json.insights.join('\\n') || '✅ Tudo funcionando normalmente' }}\"\n    }\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"text\": \"Ver Dashboard\"\n        },\n        \"url\": \"https://dashboard-admin-bay.vercel.app/dashboard\"\n      }\n    ]\n  }\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-report",
+      "name": "Slack - Relatório",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.emailjs.com/api/v1.0/email/send",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "service_id",
+              "value": "{{ $vars.EMAILJS_SERVICE_ID }}"
+            },
+            {
+              "name": "template_id",
+              "value": "{{ $vars.EMAILJS_TEMPLATE_REPORT_ID }}"
+            },
+            {
+              "name": "user_id",
+              "value": "{{ $vars.EMAILJS_USER_ID }}"
+            },
+            {
+              "name": "template_params",
+              "value": "{\n  \"to_email\": \"{{ $vars.ADMIN_EMAIL }}\",\n  \"subject\": \"📊 Relatório Diário - {{ $json.date }}\",\n  \"date\": \"{{ $json.date }}\",\n  \"total_orders\": \"{{ $json.totalOrders }}\",\n  \"completed_orders\": \"{{ $json.completedOrders }}\",\n  \"completion_rate\": \"{{ $json.completionRate }}%\",\n  \"pending_orders\": \"{{ $json.pendingOrders }}\",\n  \"cancelled_orders\": \"{{ $json.cancelledOrders }}\",\n  \"cancellation_rate\": \"{{ $json.cancellationRate }}%\",\n  \"emergency_orders\": \"{{ $json.emergencyOrders }}\",\n  \"total_revenue\": \"{{ $json.formattedRevenue }}\",\n  \"active_providers\": \"{{ $json.activeProviders }}\",\n  \"new_clients\": \"{{ $json.newClients }}\",\n  \"chat_messages\": \"{{ $json.chatMessages }}\",\n  \"average_response_time\": \"{{ $json.averageResponseTime }}min\",\n  \"customer_satisfaction\": \"{{ $json.customerSatisfaction }}/5\",\n  \"insights\": \"{{ $json.insights.join('\\n') || 'Tudo funcionando normalmente' }}\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "email-report",
+      "name": "Email - Relatório",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "filePath": "/reports/daily-{{ $json.date }}.json",
+        "fileContent": "={{ JSON.stringify($json, null, 2) }}",
+        "options": {}
+      },
+      "id": "save-report",
+      "name": "Salvar Relatório",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [900, 500]
+    }
+  ],
+  "connections": {
+    "Cron - Dias Úteis 9h": {
+      "main": [
+        [
+          {
+            "node": "Buscar Estatísticas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Estatísticas": {
+      "main": [
+        [
+          {
+            "node": "Processar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Dados": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Relatório",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack - Relatório",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email - Relatório",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salvar Relatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-15T10:00:00.000Z",
+  "versionId": "1"
+}
+

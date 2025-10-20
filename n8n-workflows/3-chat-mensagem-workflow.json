@@ -1,0 +1,355 @@
+{
+  "name": "Nova Mensagem Chat - Notificações",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nova-mensagem",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Nova Mensagem",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "nova-mensagem-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "urgent-keywords",
+              "leftValue": "={{ $json.message.toLowerCase() }}",
+              "rightValue": "urgente|emergência|problema|erro|bug|não funciona",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "urgent-message",
+      "name": "Mensagem Urgente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "after-hours",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 18,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "before-hours",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 8,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "after-hours",
+      "name": "Fora do Horário?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "🚨 *MENSAGEM URGENTE NO CHAT*\n\n💬 **Conversa:** {{ $json.conversationId }}\n👤 **Usuário:** {{ $json.userName || $json.userId }}\n📋 **Pedido:** {{ $json.orderId || 'N/A' }}\n🕐 **Horário:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n📝 **Mensagem:**\n{{ $json.message }}\n\n🔗 [Responder no Chat](https://dashboard-admin-bay.vercel.app/dashboard/controle/chat)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-urgent",
+      "name": "Telegram - Urgente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/{{ $vars.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "🚨 Mensagem Urgente no Chat"
+            },
+            {
+              "name": "blocks",
+              "value": "[\n  {\n    \"type\": \"header\",\n    \"text\": {\n      \"type\": \"plain_text\",\n      \"text\": \"🚨 MENSAGEM URGENTE NO CHAT\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Conversa:* {{ $json.conversationId }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Usuário:* {{ $json.userName || $json.userId }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Pedido:* {{ $json.orderId || 'N/A' }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Horário:* {{ $now.format('dd/MM/yyyy HH:mm') }}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \"*Mensagem:*\\n{{ $json.message }}\"\n    }\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"text\": \"Responder no Chat\"\n        },\n        \"url\": \"https://dashboard-admin-bay.vercel.app/dashboard/controle/chat\"\n      }\n    ]\n  }\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-urgent",
+      "name": "Slack - Urgente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "💬 *NOVA MENSAGEM NO CHAT*\n\n💬 **Conversa:** {{ $json.conversationId }}\n👤 **Usuário:** {{ $json.userName || $json.userId }}\n📋 **Pedido:** {{ $json.orderId || 'N/A' }}\n🕐 **Horário:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n📝 **Mensagem:**\n{{ $json.message }}\n\n🔗 [Responder no Chat](https://dashboard-admin-bay.vercel.app/dashboard/controle/chat)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-normal",
+      "name": "Telegram - Normal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "🌙 *MENSAGEM FORA DO HORÁRIO*\n\n💬 **Conversa:** {{ $json.conversationId }}\n👤 **Usuário:** {{ $json.userName || $json.userId }}\n📋 **Pedido:** {{ $json.orderId || 'N/A' }}\n🕐 **Horário:** {{ $now.format('dd/MM/yyyy HH:mm') }} (Fora do expediente)\n\n📝 **Mensagem:**\n{{ $json.message }}\n\n🔗 [Responder no Chat](https://dashboard-admin-bay.vercel.app/dashboard/controle/chat)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-after-hours",
+      "name": "Telegram - Fora Horário",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 600]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Mensagem processada e notificações enviadas\",\n  \"conversationId\": \"{{ $json.conversationId }}\",\n  \"messageId\": \"{{ $json.messageId }}\",\n  \"processedAt\": \"{{ $now.toISOString() }}\"\n}"
+      },
+      "id": "response",
+      "name": "Resposta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 400]
+    }
+  ],
+  "connections": {
+    "Webhook - Nova Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Mensagem Urgente?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fora do Horário?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem Urgente?": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Urgente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack - Urgente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fora do Horário?": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Fora Horário",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Urgente": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Urgente": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Normal": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Fora Horário": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-15T10:00:00.000Z",
+  "versionId": "1"
+}
+

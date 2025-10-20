@@ -1,5 +1,5 @@
 import { AdminLayout } from "@/components/layout/admin-layout"
-import { FinancialDashboard } from "@/components/financial/financial-dashboard"
+import { RevenueControlDashboard } from "@/components/financial/revenue-control-dashboard"
 import { TransactionsTable } from "@/components/financial/transactions-table"
 import { PageWithBack } from "@/components/layout/page-with-back"
 
@@ -7,13 +7,16 @@ export default function FinancialPage() {
   return (
     <AdminLayout>
       <PageWithBack backButtonLabel="Voltar para Dashboard">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestão Financeira</h1>
-          <p className="text-gray-600">Monitore receitas, transações e comissões da plataforma</p>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">💰 Controle Financeiro</h1>
+          <p className="text-gray-600">Acompanhe valores recebidos, saldo disponível e todos os pagamentos</p>
         </div>
 
-        <FinancialDashboard />
-        <TransactionsTable />
+        <RevenueControlDashboard />
+        
+        <div className="mt-8">
+          <TransactionsTable />
+        </div>
       </PageWithBack>
     </AdminLayout>
   )

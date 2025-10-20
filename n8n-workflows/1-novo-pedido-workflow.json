@@ -1,0 +1,310 @@
+{
+  "name": "Novo Pedido - Notificações Automáticas",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "novo-pedido",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Novo Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "novo-pedido-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "emergency-check",
+              "leftValue": "={{ $json.isEmergency }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "emergency-check",
+      "name": "Verificar Emergência",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "🚨 *PEDIDO DE EMERGÊNCIA*\n\n📋 **Pedido:** {{ $json.id }}\n👤 **Cliente:** {{ $json.clientName }}\n📧 **Email:** {{ $json.clientEmail }}\n📍 **Endereço:** {{ $json.address }}\n📞 **Telefone:** {{ $json.clientPhone || 'Não informado' }}\n💬 **Descrição:** {{ $json.description }}\n⏰ **Data/Hora:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n🔗 [Ver no Dashboard](https://dashboard-admin-bay.vercel.app/dashboard/servicos)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-emergency",
+      "name": "Telegram - Emergência",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "url": "https://hooks.slack.com/services/{{ $vars.SLACK_WEBHOOK_URL }}",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "🚨 Pedido de Emergência Recebido"
+            },
+            {
+              "name": "blocks",
+              "value": "[\n  {\n    \"type\": \"header\",\n    \"text\": {\n      \"type\": \"plain_text\",\n      \"text\": \"🚨 PEDIDO DE EMERGÊNCIA\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"fields\": [\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Pedido:* {{ $json.id }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Cliente:* {{ $json.clientName }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Email:* {{ $json.clientEmail }}\"\n      },\n      {\n        \"type\": \"mrkdwn\",\n        \"text\": \"*Telefone:* {{ $json.clientPhone || 'Não informado' }}\"\n      }\n    ]\n  },\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \"*Endereço:* {{ $json.address }}\"\n    }\n  },\n  {\n    \"type\": \"section\",\n    \"text\": {\n      \"type\": \"mrkdwn\",\n      \"text\": \"*Descrição:* {{ $json.description }}\"\n    }\n  },\n  {\n    \"type\": \"actions\",\n    \"elements\": [\n      {\n        \"type\": \"button\",\n        \"text\": {\n          \"type\": \"plain_text\",\n          \"text\": \"Ver Dashboard\"\n        },\n        \"url\": \"https://dashboard-admin-bay.vercel.app/dashboard/servicos\"\n      }\n    ]\n  }\n]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-emergency",
+      "name": "Slack - Emergência",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://api.emailjs.com/api/v1.0/email/send",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "service_id",
+              "value": "{{ $vars.EMAILJS_SERVICE_ID }}"
+            },
+            {
+              "name": "template_id",
+              "value": "{{ $vars.EMAILJS_TEMPLATE_ID }}"
+            },
+            {
+              "name": "user_id",
+              "value": "{{ $vars.EMAILJS_USER_ID }}"
+            },
+            {
+              "name": "template_params",
+              "value": "{\n  \"to_email\": \"{{ $vars.ADMIN_EMAIL }}\",\n  \"subject\": \"🚨 Novo Pedido de Emergência - {{ $json.id }}\",\n  \"message\": \"Um novo pedido de emergência foi recebido:\\n\\nPedido: {{ $json.id }}\\nCliente: {{ $json.clientName }}\\nEmail: {{ $json.clientEmail }}\\nEndereço: {{ $json.address }}\\nDescrição: {{ $json.description }}\\n\\nAcesse o dashboard para mais detalhes.\"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "email-emergency",
+      "name": "Email - Emergência",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 600]
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $vars.TELEGRAM_BOT_TOKEN }}/sendMessage",
+        "authentication": "none",
+        "requestMethod": "POST",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "chat_id",
+              "value": "{{ $vars.TELEGRAM_ADMIN_CHAT_ID }}"
+            },
+            {
+              "name": "text",
+              "value": "📋 *NOVO PEDIDO*\n\n📋 **Pedido:** {{ $json.id }}\n👤 **Cliente:** {{ $json.clientName }}\n📧 **Email:** {{ $json.clientEmail }}\n📍 **Endereço:** {{ $json.address }}\n📞 **Telefone:** {{ $json.clientPhone || 'Não informado' }}\n💬 **Descrição:** {{ $json.description }}\n⏰ **Data/Hora:** {{ $now.format('dd/MM/yyyy HH:mm') }}\n\n🔗 [Ver no Dashboard](https://dashboard-admin-bay.vercel.app/dashboard/servicos)"
+            },
+            {
+              "name": "parse_mode",
+              "value": "Markdown"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "telegram-normal",
+      "name": "Telegram - Pedido Normal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Pedido processado com sucesso\",\n  \"orderId\": \"{{ $json.id }}\",\n  \"processedAt\": \"{{ $now.toISOString() }}\"\n}"
+      },
+      "id": "response",
+      "name": "Resposta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Novo Pedido": {
+      "main": [
+        [
+          {
+            "node": "Verificar Emergência",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Emergência": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Emergência",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack - Emergência",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email - Emergência",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Pedido Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Emergência": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack - Emergência": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email - Emergência": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Pedido Normal": {
+      "main": [
+        [
+          {
+            "node": "Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-15T10:00:00.000Z",
+  "versionId": "1"
+}
+
