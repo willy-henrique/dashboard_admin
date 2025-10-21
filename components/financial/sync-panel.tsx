@@ -3,12 +3,17 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { RefreshCw, Database, CheckCircle, AlertCircle, Loader2, Cloud } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { RefreshCw, Database, CheckCircle, AlertCircle, Loader2, Cloud, X, Sparkles, TrendingUp, Users, CreditCard } from "lucide-react"
 import { usePagarmeSync } from "@/hooks/use-pagarme-firebase"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export function SyncPanel() {
   const { syncAll, syncing, lastSync, getSyncStatus } = usePagarmeSync()
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [syncResult, setSyncResult] = useState<any>(null)
+  const [errorMessage, setErrorMessage] = useState("")
 
   useEffect(() => {
     getSyncStatus()
@@ -17,13 +22,16 @@ export function SyncPanel() {
   const handleSync = async () => {
     const result = await syncAll()
     if (result.success) {
-      alert(`✅ Sincronização concluída!\n\nPedidos: ${result.data?.orders || 0}\nCobranças: ${result.data?.charges || 0}\nClientes: ${result.data?.customers || 0}`)
+      setSyncResult(result.data)
+      setShowSuccessModal(true)
     } else {
-      alert(`❌ Erro na sincronização: ${result.error}`)
+      setErrorMessage(result.error || "Erro desconhecido")
+      setShowErrorModal(true)
     }
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -117,6 +125,108 @@ export function SyncPanel() {
         </div>
       </CardContent>
     </Card>
+
+    {/* Modal de Sucesso - Popup Bonito */}
+    <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+      <DialogContent className="max-w-md mx-auto">
+        <div className="text-center space-y-6">
+          {/* Ícone de sucesso animado */}
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+            <CheckCircle className="h-10 w-10 text-white animate-pulse" />
+          </div>
+          
+          {/* Título */}
+          <div className="space-y-2">
+            <h3 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+              <Sparkles className="h-6 w-6 text-yellow-500" />
+              Sincronização Concluída!
+            </h3>
+            <p className="text-gray-600">Os dados foram sincronizados com sucesso</p>
+          </div>
+
+          {/* Estatísticas */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex items-center justify-center mb-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-blue-600">{syncResult?.orders || 0}</p>
+              <p className="text-xs text-blue-600 font-medium">Pedidos</p>
+            </div>
+            
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="flex items-center justify-center mb-2">
+                <CreditCard className="h-5 w-5 text-green-600" />
+              </div>
+              <p className="text-2xl font-bold text-green-600">{syncResult?.charges || 0}</p>
+              <p className="text-xs text-green-600 font-medium">Cobranças</p>
+            </div>
+            
+            <div className="bg-purple-50 rounded-lg p-4">
+              <div className="flex items-center justify-center mb-2">
+                <Users className="h-5 w-5 text-purple-600" />
+              </div>
+              <p className="text-2xl font-bold text-purple-600">{syncResult?.customers || 0}</p>
+              <p className="text-xs text-purple-600 font-medium">Clientes</p>
+            </div>
+          </div>
+
+          {/* Botão de fechar */}
+          <Button 
+            onClick={() => setShowSuccessModal(false)}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            <CheckCircle className="h-5 w-5 mr-2" />
+            Perfeito!
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    {/* Modal de Erro */}
+    <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+      <DialogContent className="max-w-md mx-auto">
+        <div className="text-center space-y-6">
+          {/* Ícone de erro */}
+          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+            <AlertCircle className="h-10 w-10 text-white" />
+          </div>
+          
+          {/* Título */}
+          <div className="space-y-2">
+            <h3 className="text-2xl font-bold text-gray-900">Ops! Algo deu errado</h3>
+            <p className="text-gray-600">Não foi possível sincronizar os dados</p>
+          </div>
+
+          {/* Mensagem de erro */}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800 font-medium">{errorMessage}</p>
+          </div>
+
+          {/* Botões */}
+          <div className="flex gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowErrorModal(false)}
+              className="flex-1"
+            >
+              Fechar
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowErrorModal(false)
+                handleSync()
+              }}
+              className="flex-1 bg-red-600 hover:bg-red-700"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Tentar Novamente
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  </>
   )
 }
 
