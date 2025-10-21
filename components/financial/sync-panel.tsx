@@ -127,15 +127,10 @@ export function SyncPanel() {
     </Card>
 
     {/* Modal de Sucesso - Popup Bonito */}
-    <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle className="sr-only">Sincronização Concluída</DialogTitle>
-          <DialogDescription className="sr-only">
-            Os dados do Pagar.me foram sincronizados com sucesso com o Firebase
-          </DialogDescription>
-        </DialogHeader>
-        <div className="text-center space-y-6">
+    {showSuccessModal && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto border-0 overflow-hidden">
+          <div className="text-center space-y-6 p-6">
           {/* Ícone de sucesso animado */}
           <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
             <CheckCircle className="h-10 w-10 text-white animate-pulse" />
@@ -177,28 +172,24 @@ export function SyncPanel() {
             </div>
           </div>
 
-          {/* Botão de fechar */}
-          <Button 
-            onClick={() => setShowSuccessModal(false)}
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
-          >
-            <CheckCircle className="h-5 w-5 mr-2" />
-            Perfeito!
-          </Button>
+            {/* Botão de fechar */}
+            <Button 
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+            >
+              <CheckCircle className="h-5 w-5 mr-2" />
+              Perfeito!
+            </Button>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    )}
 
     {/* Modal de Erro */}
-    <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle className="sr-only">Erro na Sincronização</DialogTitle>
-          <DialogDescription className="sr-only">
-            Ocorreu um erro durante a sincronização dos dados do Pagar.me com o Firebase
-          </DialogDescription>
-        </DialogHeader>
-        <div className="text-center space-y-6">
+    {showErrorModal && (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto border-0 overflow-hidden">
+          <div className="text-center space-y-6 p-6">
           {/* Ícone de erro */}
           <div className="mx-auto w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
             <AlertCircle className="h-10 w-10 text-white" />
@@ -215,29 +206,30 @@ export function SyncPanel() {
             <p className="text-red-800 font-medium">{errorMessage}</p>
           </div>
 
-          {/* Botões */}
-          <div className="flex gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowErrorModal(false)}
-              className="flex-1"
-            >
-              Fechar
-            </Button>
-            <Button 
-              onClick={() => {
-                setShowErrorModal(false)
-                handleSync()
-              }}
-              className="flex-1 bg-red-600 hover:bg-red-700"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Tentar Novamente
-            </Button>
+            {/* Botões */}
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowErrorModal(false)}
+                className="flex-1"
+              >
+                Fechar
+              </Button>
+              <Button 
+                onClick={() => {
+                  setShowErrorModal(false)
+                  handleSync()
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Tentar Novamente
+              </Button>
+            </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    )}
   </>
   )
 }
