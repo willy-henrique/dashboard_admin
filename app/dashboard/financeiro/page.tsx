@@ -39,7 +39,7 @@ export default function FinanceiroPage() {
   const saldoTotal = PagarmeService.fromCents(balance?.available_amount ?? 0)
   const aReceber = PagarmeService.fromCents(balance?.waiting_funds_amount ?? 0)
   const receitasMes = PagarmeService.fromCents(analytics?.total_amount ?? 0)
-  const despesasMes = 18299.5 // Placeholder até existir origem de despesas
+  const despesasMes = 18299.50 // Placeholder até existir origem de despesas
   const lucroLiquido = Math.max(receitasMes - despesasMes, 0)
 
   return (
