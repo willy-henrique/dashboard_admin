@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
+import { Logo } from "@/components/logo"
 import {
   Users,
   DollarSign,
@@ -47,12 +48,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo e Título */}
         <div className="text-center mb-8">
-          <div className="w-20 h-16 flex items-center justify-center mx-auto mb-4">
-            <img 
-              src="/logo-aquiresolve.svg" 
-              alt="AquiResolve" 
-              className="h-16 w-auto"
-            />
+          <div className="flex items-center justify-center mx-auto mb-4">
+            <Logo className="h-16" showText={true} />
           </div>
           <p className="text-slate-600 dark:text-slate-300 font-medium">
             Painel Administrativo

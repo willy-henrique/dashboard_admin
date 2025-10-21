@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Logo } from "@/components/logo"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,13 +61,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
 
               {/* Logo */}
-              <div className="flex items-center space-x-1 sm:space-x-2">
-                <img 
-                  src="/logo-aquiresolve.svg" 
-                  alt="AquiResolve" 
-                  className="h-6 w-auto sm:h-7 lg:h-8"
-                />
-              </div>
+              <Logo className="h-6 sm:h-7 lg:h-8" showText={true} />
             </div>
 
             {/* Center - Search (hidden on mobile) */}

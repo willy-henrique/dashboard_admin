@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
+import { Logo } from "@/components/logo"
 import {
   LayoutDashboard,
   Users,
@@ -136,13 +137,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
     <div className="flex h-full flex-col bg-gradient-to-b from-orange-100 to-orange-200 text-slate-900">
       {/* Header fixo */}
       <div className="flex h-16 items-center justify-between px-6 flex-shrink-0">
-        <div className="flex items-center space-x-2">
-          <img 
-            src="/logo-aquiresolve.svg" 
-            alt="AquiResolve" 
-            className="h-8 w-auto"
-          />
-        </div>
+        <Logo className="h-8" showText={true} />
         <Button
           variant="ghost"
           size="sm"
@@ -230,11 +225,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       <div className="border-t border-black/10 p-4 flex-shrink-0">
         <div className="flex items-center space-x-3 text-slate-900">
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white">
-            <img 
-              src="/logo-aquiresolve.svg" 
-              alt="AquiResolve" 
-              className="h-6 w-auto"
-            />
+            <Logo className="h-6" showText={false} />
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium">Admin</p>
