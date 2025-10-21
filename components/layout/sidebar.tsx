@@ -102,14 +102,8 @@ const navigation = [
     name: "Configurações",
     icon: Settings,
     children: [
-      { name: "Dashboard", href: "/dashboard/configuracoes", icon: BarChart3 },
-      { name: "Checklists", href: "/dashboard/configuracoes/checklists", icon: ClipboardList },
-      { name: "Clientes e Fornecedores", href: "/dashboard/configuracoes/clientes-fornecedores", icon: Users },
+      { name: "Geral", href: "/dashboard/configuracoes", icon: Settings },
       { name: "Equipes", href: "/dashboard/configuracoes/equipes", icon: UserCheck },
-      { name: "Exportador", href: "/dashboard/configuracoes/exportador", icon: Download },
-      { name: "Filiais", href: "/dashboard/configuracoes/filiais", icon: Building },
-      { name: "Manutenção", href: "/dashboard/configuracoes/manutencao", icon: Wrench },
-      { name: "Sistema", href: "/dashboard/configuracoes/sistema", icon: Settings },
     ],
   },
 ]
