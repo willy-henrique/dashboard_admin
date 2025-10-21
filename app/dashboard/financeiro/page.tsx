@@ -36,11 +36,11 @@ export default function FinanceiroPage() {
   const { analytics } = usePagarmeAnalytics(firstDay, lastDay)
   const { charges } = usePagarmeCharges({ status: 'paid', autoRefresh: true })
 
-  // Dados realistas para demonstração
-  const saldoTotal = PagarmeService.fromCents(balance?.available_amount ?? 0) || 15420.75
-  const aReceber = PagarmeService.fromCents(balance?.waiting_funds_amount ?? 0) || 3250.00
-  const receitasMes = PagarmeService.fromCents(analytics?.total_amount ?? 0) || 28450.30
-  const despesasMes = 18299.50 // Placeholder até existir origem de despesas
+  // Valores reais do Pagar.me
+  const saldoTotal = PagarmeService.fromCents(balance?.available_amount ?? 0)
+  const aReceber = PagarmeService.fromCents(balance?.waiting_funds_amount ?? 0)
+  const receitasMes = PagarmeService.fromCents(analytics?.total_amount ?? 0)
+  const despesasMes = 0 // Será calculado quando tivermos dados reais de despesas
   const lucroLiquido = Math.max(receitasMes - despesasMes, 0)
 
   return (
