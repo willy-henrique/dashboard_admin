@@ -129,6 +129,12 @@ export function SyncPanel() {
     {/* Modal de Sucesso - Popup Bonito */}
     <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
       <DialogContent className="max-w-md mx-auto">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Sincronização Concluída</DialogTitle>
+          <DialogDescription className="sr-only">
+            Os dados do Pagar.me foram sincronizados com sucesso com o Firebase
+          </DialogDescription>
+        </DialogHeader>
         <div className="text-center space-y-6">
           {/* Ícone de sucesso animado */}
           <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
@@ -186,6 +192,12 @@ export function SyncPanel() {
     {/* Modal de Erro */}
     <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
       <DialogContent className="max-w-md mx-auto">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Erro na Sincronização</DialogTitle>
+          <DialogDescription className="sr-only">
+            Ocorreu um erro durante a sincronização dos dados do Pagar.me com o Firebase
+          </DialogDescription>
+        </DialogHeader>
         <div className="text-center space-y-6">
           {/* Ícone de erro */}
           <div className="mx-auto w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
