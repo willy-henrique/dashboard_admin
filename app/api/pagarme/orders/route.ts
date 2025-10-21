@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { pagarmeService } from '@/lib/services/pagarme-service'
+import { PagarmeFirebaseSync } from '@/lib/services/pagarme-firebase-sync'
 
 /**
  * GET /api/pagarme/orders
@@ -77,6 +78,16 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       )
+    }
+
+    // Sincronizar com Firebase
+    if (response.data) {
+      try {
+        await PagarmeFirebaseSync.saveOrder(response.data)
+        await PagarmeFirebaseSync.logSync('order_created', 1, 'success')
+      } catch (syncError) {
+        console.error('⚠️ Erro ao sincronizar com Firebase:', syncError)
+      }
     }
 
     return NextResponse.json(
