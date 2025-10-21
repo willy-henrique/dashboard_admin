@@ -142,7 +142,7 @@ export function ServicesAnalytics() {
               <div>
                 <p className="text-sm font-medium text-gray-600">Avaliação Média</p>
                 <p className="text-xl font-bold text-gray-900">
-                  {analytics.averageRating.toFixed(1)} ⭐
+                  {Math.round(analytics.averageRating)} ⭐
                 </p>
               </div>
             </div>
@@ -184,7 +184,7 @@ export function ServicesAnalytics() {
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-sm">{status.count}</div>
-                    <div className="text-xs text-gray-500">{status.percentage.toFixed(1)}%</div>
+                    <div className="text-xs text-gray-500">{Math.round(status.percentage)}%</div>
                   </div>
                 </div>
               ))}

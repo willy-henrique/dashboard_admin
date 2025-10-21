@@ -90,7 +90,7 @@ export function DashboardMetrics() {
       },
       {
         title: "Taxa de Aprovação",
-        value: `${(firestoreData.providers?.approvalRate || 0).toFixed(1)}%`,
+        value: `${Math.round(firestoreData.providers?.approvalRate || 0)}%`,
         change: "+3%",
         changeType: "positive" as const,
         icon: TrendingUp,
