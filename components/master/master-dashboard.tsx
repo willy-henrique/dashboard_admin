@@ -49,6 +49,7 @@ export function MasterDashboard() {
   const [newUser, setNewUser] = useState({
     nome: "",
     email: "",
+    password: "",
     permissoes: {
       dashboard: false,
       controle: false,
@@ -63,10 +64,22 @@ export function MasterDashboard() {
 
   const handleAddUser = async () => {
     try {
-      await addUsuario(newUser)
+      // Chama API para criar usuário com senha no Firebase Auth e salvar permissões
+      const resp = await fetch('/api/adminmaster/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: newUser.nome,
+          email: newUser.email,
+          password: newUser.password,
+          permissoes: newUser.permissoes,
+        })
+      })
+      if (!resp.ok) throw new Error('Falha ao criar usuário')
       setNewUser({
         nome: "",
         email: "",
+        password: "",
         permissoes: {
           dashboard: false,
           controle: false,
@@ -233,6 +246,17 @@ export function MasterDashboard() {
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     placeholder="email@exemplo.com"
+                    style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password" style={{ color: '#1F2B3D' }}>Senha</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    placeholder="Defina uma senha segura"
                     style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
                   />
                 </div>
