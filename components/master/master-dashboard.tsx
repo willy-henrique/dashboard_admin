@@ -138,7 +138,7 @@ export function MasterDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">Carregando dados...</p>
@@ -148,9 +148,9 @@ export function MasterDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 shadow-sm border-b border-orange-200 dark:border-slate-700">
+      <div className="bg-white/95 dark:bg-slate-900 shadow-sm border-b border-orange-200 dark:border-slate-700 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -205,7 +205,7 @@ export function MasterDashboard() {
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-white dark:bg-slate-800">
+            <DialogContent className="sm:max-w-md bg-white/95 dark:bg-slate-800 shadow-xl backdrop-blur-sm">
               <DialogHeader>
                 <DialogTitle className="text-slate-900 dark:text-white">Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
@@ -273,8 +273,8 @@ export function MasterDashboard() {
         {/* Users List */}
         <div className="grid gap-6">
           {usuarios.map((user) => (
-            <Card key={user.id} className="shadow-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-              <CardHeader className="bg-slate-50 dark:bg-slate-700/50">
+            <Card key={user.id} className="shadow-lg bg-white/95 dark:bg-slate-800 border-slate-200 dark:border-slate-700 backdrop-blur-sm">
+              <CardHeader className="bg-gradient-to-r from-slate-50 to-orange-50 dark:bg-slate-700/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
@@ -334,7 +334,7 @@ export function MasterDashboard() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="bg-white dark:bg-slate-800">
+              <CardContent className="bg-white/90 dark:bg-slate-800">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Object.entries(permissionLabels).map(([key, label]) => {
                     const Icon = permissionIcons[key as keyof typeof permissionIcons]
@@ -373,7 +373,7 @@ export function MasterDashboard() {
         </div>
 
         {usuarios.length === 0 && (
-          <Card className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
+          <Card className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600 bg-white/95 dark:bg-slate-800 shadow-lg backdrop-blur-sm">
             <CardContent>
               <Users className="h-16 w-16 text-slate-500 dark:text-slate-400 mx-auto mb-6" />
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
