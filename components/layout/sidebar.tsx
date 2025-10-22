@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Logo } from "@/components/logo"
+import { usePermissions } from "@/hooks/use-permissions"
 import {
   LayoutDashboard,
   Users,
@@ -51,15 +52,18 @@ const navigation = [
     name: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
+    permission: "dashboard",
   },
   {
     name: "Serviços",
     href: "/dashboard/servicos",
     icon: ClipboardList,
+    permission: "dashboard",
   },
   {
     name: "Controle",
     icon: MousePointer,
+    permission: "controle",
     children: [
       { name: "AutEM Mobile", href: "/dashboard/controle/autem-mobile", icon: Smartphone },
       { name: "Monitoramento de Chat", href: "/dashboard/controle/chat", icon: MessageSquare },
@@ -68,6 +72,7 @@ const navigation = [
   {
     name: "Gestão de Usuários",
     icon: Users,
+    permission: "gestaoUsuarios",
     children: [
       { name: "Clientes", href: "/users/clients", icon: Users },
       { name: "Prestadores", href: "/users/providers", icon: UserCheck },
@@ -77,6 +82,7 @@ const navigation = [
   {
     name: "Gestão de Pedidos",
     icon: ShoppingCart,
+    permission: "gestaoPedidos",
     children: [
       { name: "Todos os Pedidos", href: "/orders", icon: ShoppingCart },
       { name: "Pedidos Concluídos", href: "/orders/completed", icon: CheckCircle },
@@ -85,6 +91,7 @@ const navigation = [
   {
     name: "Financeiro",
     icon: DollarSign,
+    permission: "financeiro",
     children: [
       { name: "Dashboard", href: "/dashboard/financeiro", icon: BarChart3 },
       { name: "Faturamento", href: "/dashboard/financeiro/faturamento", icon: FileText },
@@ -93,6 +100,7 @@ const navigation = [
   {
     name: "Relatórios",
     icon: BarChart3,
+    permission: "relatorios",
     children: [
       { name: "Dashboard Analytics", href: "/reports/analytics", icon: BarChart3 },
       { name: "Performance", href: "/reports/performance", icon: TrendingUp },
@@ -101,10 +109,18 @@ const navigation = [
   {
     name: "Configurações",
     icon: Settings,
+    permission: "configuracoes",
     children: [
       { name: "Geral", href: "/dashboard/configuracoes", icon: Settings },
       { name: "Equipes", href: "/dashboard/configuracoes/equipes", icon: UserCheck },
     ],
+  },
+  {
+    name: "Área Master",
+    href: "/master",
+    icon: Shield,
+    permission: "gestaoUsuarios", // Apenas quem pode gerenciar usuários pode acessar master
+    isMaster: true, // Flag especial para área master
   },
 ]
 
@@ -116,6 +132,7 @@ interface SidebarProps {
 export function Sidebar({ open, setOpen }: SidebarProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const { hasPermission } = usePermissions()
 
   const toggleExpanded = (name: string) => {
     setExpandedItems(prev =>
@@ -126,6 +143,12 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   }
 
   const isActive = (href: string) => pathname === href
+
+  // Filtrar navegação baseada nas permissões
+  const filteredNavigation = navigation.filter(item => {
+    if (!item.permission) return true
+    return hasPermission(item.permission as keyof import("@/hooks/use-permissions").UserPermissions)
+  })
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-gradient-to-b from-orange-100 to-orange-200 text-slate-900">
@@ -146,7 +169,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       {/* Área rolável para navegação */}
       <ScrollArea className="flex-1 px-3 py-2 overflow-hidden">
         <nav className="space-y-2 pb-4" role="navigation" aria-label="Navegação principal">
-          {navigation.map((item) => (
+          {filteredNavigation.map((item) => (
             <div key={item.name}>
               {item.children ? (
                 <div>

@@ -5,5 +5,15 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if true;
     }
+    
+    // Regras específicas para a coleção adminmaster
+    match /adminmaster/{document} {
+      allow read, write: if true;
+      
+      // Subcoleção de usuários
+      match /usuarios/{usuarioId} {
+        allow read, write: if true;
+      }
+    }
   }
 }
