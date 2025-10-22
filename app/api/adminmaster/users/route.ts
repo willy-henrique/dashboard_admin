@@ -6,6 +6,11 @@ import { getFirestore } from 'firebase-admin/firestore'
 export async function POST(req: NextRequest) {
   try {
     console.log('🚀 Iniciando criação de usuário master...')
+    console.log('🔍 Firebase Admin Status:', { 
+      app: !!adminApp, 
+      serviceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID 
+    })
     
     const body = await req.json()
     const { nome, email, password, permissoes } = body || {}
@@ -19,7 +24,11 @@ export async function POST(req: NextRequest) {
 
     if (!adminApp) {
       console.error('❌ Firebase Admin não inicializado')
-      return NextResponse.json({ success: false, error: 'Firebase Admin não inicializado' }, { status: 500 })
+      console.error('❌ Verifique se FIREBASE_SERVICE_ACCOUNT está configurado no Vercel')
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Firebase Admin não inicializado. Verifique as configurações no Vercel.' 
+      }, { status: 500 })
     }
 
     console.log('✅ Firebase Admin disponível, criando usuário...')

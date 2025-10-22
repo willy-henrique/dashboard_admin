@@ -4,7 +4,7 @@ const getServiceAccount = () => {
   const json = process.env.FIREBASE_SERVICE_ACCOUNT
   if (!json) {
     console.warn('⚠️ FIREBASE_SERVICE_ACCOUNT não configurado')
-    console.warn('⚠️ Para configurar, adicione a variável FIREBASE_SERVICE_ACCOUNT no arquivo .env.local')
+    console.warn('⚠️ Para configurar, adicione a variável FIREBASE_SERVICE_ACCOUNT no Vercel')
     console.warn('⚠️ Formato: FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}')
     return null
   }
