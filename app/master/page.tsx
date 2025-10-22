@@ -26,13 +26,13 @@ export default function MasterPage() {
   const router = useRouter()
   const { isMasterAuthenticated, masterLogin, masterUser } = useMasterAuth()
 
-  // Redirecionar se não for master admin
-  useEffect(() => {
-    if (!isMasterAuthenticated && masterUser === null) {
-      // Se não está autenticado como master, redirecionar para dashboard
-      router.push("/dashboard")
-    }
-  }, [isMasterAuthenticated, masterUser, router])
+  // Não redirecionar automaticamente - deixar o usuário tentar fazer login
+  // useEffect(() => {
+  //   if (!isMasterAuthenticated && masterUser === null) {
+  //     // Se não está autenticado como master, redirecionar para dashboard
+  //     router.push("/dashboard")
+  //   }
+  // }, [isMasterAuthenticated, masterUser, router])
 
   const handleMasterLogin = async (e: React.FormEvent) => {
     e.preventDefault()

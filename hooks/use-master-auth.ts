@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState, useEffect, createContext, useContext } from "react"
+import { getDoc, doc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import { AdminMasterService } from "@/lib/services/admin-master-service"
 
 export interface MasterUser {
