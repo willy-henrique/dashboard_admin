@@ -73,10 +73,11 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const checkMasterAuth = async () => {
       try {
+        setLoading(true)
         const masterAuthData = localStorage.getItem('masterAuth')
         if (masterAuthData) {
           const { userId } = JSON.parse(masterAuthData)
-          const userDoc = await getDoc(doc(db, 'AdminMaster', userId))
+          const userDoc = await getDoc(doc(db, 'adminmaster', 'master'))
           if (userDoc.exists()) {
             const userData = userDoc.data() as AdminMaster
             setMasterUser({
@@ -87,10 +88,19 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
             })
             setIsMasterAuthenticated(true)
             await loadUsuarios(userDoc.id)
+          } else {
+            // Limpar dados inválidos
+            localStorage.removeItem('masterAuth')
+            setMasterUser(null)
+            setIsMasterAuthenticated(false)
           }
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação master:', error)
+        // Em caso de erro, limpar dados
+        localStorage.removeItem('masterAuth')
+        setMasterUser(null)
+        setIsMasterAuthenticated(false)
       } finally {
         setLoading(false)
       }
@@ -127,6 +137,8 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
       await loadUsuarios(adminMaster.id)
     } catch (error) {
       console.error('Erro no login master:', error)
+      setMasterUser(null)
+      setIsMasterAuthenticated(false)
       throw error
     } finally {
       setLoading(false)

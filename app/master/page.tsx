@@ -24,7 +24,7 @@ export default function MasterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const { isMasterAuthenticated, masterLogin, masterUser } = useMasterAuth()
+  const { isMasterAuthenticated, masterLogin, masterUser, loading } = useMasterAuth()
 
   // Não redirecionar automaticamente - deixar o usuário tentar fazer login
   // useEffect(() => {
@@ -41,15 +41,31 @@ export default function MasterPage() {
     
     try {
       await masterLogin(email, password)
+      // Limpar campos após login bem-sucedido
+      setEmail("")
+      setPassword("")
     } catch (error) {
+      console.error('Erro no login:', error)
       setError("Credenciais inválidas. Apenas administradores master podem acessar esta área.")
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Mostrar loading enquanto verifica autenticação
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Verificando autenticação...</p>
+        </div>
+      </main>
+    )
+  }
+
   // Se já está autenticado como master, mostrar dashboard
-  if (isMasterAuthenticated) {
+  if (isMasterAuthenticated && masterUser) {
     return <MasterDashboard />
   }
 

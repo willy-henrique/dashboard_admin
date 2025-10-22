@@ -138,8 +138,11 @@ export function MasterDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400">Carregando dados...</p>
+        </div>
       </div>
     )
   }
@@ -366,20 +369,21 @@ export function MasterDashboard() {
         </div>
 
         {usuarios.length === 0 && (
-          <Card className="text-center py-12">
+          <Card className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600">
             <CardContent>
-              <Users className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+              <Users className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
                 Nenhum usuário cadastrado
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-4">
-                Comece adicionando usuários para gerenciar suas permissões
+              <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+                Comece adicionando usuários para gerenciar suas permissões e controlar o acesso ao sistema
               </p>
               <Button 
                 onClick={() => setIsAddModalOpen(true)}
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3"
+                size="lg"
               >
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-5 w-5 mr-2" />
                 Adicionar Primeiro Usuário
               </Button>
             </CardContent>
