@@ -259,31 +259,44 @@ export function MasterDashboard() {
                     placeholder="Defina uma senha segura"
                     style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
                   />
-                </div>
+                      </div>
                 <div>
                   <Label style={{ color: '#1F2B3D' }}>Permissões Iniciais</Label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {Object.entries(permissionLabels).map(([key, label]) => (
-                      <div key={key} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`new-${key}`}
-                          checked={Boolean(newUser.permissoes[key as keyof typeof newUser.permissoes])}
-                          onCheckedChange={(checked) => {
-                            const value = Boolean(checked)
-                            setNewUser({
-                              ...newUser,
-                              permissoes: {
-                                ...newUser.permissoes,
-                                [key]: value
-                              }
-                            })
+                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 mt-3">
+                    {Object.entries(permissionLabels).map(([key, label]) => {
+                      const checked = Boolean(newUser.permissoes[key as keyof typeof newUser.permissoes])
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => {
+                            const value = !checked
+                            setNewUser((prev) => ({
+                              ...prev,
+                              permissoes: { ...prev.permissoes, [key]: value },
+                            }))
                           }}
-                        />
-                        <Label htmlFor={`new-${key}`} className="text-sm" style={{ color: '#6B7280' }}>
-                          {label}
-                        </Label>
-                      </div>
-                    ))}
+                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 border text-left focus:outline-none focus:ring-2 transition-colors ${
+                            checked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB]'
+                          }`}
+                          aria-pressed={checked}
+                        >
+                          <span className="text-sm" style={{ color: '#1F2B3D' }}>{label}</span>
+                          <span
+                            aria-hidden
+                            className={`inline-block h-5 w-9 rounded-full transition-colors ${
+                              checked ? 'bg-[#F7931E]' : 'bg-[#E5E7EB]'
+                            }`}
+                          >
+                            <span
+                              className={`block h-5 w-5 bg-white rounded-full shadow transform transition-transform ${
+                                checked ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
+                          </span>
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2">
@@ -368,7 +381,7 @@ export function MasterDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {Object.entries(permissionLabels).map(([key, label]) => {
                     const Icon = permissionIcons[key as keyof typeof permissionIcons]
                     const isChecked = editingUser === user.id 
@@ -376,24 +389,32 @@ export function MasterDashboard() {
                       : user.permissoes[key as keyof typeof user.permissoes]
                     
                     return (
-                      <div key={key} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${user.id}-${key}`}
-                          checked={isChecked}
-                          onCheckedChange={(checked) => updatePermission(user.id, key, Boolean(checked))}
-                          disabled={editingUser !== user.id}
-                        />
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => editingUser === user.id && updatePermission(user.id, key, !isChecked)}
+                        className={`flex items-center justify-between rounded-md px-3 py-2 border text-left w-full transition-colors ${
+                          isChecked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB]'
+                        } ${editingUser !== user.id ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                        aria-pressed={isChecked}
+                      >
                         <div className="flex items-center space-x-2">
                           <Icon className="h-4 w-4" style={{ color: '#6B7280' }} />
-                          <Label 
-                            htmlFor={`${user.id}-${key}`} 
-                            className="text-sm cursor-pointer"
-                            style={{ color: '#6B7280' }}
-                          >
-                            {label}
-                          </Label>
+                          <span className="text-sm" style={{ color: '#1F2B3D' }}>{label}</span>
                         </div>
-                      </div>
+                        <span
+                          aria-hidden
+                          className={`inline-block h-5 w-9 rounded-full transition-colors ${
+                            isChecked ? 'bg-[#F7931E]' : 'bg-[#E5E7EB]'
+                          }`}
+                        >
+                          <span
+                            className={`block h-5 w-5 bg-white rounded-full shadow transform transition-transform ${
+                              isChecked ? 'translate-x-4' : 'translate-x-0'
+                            }`}
+                          />
+                        </span>
+                      </button>
                     )
                   })}
                 </div>
