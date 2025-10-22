@@ -138,7 +138,7 @@ export function MasterDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400">Carregando dados...</p>
@@ -148,9 +148,9 @@ export function MasterDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {/* Header */}
-      <div className="bg-white/95 dark:bg-slate-900 shadow-sm border-b border-orange-200 dark:border-slate-700 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-900 shadow-sm border-b border-orange-200 dark:border-slate-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -167,7 +167,7 @@ export function MasterDashboard() {
                 <p className="text-sm font-medium text-slate-900 dark:text-white">
                   {masterUser?.nome}
                 </p>
-                <p className="text-xs text-slate-600 dark:text-slate-300">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {masterUser?.email}
                 </p>
               </div>
@@ -175,7 +175,7 @@ export function MasterDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={masterLogout}
-                className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-300 dark:border-slate-600"
+                className="text-slate-600 hover:text-slate-800"
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
@@ -191,7 +191,7 @@ export function MasterDashboard() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
             Gestão de Usuários e Permissões
           </h1>
-          <p className="text-slate-700 dark:text-slate-300">
+          <p className="text-slate-600 dark:text-slate-400">
             Configure as permissões de acesso para cada usuário do sistema
           </p>
         </div>
@@ -205,37 +205,35 @@ export function MasterDashboard() {
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-white/95 dark:bg-slate-800 shadow-xl backdrop-blur-sm">
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-slate-900 dark:text-white">Adicionar Novo Usuário</DialogTitle>
+                <DialogTitle>Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="nome" className="text-slate-700 dark:text-slate-300">Nome</Label>
+                  <Label htmlFor="nome">Nome</Label>
                   <Input
                     id="nome"
                     value={newUser.nome}
                     onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })}
                     placeholder="Nome completo"
-                    className="border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-slate-700 dark:text-slate-300">Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     placeholder="email@exemplo.com"
-                    className="border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-700 dark:text-slate-300">Permissões Iniciais</Label>
+                  <Label>Permissões Iniciais</Label>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {Object.entries(permissionLabels).map(([key, label]) => (
-                      <div key={key} className="flex items-center space-x-2 p-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                      <div key={key} className="flex items-center space-x-2">
                         <Checkbox
                           id={`new-${key}`}
                           checked={newUser.permissoes[key as keyof typeof newUser.permissoes]}
@@ -248,9 +246,8 @@ export function MasterDashboard() {
                               }
                             })
                           }
-                          className="border-slate-300 dark:border-slate-600"
                         />
-                        <Label htmlFor={`new-${key}`} className="text-sm text-slate-700 dark:text-slate-300">
+                        <Label htmlFor={`new-${key}`} className="text-sm">
                           {label}
                         </Label>
                       </div>
@@ -273,16 +270,16 @@ export function MasterDashboard() {
         {/* Users List */}
         <div className="grid gap-6">
           {usuarios.map((user) => (
-            <Card key={user.id} className="shadow-lg bg-white/95 dark:bg-slate-800 border-slate-200 dark:border-slate-700 backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-orange-50 dark:bg-slate-700/50">
+            <Card key={user.id} className="shadow-sm">
+              <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
                       <User className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg text-slate-900 dark:text-white">{user.nome}</CardTitle>
-                      <div className="flex items-center space-x-1 text-sm text-slate-600 dark:text-slate-300">
+                      <CardTitle className="text-lg">{user.nome}</CardTitle>
+                      <div className="flex items-center space-x-1 text-sm text-slate-500 dark:text-slate-400">
                         <Mail className="h-3 w-3" />
                         <span>{user.email}</span>
                       </div>
@@ -334,7 +331,7 @@ export function MasterDashboard() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="bg-white/90 dark:bg-slate-800">
+              <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {Object.entries(permissionLabels).map(([key, label]) => {
                     const Icon = permissionIcons[key as keyof typeof permissionIcons]
@@ -343,7 +340,7 @@ export function MasterDashboard() {
                       : user.permissoes[key as keyof typeof user.permissoes]
                     
                     return (
-                      <div key={key} className="flex items-center space-x-2 p-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                      <div key={key} className="flex items-center space-x-2">
                         <Checkbox
                           id={`${user.id}-${key}`}
                           checked={isChecked}
@@ -352,13 +349,12 @@ export function MasterDashboard() {
                             undefined
                           }
                           disabled={editingUser !== user.id}
-                          className="border-slate-300 dark:border-slate-600"
                         />
                         <div className="flex items-center space-x-2">
-                          <Icon className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                          <Icon className="h-4 w-4 text-slate-500" />
                           <Label 
                             htmlFor={`${user.id}-${key}`} 
-                            className="text-sm cursor-pointer text-slate-700 dark:text-slate-300"
+                            className="text-sm cursor-pointer"
                           >
                             {label}
                           </Label>
@@ -373,13 +369,13 @@ export function MasterDashboard() {
         </div>
 
         {usuarios.length === 0 && (
-          <Card className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600 bg-white/95 dark:bg-slate-800 shadow-lg backdrop-blur-sm">
+          <Card className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600">
             <CardContent>
-              <Users className="h-16 w-16 text-slate-500 dark:text-slate-400 mx-auto mb-6" />
+              <Users className="h-16 w-16 text-slate-400 mx-auto mb-6" />
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
                 Nenhum usuário cadastrado
               </h3>
-              <p className="text-slate-600 dark:text-slate-300 mb-6 max-w-md mx-auto">
+              <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
                 Comece adicionando usuários para gerenciar suas permissões e controlar o acesso ao sistema
               </p>
               <Button 
