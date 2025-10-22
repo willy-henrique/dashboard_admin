@@ -55,10 +55,10 @@ export default function MasterPage() {
   // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Verificando autenticação...</p>
+          <p className="text-slate-700">Verificando autenticação...</p>
         </div>
       </main>
     )
@@ -70,7 +70,7 @@ export default function MasterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo e Título */}
         <div className="text-center mb-8">
@@ -89,32 +89,32 @@ export default function MasterPage() {
         </div>
 
         {/* Card de Login Master */}
-        <Card className="shadow-xl border-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm">
+        <Card className="shadow-xl border border-slate-200 bg-white/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
-            <CardTitle className="flex items-center justify-center space-x-2 text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center justify-center space-x-2 text-slate-900">
               <LogIn className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               <span>Login Master</span>
             </CardTitle>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            <p className="text-sm text-slate-600 mt-2">
               Acesso restrito para configuração de permissões
             </p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleMasterLogin} className="space-y-6">
               {error && (
-                <div className="flex items-center space-x-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-                  <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <AlertTriangle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                  <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
+                <Label htmlFor="email" className="text-slate-700 font-medium">
                   Email Master
                 </Label>
-                <div className="flex items-center border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 focus-within:border-orange-500 dark:focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/20 dark:focus-within:ring-orange-400/20">
+                <div className="flex items-center border border-slate-300 rounded-md bg-white focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
                   <div className="pl-3 pr-2 flex-shrink-0">
-                    <Mail className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                    <Mail className="h-4 w-4 text-slate-400" />
                   </div>
                   <Input
                     id="email"
@@ -122,19 +122,19 @@ export default function MasterPage() {
                     placeholder="master@aquiresolve.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="border-0 bg-transparent pl-0 pr-4 h-11 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-0 focus:border-0 focus:outline-none"
+                    className="border-0 bg-transparent pl-0 pr-4 h-11 text-slate-900 placeholder:text-slate-500 focus:ring-0 focus:border-0 focus:outline-none"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">
+                <Label htmlFor="password" className="text-slate-700 font-medium">
                   Senha Master
                 </Label>
-                <div className="flex items-center border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 focus-within:border-orange-500 dark:focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/20 dark:focus-within:ring-orange-400/20">
+                <div className="flex items-center border border-slate-300 rounded-md bg-white focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/20">
                   <div className="pl-3 pr-2 flex-shrink-0">
-                    <Lock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+                    <Lock className="h-4 w-4 text-slate-400" />
                   </div>
                   <Input
                     id="password"
@@ -142,7 +142,7 @@ export default function MasterPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="border-0 bg-transparent pl-0 pr-4 h-11 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-0 focus:border-0 focus:outline-none"
+                    className="border-0 bg-transparent pl-0 pr-4 h-11 text-slate-900 placeholder:text-slate-500 focus:ring-0 focus:border-0 focus:outline-none"
                     required
                     minLength={6}
                   />
@@ -169,7 +169,7 @@ export default function MasterPage() {
               <Button
                 variant="ghost"
                 onClick={() => router.push("/dashboard")}
-                className="text-sm text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                className="text-sm text-slate-600 hover:text-slate-800"
               >
                 ← Voltar ao Dashboard
               </Button>
