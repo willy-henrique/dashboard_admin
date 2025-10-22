@@ -18,9 +18,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
-// Força renderização dinâmica e desativa cache de rotas no Vercel/Next
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Configuração de cache/dinâmica é definida no app/master/layout.tsx (Server Component)
 
 export default function MasterPage() {
   const [email, setEmail] = useState("")
