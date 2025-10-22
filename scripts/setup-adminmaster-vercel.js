@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { initializeApp } from 'firebase/app'
-import { getFirestore, doc, setDoc, collection, addDoc } from 'firebase/firestore'
+const { initializeApp } = require('firebase/app');
+const { getFirestore, doc, setDoc, collection, addDoc } = require('firebase/firestore');
 
-// Configuração do Firebase
+// Configuração do Firebase usando variáveis do Vercel
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -10,16 +9,17 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-}
+};
 
-// Função para hash de senha
-const hashPassword = (password: string): string => {
-  return Buffer.from(password).toString('base64')
-}
+// Função para hash de senha (simplificada para demonstração)
+const hashPassword = (password) => {
+  return Buffer.from(password).toString('base64');
+};
 
-export async function POST(request: NextRequest) {
+async function setupAdminMasterVercel() {
   try {
-    console.log('🔥 Inicializando setup do AdminMaster...')
+    console.log('🔥 Inicializando Firebase com configuração do Vercel...');
+    console.log('📋 Verificando variáveis de ambiente...');
     
     // Verificar se as variáveis estão definidas
     const requiredVars = [
@@ -29,22 +29,21 @@ export async function POST(request: NextRequest) {
       'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
       'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
       'NEXT_PUBLIC_FIREBASE_APP_ID'
-    ]
+    ];
 
-    const missingVars = requiredVars.filter(varName => !process.env[varName])
+    const missingVars = requiredVars.filter(varName => !process.env[varName]);
     if (missingVars.length > 0) {
-      return NextResponse.json({
-        success: false,
-        error: 'Variáveis de ambiente ausentes',
-        missing: missingVars
-      }, { status: 400 })
+      console.error('❌ Variáveis de ambiente ausentes:', missingVars);
+      console.log('💡 Configure as variáveis no Vercel ou no arquivo .env.local');
+      return;
     }
 
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig)
-    const db = getFirestore(app)
+    console.log('✅ Todas as variáveis de ambiente estão configuradas');
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    console.log('👑 Configurando AdminMaster...')
+    console.log('👑 Configurando AdminMaster...');
     
     // Dados do AdminMaster padrão
     const adminMasterData = {
@@ -62,16 +61,19 @@ export async function POST(request: NextRequest) {
       },
       criadoEm: new Date().toISOString(),
       ativo: true
-    }
+    };
 
     // Criar documento AdminMaster na coleção 'adminmaster'
-    const adminMasterRef = doc(db, 'adminmaster', 'master')
-    await setDoc(adminMasterRef, adminMasterData)
+    const adminMasterRef = doc(db, 'adminmaster', 'master');
+    await setDoc(adminMasterRef, adminMasterData);
 
-    console.log('✅ AdminMaster configurado com sucesso!')
+    console.log('✅ AdminMaster configurado com sucesso!');
+    console.log('📧 Email: master@aquiresolve.com');
+    console.log('🔑 Senha: admin123');
+    console.log('⚠️  IMPORTANTE: Altere a senha padrão em produção!');
 
     // Criar alguns usuários de exemplo
-    console.log('👥 Criando usuários de exemplo...')
+    console.log('👥 Criando usuários de exemplo...');
     
     const usuariosExemplo = [
       {
@@ -119,20 +121,20 @@ export async function POST(request: NextRequest) {
         criadoEm: new Date().toISOString(),
         ativo: true
       }
-    ]
+    ];
 
     // Criar subcoleção de usuários
-    const usuariosRef = collection(db, 'adminmaster', 'master', 'usuarios')
+    const usuariosRef = collection(db, 'adminmaster', 'master', 'usuarios');
     
     for (const usuario of usuariosExemplo) {
-      await addDoc(usuariosRef, usuario)
-      console.log(`✅ Usuário ${usuario.nome} criado`)
+      await addDoc(usuariosRef, usuario);
+      console.log(`✅ Usuário ${usuario.nome} criado`);
     }
 
     // Criar configurações do sistema
-    console.log('⚙️ Criando configurações do sistema...')
+    console.log('⚙️ Criando configurações do sistema...');
     
-    const configuracoesRef = doc(db, 'adminmaster', 'master', 'configuracoes', 'sistema')
+    const configuracoesRef = doc(db, 'adminmaster', 'master', 'configuracoes', 'sistema');
     await setDoc(configuracoesRef, {
       versao: '1.0.0',
       ultimaAtualizacao: new Date().toISOString(),
@@ -151,14 +153,14 @@ export async function POST(request: NextRequest) {
         logAtividades: true,
         notificacoes: true
       }
-    })
+    });
 
-    console.log('✅ Configurações do sistema criadas')
+    console.log('✅ Configurações do sistema criadas');
 
     // Criar logs de atividade
-    console.log('📝 Criando logs de atividade...')
+    console.log('📝 Criando logs de atividade...');
     
-    const logsRef = collection(db, 'adminmaster', 'master', 'logs')
+    const logsRef = collection(db, 'adminmaster', 'master', 'logs');
     await addDoc(logsRef, {
       tipo: 'sistema',
       acao: 'setup_inicial',
@@ -166,43 +168,28 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
       usuario: 'sistema',
       ip: 'localhost'
-    })
+    });
 
-    console.log('✅ Log de atividade criado')
+    console.log('✅ Log de atividade criado');
 
-    return NextResponse.json({
-      success: true,
-      message: 'AdminMaster configurado com sucesso!',
-      data: {
-        adminMaster: {
-          email: 'master@aquiresolve.com',
-          senha: 'admin123',
-          nome: 'Administrador Master'
-        },
-        usuarios: usuariosExemplo.length,
-        estrutura: {
-          'adminmaster/master': 'Documento principal',
-          'adminmaster/master/usuarios': 'Subcoleção de usuários',
-          'adminmaster/master/configuracoes/sistema': 'Configurações',
-          'adminmaster/master/logs': 'Logs de atividade'
-        }
-      }
-    })
+    console.log('🎉 Configuração completa!');
+    console.log('🌐 Acesse /master para gerenciar usuários e permissões');
+    console.log('📊 Estrutura criada:');
+    console.log('   - adminmaster/master (documento principal)');
+    console.log('   - adminmaster/master/usuarios (subcoleção de usuários)');
+    console.log('   - adminmaster/master/configuracoes/sistema (configurações)');
+    console.log('   - adminmaster/master/logs (logs de atividade)');
 
   } catch (error) {
-    console.error('❌ Erro ao configurar AdminMaster:', error)
-    return NextResponse.json({
-      success: false,
-      error: 'Erro interno do servidor',
-      details: error instanceof Error ? error.message : 'Erro desconhecido'
-    }, { status: 500 })
+    console.error('❌ Erro ao configurar AdminMaster:', error);
+    console.error('Detalhes do erro:', error.message);
+    process.exit(1);
   }
 }
 
-export async function GET() {
-  return NextResponse.json({
-    message: 'Use POST para configurar o AdminMaster',
-    endpoint: '/api/setup-adminmaster',
-    method: 'POST'
-  })
+// Executar se chamado diretamente
+if (require.main === module) {
+  setupAdminMasterVercel();
 }
+
+module.exports = { setupAdminMasterVercel };
