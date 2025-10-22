@@ -177,7 +177,8 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
     try {
       if (!masterUser) throw new Error('Não autenticado como master')
       
-      await AdminMasterService.updateUsuario(masterUser.id, id, { permissoes })
+      // Permite atualizar apenas o objeto de permissões
+      await AdminMasterService.updateUsuario(masterUser.id, id, permissoes)
       await refreshUsuarios()
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error)

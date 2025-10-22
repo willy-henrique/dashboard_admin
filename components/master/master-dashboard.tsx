@@ -379,10 +379,7 @@ export function MasterDashboard() {
                         <Checkbox
                           id={`${user.id}-${key}`}
                           checked={isChecked}
-                          onCheckedChange={editingUser === user.id ? 
-                            (checked) => updatePermission(user.id, key, checked as boolean) :
-                            undefined
-                          }
+                          onCheckedChange={(checked) => updatePermission(user.id, key, Boolean(checked))}
                           disabled={editingUser !== user.id}
                         />
                         <div className="flex items-center space-x-2">

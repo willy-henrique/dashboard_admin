@@ -145,10 +145,20 @@ export class AdminMasterService {
   }
 
   // Atualizar usuário
-  static async updateUsuario(adminId: string, usuarioId: string, data: Partial<MasterUser>): Promise<void> {
+  static async updateUsuario(adminId: string, usuarioId: string, data: Partial<MasterUser> | MasterUser['permissoes']): Promise<void> {
     try {
       const usuarioRef = doc(db, 'adminmaster', adminId, 'usuarios', usuarioId)
-      await updateDoc(usuarioRef, data)
+      // Se vier apenas o objeto de permissões, atualiza o campo aninhado 'permissoes'
+      if (
+        data &&
+        !('email' in (data as any)) &&
+        !('nome' in (data as any)) &&
+        !('permissoes' in (data as any))
+      ) {
+        await updateDoc(usuarioRef, { permissoes: data })
+      } else {
+        await updateDoc(usuarioRef, data as any)
+      }
     } catch (error) {
       console.error('Erro ao atualizar usuário:', error)
       throw error
