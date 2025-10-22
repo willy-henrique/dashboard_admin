@@ -61,10 +61,28 @@ export function MasterDashboard() {
     }
   })
   const [tempPermissions, setTempPermissions] = useState<Record<string, any>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const handleAddUser = async () => {
+    if (!newUser.nome || !newUser.email || !newUser.password) {
+      setError('Por favor, preencha todos os campos obrigatórios')
+      return
+    }
+
+    // Verificar se pelo menos uma permissão foi selecionada
+    const hasPermissions = Object.values(newUser.permissoes).some(Boolean)
+    if (!hasPermissions) {
+      setError('Selecione pelo menos uma permissão para o usuário')
+      return
+    }
+
+    setIsSubmitting(true)
+    setError(null)
+    setSuccess(null)
+
     try {
-      // Chama API para criar usuário com senha no Firebase Auth e salvar permissões
       const resp = await fetch('/api/adminmaster/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,7 +93,14 @@ export function MasterDashboard() {
           permissoes: newUser.permissoes,
         })
       })
-      if (!resp.ok) throw new Error('Falha ao criar usuário')
+
+      const data = await resp.json()
+      
+      if (!resp.ok) {
+        throw new Error(data.error || 'Falha ao criar usuário')
+      }
+
+      setSuccess('Usuário criado com sucesso!')
       setNewUser({
         nome: "",
         email: "",
@@ -90,9 +115,18 @@ export function MasterDashboard() {
           configuracoes: false
         }
       })
-      setIsAddModalOpen(false)
-    } catch (error) {
+      
+      // Fechar modal após 1 segundo
+      setTimeout(() => {
+        setIsAddModalOpen(false)
+        setSuccess(null)
+      }, 1000)
+
+    } catch (error: any) {
       console.error('Erro ao adicionar usuário:', error)
+      setError(error.message || 'Erro ao criar usuário')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -133,6 +167,16 @@ export function MasterDashboard() {
     }))
   }
 
+  const updateNewUserPermission = (permission: string, value: boolean) => {
+    setNewUser(prev => ({
+      ...prev,
+      permissoes: {
+        ...prev.permissoes,
+        [permission]: value
+      }
+    }))
+  }
+
   const permissionLabels = {
     dashboard: "Dashboard",
     controle: "Controle",
@@ -141,6 +185,61 @@ export function MasterDashboard() {
     financeiro: "Financeiro",
     relatorios: "Relatórios",
     configuracoes: "Configurações"
+  }
+
+  const permissionTemplates = {
+    admin: {
+      name: "Administrador Completo",
+      description: "Acesso total ao sistema",
+      permissions: {
+        dashboard: true,
+        controle: true,
+        gestaoUsuarios: true,
+        gestaoPedidos: true,
+        financeiro: true,
+        relatorios: true,
+        configuracoes: true
+      }
+    },
+    manager: {
+      name: "Gerente",
+      description: "Acesso a gestão e relatórios",
+      permissions: {
+        dashboard: true,
+        controle: true,
+        gestaoUsuarios: false,
+        gestaoPedidos: true,
+        financeiro: true,
+        relatorios: true,
+        configuracoes: false
+      }
+    },
+    operator: {
+      name: "Operador",
+      description: "Acesso básico ao sistema",
+      permissions: {
+        dashboard: true,
+        controle: true,
+        gestaoUsuarios: false,
+        gestaoPedidos: true,
+        financeiro: false,
+        relatorios: false,
+        configuracoes: false
+      }
+    },
+    viewer: {
+      name: "Visualizador",
+      description: "Apenas visualização",
+      permissions: {
+        dashboard: true,
+        controle: false,
+        gestaoUsuarios: false,
+        gestaoPedidos: false,
+        financeiro: false,
+        relatorios: true,
+        configuracoes: false
+      }
+    }
   }
 
   const permissionIcons = {
@@ -204,12 +303,12 @@ export function MasterDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2" style={{ color: '#1F2B3D' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#1F2B3D' }}>
             Gestão de Usuários e Permissões
           </h1>
-          <p style={{ color: '#6B7280' }}>
+          <p className="text-sm sm:text-base" style={{ color: '#6B7280' }}>
             Configure as permissões de acesso para cada usuário do sistema
           </p>
         </div>
@@ -223,11 +322,31 @@ export function MasterDashboard() {
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
+            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
               <DialogHeader>
-                <DialogTitle style={{ color: '#1F2B3D' }}>Adicionar Novo Usuário</DialogTitle>
+                <DialogTitle className="text-lg sm:text-xl" style={{ color: '#1F2B3D' }}>Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                    <div className="flex items-center">
+                      <X className="h-4 w-4 text-red-400 mr-2" />
+                      <span className="text-sm text-red-800">{error}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Success Message */}
+                {success && (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                      <span className="text-sm text-green-800">{success}</span>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <Label htmlFor="nome" style={{ color: '#1F2B3D' }}>Nome</Label>
                   <Input
@@ -261,23 +380,111 @@ export function MasterDashboard() {
                   />
                       </div>
                 <div>
-                  <Label style={{ color: '#1F2B3D' }}>Permissões Iniciais</Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 mt-3">
+                  <Label style={{ color: '#1F2B3D' }}>Tipo de Usuário</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 mb-4">
+                    {Object.entries(permissionTemplates).map(([key, template]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => {
+                          setNewUser(prev => ({
+                            ...prev,
+                            permissoes: template.permissions
+                          }))
+                        }}
+                        className="flex flex-col items-start p-3 rounded-md border text-left focus:outline-none focus:ring-2 transition-colors hover:opacity-90 bg-white border-[#E5E7EB] hover:border-[#F7931E]"
+                      >
+                        <span className="font-medium text-sm" style={{ color: '#1F2B3D' }}>
+                          {template.name}
+                        </span>
+                        <span className="text-xs" style={{ color: '#6B7280' }}>
+                          {template.description}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <div className="mb-4 p-3 rounded-md" style={{ backgroundColor: '#F0F9FF', border: '1px solid #E0F2FE' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium" style={{ color: '#1F2B3D' }}>
+                        Permissões Selecionadas
+                      </span>
+                      <span className="text-xs" style={{ color: '#6B7280' }}>
+                        {Object.values(newUser.permissoes).filter(Boolean).length} de {Object.keys(newUser.permissoes).length}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(newUser.permissoes)
+                        .filter(([_, value]) => value)
+                        .map(([key, _]) => (
+                          <span
+                            key={key}
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs"
+                            style={{ backgroundColor: '#F7931E', color: '#FFFFFF' }}
+                          >
+                            {permissionLabels[key as keyof typeof permissionLabels]}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label style={{ color: '#1F2B3D' }}>Permissões Detalhadas</Label>
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewUser(prev => ({
+                            ...prev,
+                            permissoes: {
+                              dashboard: true,
+                              controle: true,
+                              gestaoUsuarios: true,
+                              gestaoPedidos: true,
+                              financeiro: true,
+                              relatorios: true,
+                              configuracoes: true
+                            }
+                          }))
+                        }}
+                        className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
+                        style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                      >
+                        Todas
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewUser(prev => ({
+                            ...prev,
+                            permissoes: {
+                              dashboard: false,
+                              controle: false,
+                              gestaoUsuarios: false,
+                              gestaoPedidos: false,
+                              financeiro: false,
+                              relatorios: false,
+                              configuracoes: false
+                            }
+                          }))
+                        }}
+                        className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
+                        style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                      >
+                        Nenhuma
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                     {Object.entries(permissionLabels).map(([key, label]) => {
                       const checked = Boolean(newUser.permissoes[key as keyof typeof newUser.permissoes])
                       return (
                         <button
                           key={key}
                           type="button"
-                          onClick={() => {
-                            const value = !checked
-                            setNewUser((prev) => ({
-                              ...prev,
-                              permissoes: { ...prev.permissoes, [key]: value },
-                            }))
-                          }}
-                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 border text-left focus:outline-none focus:ring-2 transition-colors ${
-                            checked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB]'
+                          onClick={() => updateNewUserPermission(key, !checked)}
+                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 border text-left focus:outline-none focus:ring-2 transition-colors hover:opacity-90 ${
+                            checked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB] hover:border-[#F7931E]'
                           }`}
                           aria-pressed={checked}
                         >
@@ -300,11 +507,27 @@ export function MasterDashboard() {
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsAddModalOpen(false)} style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsAddModalOpen(false)
+                      setError(null)
+                      setSuccess(null)
+                    }} 
+                    disabled={isSubmitting}
+                    style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                  >
                     Cancelar
                   </Button>
-                  <Button onClick={handleAddUser} className="text-white" style={{ backgroundColor: '#F7931E' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E67E00')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F7931E')}>
-                    Adicionar
+                  <Button 
+                    onClick={handleAddUser} 
+                    disabled={isSubmitting}
+                    className="text-white" 
+                    style={{ backgroundColor: isSubmitting ? '#9CA3AF' : '#F7931E' }}
+                    onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#E67E00')} 
+                    onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#F7931E')}
+                  >
+                    {isSubmitting ? 'Criando...' : 'Adicionar'}
                   </Button>
                 </div>
               </div>
@@ -313,34 +536,34 @@ export function MasterDashboard() {
         </div>
 
         {/* Users List */}
-        <div className="grid gap-6">
+        <div className="grid gap-4 sm:gap-6">
           {usuarios.map((user) => (
             <Card key={user.id} className="shadow-sm" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
               <CardHeader style={{ background: '#FFFFFF' }}>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEECDC' }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FEECDC' }}>
                       <User className="h-5 w-5" style={{ color: '#F7931E' }} />
                     </div>
-                    <div>
-                      <CardTitle className="text-lg" style={{ color: '#1F2B3D' }}>{user.nome}</CardTitle>
-                      <div className="flex items-center space-x-1 text-sm" style={{ color: '#6B7280' }}>
-                        <Mail className="h-3 w-3" />
-                        <span>{user.email}</span>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-base sm:text-lg truncate" style={{ color: '#1F2B3D' }}>{user.nome}</CardTitle>
+                      <div className="flex items-center space-x-1 text-xs sm:text-sm" style={{ color: '#6B7280' }}>
+                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">{user.email}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 flex-wrap gap-2">
                     {editingUser === user.id ? (
                       <>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateUser(user.id)}
-                          className="text-white"
+                          className="text-white text-xs sm:text-sm"
                           style={{ backgroundColor: '#22C55E' }}
                         >
-                          <Save className="h-4 w-4 mr-1" />
-                          Salvar
+                          <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="hidden sm:inline">Salvar</span>
                         </Button>
                         <Button
                           size="sm"
@@ -349,10 +572,11 @@ export function MasterDashboard() {
                             setEditingUser(null)
                             setTempPermissions({})
                           }}
+                          className="text-xs sm:text-sm"
                           style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                         >
-                          <X className="h-4 w-4 mr-1" />
-                          Cancelar
+                          <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="hidden sm:inline">Cancelar</span>
                         </Button>
                       </>
                     ) : (
@@ -361,19 +585,20 @@ export function MasterDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => startEditing(user)}
+                          className="text-xs sm:text-sm"
                           style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="hidden sm:inline">Editar</span>
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
                           style={{ borderColor: '#FCA5A5' }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </>
                     )}
@@ -381,7 +606,32 @@ export function MasterDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {/* Resumo das permissões */}
+                <div className="mb-4 p-3 rounded-md" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium" style={{ color: '#1F2B3D' }}>
+                      Permissões Ativas
+                    </span>
+                    <span className="text-xs" style={{ color: '#6B7280' }}>
+                      {Object.values(user.permissoes).filter(Boolean).length} de {Object.keys(user.permissoes).length}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(user.permissoes)
+                      .filter(([_, value]) => value)
+                      .map(([key, _]) => (
+                        <span
+                          key={key}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs"
+                          style={{ backgroundColor: '#F7931E', color: '#FFFFFF' }}
+                        >
+                          {permissionLabels[key as keyof typeof permissionLabels]}
+                        </span>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {Object.entries(permissionLabels).map(([key, label]) => {
                     const Icon = permissionIcons[key as keyof typeof permissionIcons]
                     const isChecked = editingUser === user.id 
@@ -395,7 +645,7 @@ export function MasterDashboard() {
                         onClick={() => editingUser === user.id && updatePermission(user.id, key, !isChecked)}
                         className={`flex items-center justify-between rounded-md px-3 py-2 border text-left w-full transition-colors ${
                           isChecked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB]'
-                        } ${editingUser !== user.id ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                        } ${editingUser !== user.id ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:opacity-90 hover:border-[#F7931E]'}`}
                         aria-pressed={isChecked}
                       >
                         <div className="flex items-center space-x-2">

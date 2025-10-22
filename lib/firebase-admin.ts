@@ -4,6 +4,8 @@ const getServiceAccount = () => {
   const json = process.env.FIREBASE_SERVICE_ACCOUNT
   if (!json) {
     console.warn('⚠️ FIREBASE_SERVICE_ACCOUNT não configurado')
+    console.warn('⚠️ Para configurar, adicione a variável FIREBASE_SERVICE_ACCOUNT no arquivo .env.local')
+    console.warn('⚠️ Formato: FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}')
     return null
   }
   try {
@@ -12,6 +14,7 @@ const getServiceAccount = () => {
     return parsed
   } catch (error) {
     console.error('❌ Erro ao parsear FIREBASE_SERVICE_ACCOUNT:', error)
+    console.error('❌ Verifique se o JSON está válido e bem formatado')
     return null
   }
 }
