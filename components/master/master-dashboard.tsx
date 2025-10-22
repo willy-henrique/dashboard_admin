@@ -138,36 +138,36 @@ export function MasterDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Carregando dados...</p>
+          <div className="animate-spin rounded-full h-12 w-12 mx-auto mb-4" style={{ borderBottom: '2px solid #F7931E', borderLeft: '2px solid #F7931E', borderRight: '2px solid #F7931E', borderTop: '2px solid transparent' }}></div>
+          <p style={{ color: '#1F2B3D' }}>Carregando dados...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 shadow-sm border-b border-orange-200 dark:border-slate-700">
+      <div className="shadow-sm" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Logo className="h-8" showText={true} />
               <div className="flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-orange-600" />
-                <span className="text-lg font-semibold text-slate-900 dark:text-white">
+                <Shield className="h-5 w-5" style={{ color: '#F7931E' }} />
+                <span className="text-lg font-semibold" style={{ color: '#203864' }}>
                   Área Master
                 </span>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                <p className="text-sm font-medium" style={{ color: '#1F2B3D' }}>
                   {masterUser?.nome}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs" style={{ color: '#6B7280' }}>
                   {masterUser?.email}
                 </p>
               </div>
@@ -175,7 +175,8 @@ export function MasterDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={masterLogout}
-                className="text-slate-600 hover:text-slate-800"
+                className="hover:opacity-90"
+                style={{ color: '#1F2B3D', borderColor: '#E5E7EB' }}
               >
                 <LogOut className="h-4 w-4 mr-2" />
                 Sair
@@ -188,10 +189,10 @@ export function MasterDashboard() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+          <h1 className="text-3xl font-bold mb-2" style={{ color: '#1F2B3D' }}>
             Gestão de Usuários e Permissões
           </h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <p style={{ color: '#6B7280' }}>
             Configure as permissões de acesso para cada usuário do sistema
           </p>
         </div>
@@ -200,37 +201,39 @@ export function MasterDashboard() {
         <div className="mb-6">
           <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+              <Button className="text-white" style={{ backgroundColor: '#F7931E' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E67E00')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F7931E')}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
               <DialogHeader>
-                <DialogTitle>Adicionar Novo Usuário</DialogTitle>
+                <DialogTitle style={{ color: '#1F2B3D' }}>Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="nome">Nome</Label>
+                  <Label htmlFor="nome" style={{ color: '#1F2B3D' }}>Nome</Label>
                   <Input
                     id="nome"
                     value={newUser.nome}
                     onChange={(e) => setNewUser({ ...newUser, nome: e.target.value })}
                     placeholder="Nome completo"
+                    style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" style={{ color: '#1F2B3D' }}>Email</Label>
                   <Input
                     id="email"
                     type="email"
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     placeholder="email@exemplo.com"
+                    style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
                   />
                 </div>
                 <div>
-                  <Label>Permissões Iniciais</Label>
+                  <Label style={{ color: '#1F2B3D' }}>Permissões Iniciais</Label>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {Object.entries(permissionLabels).map(([key, label]) => (
                       <div key={key} className="flex items-center space-x-2">
@@ -247,7 +250,7 @@ export function MasterDashboard() {
                             })
                           }
                         />
-                        <Label htmlFor={`new-${key}`} className="text-sm">
+                        <Label htmlFor={`new-${key}`} className="text-sm" style={{ color: '#6B7280' }}>
                           {label}
                         </Label>
                       </div>
@@ -255,10 +258,10 @@ export function MasterDashboard() {
                   </div>
                 </div>
                 <div className="flex justify-end space-x-2">
-                  <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+                  <Button variant="outline" onClick={() => setIsAddModalOpen(false)} style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}>
                     Cancelar
                   </Button>
-                  <Button onClick={handleAddUser} className="bg-orange-600 hover:bg-orange-700">
+                  <Button onClick={handleAddUser} className="text-white" style={{ backgroundColor: '#F7931E' }} onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E67E00')} onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F7931E')}>
                     Adicionar
                   </Button>
                 </div>
@@ -270,16 +273,16 @@ export function MasterDashboard() {
         {/* Users List */}
         <div className="grid gap-6">
           {usuarios.map((user) => (
-            <Card key={user.id} className="shadow-sm">
-              <CardHeader>
+            <Card key={user.id} className="shadow-sm" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
+              <CardHeader style={{ background: '#FFFFFF' }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                      <User className="h-5 w-5 text-orange-600" />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEECDC' }}>
+                      <User className="h-5 w-5" style={{ color: '#F7931E' }} />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{user.nome}</CardTitle>
-                      <div className="flex items-center space-x-1 text-sm text-slate-500 dark:text-slate-400">
+                      <CardTitle className="text-lg" style={{ color: '#1F2B3D' }}>{user.nome}</CardTitle>
+                      <div className="flex items-center space-x-1 text-sm" style={{ color: '#6B7280' }}>
                         <Mail className="h-3 w-3" />
                         <span>{user.email}</span>
                       </div>
@@ -291,7 +294,8 @@ export function MasterDashboard() {
                         <Button
                           size="sm"
                           onClick={() => handleUpdateUser(user.id)}
-                          className="bg-green-600 hover:bg-green-700"
+                          className="text-white"
+                          style={{ backgroundColor: '#22C55E' }}
                         >
                           <Save className="h-4 w-4 mr-1" />
                           Salvar
@@ -303,6 +307,7 @@ export function MasterDashboard() {
                             setEditingUser(null)
                             setTempPermissions({})
                           }}
+                          style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                         >
                           <X className="h-4 w-4 mr-1" />
                           Cancelar
@@ -314,6 +319,7 @@ export function MasterDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => startEditing(user)}
+                          style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Editar
@@ -323,6 +329,7 @@ export function MasterDashboard() {
                           variant="outline"
                           onClick={() => handleDeleteUser(user.id)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          style={{ borderColor: '#FCA5A5' }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -351,10 +358,11 @@ export function MasterDashboard() {
                           disabled={editingUser !== user.id}
                         />
                         <div className="flex items-center space-x-2">
-                          <Icon className="h-4 w-4 text-slate-500" />
+                          <Icon className="h-4 w-4" style={{ color: '#6B7280' }} />
                           <Label 
                             htmlFor={`${user.id}-${key}`} 
                             className="text-sm cursor-pointer"
+                            style={{ color: '#6B7280' }}
                           >
                             {label}
                           </Label>
@@ -369,19 +377,22 @@ export function MasterDashboard() {
         </div>
 
         {usuarios.length === 0 && (
-          <Card className="text-center py-12 border-2 border-dashed border-slate-300 dark:border-slate-600">
+          <Card className="text-center py-12 border-2 border-dashed" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
             <CardContent>
-              <Users className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-              <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
+              <Users className="h-16 w-16 mx-auto mb-6" style={{ color: '#6B7280' }} />
+              <h3 className="text-xl font-semibold mb-3" style={{ color: '#1F2B3D' }}>
                 Nenhum usuário cadastrado
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+              <p className="mb-6 max-w-md mx-auto" style={{ color: '#6B7280' }}>
                 Comece adicionando usuários para gerenciar suas permissões e controlar o acesso ao sistema
               </p>
               <Button 
                 onClick={() => setIsAddModalOpen(true)}
-                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3"
+                className="text-white px-6 py-3"
                 size="lg"
+                style={{ backgroundColor: '#F7931E' }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#E67E00')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#F7931E')}
               >
                 <Plus className="h-5 w-5 mr-2" />
                 Adicionar Primeiro Usuário
