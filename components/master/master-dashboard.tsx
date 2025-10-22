@@ -29,6 +29,10 @@ import {
   X,
 } from "lucide-react"
 
+// Força renderização dinâmica dessa árvore
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export function MasterDashboard() {
   const { 
     masterUser, 

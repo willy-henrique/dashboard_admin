@@ -18,6 +18,10 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
+// Força renderização dinâmica e desativa cache de rotas no Vercel/Next
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default function MasterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
