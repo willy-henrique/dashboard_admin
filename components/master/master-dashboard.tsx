@@ -267,16 +267,17 @@ export function MasterDashboard() {
                       <div key={key} className="flex items-center space-x-2">
                         <Checkbox
                           id={`new-${key}`}
-                          checked={newUser.permissoes[key as keyof typeof newUser.permissoes]}
-                          onCheckedChange={(checked) => 
+                          checked={Boolean(newUser.permissoes[key as keyof typeof newUser.permissoes])}
+                          onCheckedChange={(checked) => {
+                            const value = Boolean(checked)
                             setNewUser({
                               ...newUser,
                               permissoes: {
                                 ...newUser.permissoes,
-                                [key]: checked
+                                [key]: value
                               }
                             })
-                          }
+                          }}
                         />
                         <Label htmlFor={`new-${key}`} className="text-sm" style={{ color: '#6B7280' }}>
                           {label}
