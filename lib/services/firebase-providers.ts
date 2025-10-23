@@ -6,7 +6,8 @@ import {
   onSnapshot, 
   doc,
   updateDoc,
-  serverTimestamp 
+  serverTimestamp,
+  getDocs
 } from 'firebase/firestore'
 import { db } from '../firebase'
 

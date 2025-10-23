@@ -27,6 +27,36 @@ export function ProvidersMap() {
     refreshInterval: 30000 // Atualiza a cada 30 segundos
   })
 
+  // Fallback para dados mock se não houver prestadores
+  const displayProviders = providers.length > 0 ? providers : [
+    {
+      id: "mock-1",
+      nome: "João Silva",
+      telefone: "(27) 99999-1111",
+      email: "joao.silva@email.com",
+      status: "disponivel" as const,
+      localizacao: { lat: -20.3155, lng: -40.3128 },
+      ultimaAtualizacao: new Date().toISOString(),
+      servicoAtual: null,
+      especialidades: ["Limpeza Residencial"],
+      avaliacao: 4.8,
+      totalServicos: 156
+    },
+    {
+      id: "mock-2", 
+      nome: "Maria Santos",
+      telefone: "(27) 99999-2222",
+      email: "maria.santos@email.com",
+      status: "ocupado" as const,
+      localizacao: { lat: -20.3255, lng: -40.3228 },
+      ultimaAtualizacao: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+      servicoAtual: "Limpeza Residencial - Centro",
+      especialidades: ["Limpeza Residencial"],
+      avaliacao: 4.9,
+      totalServicos: 203
+    }
+  ]
+
   // Inicializar o mapa
   useEffect(() => {
     if (!mapRef.current || mapLoaded) return
@@ -90,7 +120,7 @@ export function ProvidersMap() {
         </div>
         
         <!-- Mock markers for providers -->
-        ${providers.map((provider, index) => {
+        ${displayProviders.map((provider, index) => {
           const colors = {
             disponivel: '#10b981',
             ocupado: '#f59e0b', 
@@ -117,7 +147,7 @@ export function ProvidersMap() {
         <!-- Map info -->
         <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
           <div class="text-sm font-medium text-gray-700">Vitória, ES</div>
-          <div class="text-xs text-gray-500">${providers.length} prestadores ativos</div>
+          <div class="text-xs text-gray-500">${displayProviders.length} prestadores ativos</div>
         </div>
         
         <!-- Loading indicator -->
@@ -133,7 +163,7 @@ export function ProvidersMap() {
 
   // Atualizar marcadores quando os prestadores mudarem
   useEffect(() => {
-    if (!providers.length) return
+    if (!displayProviders.length) return
 
     if (mapInstance && window.google && window.google.maps) {
       // Google Maps está disponível
@@ -144,7 +174,7 @@ export function ProvidersMap() {
       // Adicionar novos marcadores
       const newMarkers: any[] = []
       
-      providers.forEach(provider => {
+      displayProviders.forEach(provider => {
         const marker = new window.google.maps.Marker({
           position: provider.localizacao,
           map: mapInstance,
@@ -188,7 +218,7 @@ export function ProvidersMap() {
       // Usar mapa mock - recriar com novos dados
       createMockMap()
     }
-  }, [mapInstance, providers])
+  }, [mapInstance, displayProviders])
 
   return (
     <div className="space-y-4">

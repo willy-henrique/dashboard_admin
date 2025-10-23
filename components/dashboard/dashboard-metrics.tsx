@@ -14,11 +14,39 @@ export function DashboardMetrics() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
+      setError(null)
       const data = await FirestoreAnalyticsService.getDashboardMetrics()
       setFirestoreData(data)
     } catch (err) {
       console.error('Erro ao buscar dados do Firestore:', err)
       setError('Erro ao carregar dados')
+      // Usar dados mock em caso de erro
+      setFirestoreData({
+        orders: {
+          totalOrders: 0,
+          activeOrders: 0,
+          ordersLast30Days: 0,
+          ordersLast7Days: 0,
+          ordersToday: 0,
+          cancelledOrders: 0,
+          completedOrders: 0,
+          emergencyOrders: 0
+        },
+        users: {
+          totalUsers: 0,
+          activeUsers: 0,
+          newUsersLast30Days: 0,
+          newUsersLast7Days: 0,
+          usersWithRecentLogin: 0
+        },
+        providers: {
+          totalVerifications: 0,
+          pendingVerifications: 0,
+          approvedVerifications: 0,
+          rejectedVerifications: 0,
+          approvalRate: 0
+        }
+      })
     } finally {
       setLoading(false)
     }
