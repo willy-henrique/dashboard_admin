@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth-provider"
 import { Logo } from "@/components/logo"
 import {
   Users,
@@ -27,14 +28,14 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { login } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     
     try {
-      // Simular login bem-sucedido
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await login({ email, password, rememberMe })
       router.push("/dashboard")
     } catch (error) {
       console.error("Erro no login:", error)

@@ -101,6 +101,16 @@ export function MasterDashboard() {
       }
 
       setSuccess('Usuário criado com sucesso!')
+      // Recarregar lista de usuários imediatamente
+      try {
+        await fetch('/master', { cache: 'no-store' })
+        // opção preferível: chamar refreshUsuarios do contexto
+        if (typeof window !== 'undefined') {
+          // forçar revalidação do hook de autenticação master
+          const event = new CustomEvent('refresh-master-usuarios')
+          window.dispatchEvent(event)
+        }
+      } catch (_) {}
       setNewUser({
         nome: "",
         email: "",

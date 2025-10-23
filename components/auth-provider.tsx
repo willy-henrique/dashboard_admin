@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { User, onAuthStateChanged, signInAnonymously } from "firebase/auth"
+import { User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signOut as firebaseSignOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 
 interface AuthContextType {
@@ -39,13 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, loading])
 
   const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
-    // Implementar login real aqui se necessário
-    console.log('Login:', { email, password, rememberMe })
+    // Autenticação real com Firebase Auth
+    const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence
+    await setPersistence(auth, persistence)
+    await signInWithEmailAndPassword(auth, email, password)
   }
 
   const logout = async () => {
-    // Implementar logout real aqui se necessário
-    console.log('Logout')
+    await firebaseSignOut(auth)
   }
 
   return (

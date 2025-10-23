@@ -109,6 +109,23 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
     checkMasterAuth()
   }, [])
 
+  // Permitir que outras partes da UI solicitem atualização da lista de usuários
+  useEffect(() => {
+    const handler = () => {
+      if (masterUser) {
+        loadUsuarios(masterUser.id)
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('refresh-master-usuarios', handler as EventListener)
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('refresh-master-usuarios', handler as EventListener)
+      }
+    }
+  }, [masterUser])
+
   const masterLogin = async (email: string, password: string) => {
     try {
       setLoading(true)
