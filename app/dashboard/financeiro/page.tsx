@@ -31,12 +31,22 @@ export default function FinanceiroPage() {
   if (loading) {
     return (
       <RouteGuard requiredPermission="financeiro">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              Financeiro
+            </h1>
             <p className="text-slate-600 dark:text-slate-400">
-              Carregando dados do Pagar.me...
+              Carregando dados financeiros...
             </p>
+          </div>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-slate-600 dark:text-slate-400">
+                Carregando dados do Pagar.me...
+              </p>
+            </div>
           </div>
         </div>
       </RouteGuard>
@@ -46,10 +56,26 @@ export default function FinanceiroPage() {
   if (error) {
     return (
       <RouteGuard requiredPermission="financeiro">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+              Financeiro
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400">
+              Erro ao carregar dados
+            </p>
+          </div>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+              <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Tentar novamente
+              </button>
+            </div>
           </div>
         </div>
       </RouteGuard>
