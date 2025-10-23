@@ -2,9 +2,60 @@
 
 import { RouteGuard } from "@/components/auth/route-guard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, TrendingUp, CreditCard, PieChart } from "lucide-react"
+import { usePagarmeAnalytics } from "@/hooks/use-pagarme-analytics"
+import { DollarSign, TrendingUp, CreditCard, PieChart, Loader2, AlertCircle } from "lucide-react"
 
 export default function FinanceiroPage() {
+  const { 
+    totalRevenue, 
+    totalTransactions, 
+    successRate, 
+    conversionRate, 
+    paymentMethods, 
+    recentCharges, 
+    loading, 
+    error 
+  } = usePagarmeAnalytics()
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value / 100) // Pagar.me retorna valores em centavos
+  }
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(1)}%`
+  }
+
+  if (loading) {
+    return (
+      <RouteGuard requiredPermission="financeiro">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-slate-600 dark:text-slate-400">
+              Carregando dados do Pagar.me...
+            </p>
+          </div>
+        </div>
+      </RouteGuard>
+    )
+  }
+
+  if (error) {
+    return (
+      <RouteGuard requiredPermission="financeiro">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </div>
+        </div>
+      </RouteGuard>
+    )
+  }
+
   return (
     <RouteGuard requiredPermission="financeiro">
       <div className="space-y-6">
@@ -13,7 +64,7 @@ export default function FinanceiroPage() {
             Financeiro
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Gestão financeira e relatórios de receitas
+            Dados financeiros em tempo real via Pagar.me
           </p>
         </div>
 
@@ -27,9 +78,9 @@ export default function FinanceiroPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ 45.231,89</div>
+              <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
               <p className="text-xs text-muted-foreground">
-                +20.1% em relação ao mês anterior
+                Últimos 30 dias
               </p>
             </CardContent>
           </Card>
@@ -42,9 +93,9 @@ export default function FinanceiroPage() {
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+2,350</div>
+              <div className="text-2xl font-bold">{totalTransactions}</div>
               <p className="text-xs text-muted-foreground">
-                +180.1% em relação ao mês anterior
+                Últimos 30 dias
               </p>
             </CardContent>
           </Card>
@@ -57,9 +108,9 @@ export default function FinanceiroPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+12,234</div>
+              <div className="text-2xl font-bold">{formatPercentage(successRate)}</div>
               <p className="text-xs text-muted-foreground">
-                +19% em relação ao mês anterior
+                Transações aprovadas
               </p>
             </CardContent>
           </Card>
@@ -72,9 +123,9 @@ export default function FinanceiroPage() {
               <PieChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">+573</div>
+              <div className="text-2xl font-bold">{formatPercentage(conversionRate)}</div>
               <p className="text-xs text-muted-foreground">
-                +201 desde a última hora
+                Taxa de conversão
               </p>
             </CardContent>
           </Card>
@@ -84,25 +135,54 @@ export default function FinanceiroPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Resumo Financeiro</CardTitle>
+              <CardTitle>Métodos de Pagamento</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-slate-600 dark:text-slate-400">
-                Esta página é protegida e só pode ser acessada por usuários com permissão de "Financeiro".
-                O RouteGuard verifica automaticamente as permissões do usuário.
-              </p>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Cartão de Crédito</span>
+                  <span className="text-sm text-slate-600">{paymentMethods.credit_card}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Cartão de Débito</span>
+                  <span className="text-sm text-slate-600">{paymentMethods.debit_card}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">PIX</span>
+                  <span className="text-sm text-slate-600">{paymentMethods.pix}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Boleto</span>
+                  <span className="text-sm text-slate-600">{paymentMethods.boleto}</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Relatórios</CardTitle>
+              <CardTitle>Cobranças Recentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-slate-600 dark:text-slate-400">
-                Aqui você pode adicionar gráficos, tabelas e outros componentes
-                relacionados ao módulo financeiro.
-              </p>
+              <div className="space-y-3">
+                {recentCharges.length > 0 ? (
+                  recentCharges.slice(0, 5).map((charge, index) => (
+                    <div key={charge.id || index} className="flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                      <div>
+                        <p className="text-sm font-medium">#{charge.id?.slice(-8)}</p>
+                        <p className="text-xs text-slate-600">{charge.status}</p>
+                      </div>
+                      <span className="text-sm font-medium">
+                        {formatCurrency(charge.amount || 0)}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-slate-600 dark:text-slate-400 text-sm">
+                    Nenhuma cobrança encontrada
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

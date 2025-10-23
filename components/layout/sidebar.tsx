@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Logo } from "@/components/logo"
 import { usePermissions } from "@/hooks/use-permissions"
+import { useAuth } from "@/components/auth-provider"
 import {
   LayoutDashboard,
   Users,
@@ -133,6 +134,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const { hasPermission } = usePermissions()
+  const { user, logout } = useAuth()
 
   const toggleExpanded = (name: string) => {
     setExpandedItems(prev =>
@@ -242,15 +244,30 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       <div className="border-t border-black/10 p-4 flex-shrink-0">
         <div className="flex items-center space-x-3 text-slate-900">
           <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white">
-            <Logo className="h-6" showText={false} />
+            {user?.photoURL ? (
+              <img 
+                src={user.photoURL} 
+                alt="Avatar" 
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+                {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'A'}
+              </div>
+            )}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium">Admin</p>
-            <p className="text-xs text-slate-600">admin@aquiresolve.com</p>
+            <p className="text-sm font-medium">
+              {user?.displayName || user?.email?.split('@')[0] || 'Usuário'}
+            </p>
+            <p className="text-xs text-slate-600">
+              {user?.email || 'admin@aquiresolve.com'}
+            </p>
           </div>
           <Button
             variant="ghost"
             size="sm"
+            onClick={logout}
             className="text-slate-900 hover:bg-black/10"
             aria-label="Sair do sistema"
           >
