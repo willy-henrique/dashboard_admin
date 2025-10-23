@@ -290,21 +290,21 @@ export function MasterDashboard() {
       <div className="shadow-sm" style={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Logo className="h-8" showText={true} />
-              <div className="flex items-center space-x-2">
-                <Shield className="h-5 w-5" style={{ color: '#F7931E' }} />
-                <span className="text-lg font-semibold" style={{ color: '#203864' }}>
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+              <Logo className="h-6 sm:h-8" showText={true} />
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" style={{ color: '#F7931E' }} />
+                <span className="text-sm sm:text-lg font-semibold truncate" style={{ color: '#203864' }}>
                   Área Master
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium" style={{ color: '#1F2B3D' }}>
+            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium truncate max-w-32" style={{ color: '#1F2B3D' }}>
                   {masterUser?.nome}
                 </p>
-                <p className="text-xs" style={{ color: '#6B7280' }}>
+                <p className="text-xs truncate max-w-32" style={{ color: '#6B7280' }}>
                   {masterUser?.email}
                 </p>
               </div>
@@ -312,11 +312,11 @@ export function MasterDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={masterLogout}
-                className="hover:opacity-90"
+                className="hover:opacity-90 text-xs sm:text-sm"
                 style={{ color: '#1F2B3D', borderColor: '#E5E7EB' }}
               >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Sair</span>
               </Button>
             </div>
           </div>
@@ -343,11 +343,11 @@ export function MasterDashboard() {
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
+            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl" style={{ color: '#1F2B3D' }}>Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="space-y-4 max-h-[calc(90vh-120px)] overflow-y-auto px-1">
                 {/* Error Message */}
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-md p-3">
@@ -496,7 +496,7 @@ export function MasterDashboard() {
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                  <div className="grid grid-cols-1 gap-3 mt-3">
                     {Object.entries(permissionLabels).map(([key, label]) => {
                       const checked = Boolean(newUser.permissoes[key as keyof typeof newUser.permissoes])
                       return (
@@ -504,15 +504,15 @@ export function MasterDashboard() {
                           key={key}
                           type="button"
                           onClick={() => updateNewUserPermission(key, !checked)}
-                          className={`flex w-full items-center justify-between rounded-md px-3 py-2 border text-left focus:outline-none focus:ring-2 transition-colors hover:opacity-90 ${
+                          className={`flex w-full items-center justify-between rounded-md px-3 py-3 border text-left focus:outline-none focus:ring-2 transition-colors hover:opacity-90 min-h-[48px] ${
                             checked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB] hover:border-[#F7931E]'
                           }`}
                           aria-pressed={checked}
                         >
-                          <span className="text-sm" style={{ color: '#1F2B3D' }}>{label}</span>
+                          <span className="text-sm font-medium" style={{ color: '#1F2B3D' }}>{label}</span>
                           <span
                             aria-hidden
-                            className={`inline-block h-5 w-9 rounded-full transition-colors ${
+                            className={`inline-block h-5 w-9 rounded-full transition-colors flex-shrink-0 ${
                               checked ? 'bg-[#F7931E]' : 'bg-[#E5E7EB]'
                             }`}
                           >
@@ -527,7 +527,7 @@ export function MasterDashboard() {
                     })}
                   </div>
                 </div>
-                <div className="flex justify-end space-x-2">
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-gray-200">
                   <Button 
                     variant="outline" 
                     onClick={() => {
@@ -536,6 +536,7 @@ export function MasterDashboard() {
                       setSuccess(null)
                     }} 
                     disabled={isSubmitting}
+                    className="w-full sm:w-auto min-h-[44px]"
                     style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                   >
                     Cancelar
@@ -543,7 +544,7 @@ export function MasterDashboard() {
                   <Button 
                     onClick={handleAddUser} 
                     disabled={isSubmitting}
-                    className="text-white" 
+                    className="text-white w-full sm:w-auto min-h-[44px]" 
                     style={{ backgroundColor: isSubmitting ? '#9CA3AF' : '#F7931E' }}
                     onMouseEnter={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#E67E00')} 
                     onMouseLeave={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = '#F7931E')}
@@ -561,7 +562,7 @@ export function MasterDashboard() {
           {usuarios.map((user) => (
             <Card key={user.id} className="shadow-sm" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
               <CardHeader style={{ background: '#FFFFFF' }}>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex flex-col gap-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FEECDC' }}>
                       <User className="h-5 w-5" style={{ color: '#F7931E' }} />
@@ -574,16 +575,16 @@ export function MasterDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 flex-wrap gap-2">
+                  <div className="flex items-center justify-end space-x-2 flex-wrap gap-2">
                     {editingUser === user.id ? (
                       <>
                         <Button
                           size="sm"
                           onClick={() => handleUpdateUser(user.id)}
-                          className="text-white text-xs sm:text-sm"
+                          className="text-white text-xs sm:text-sm min-h-[36px] px-3"
                           style={{ backgroundColor: '#22C55E' }}
                         >
-                          <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <Save className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                           <span className="hidden sm:inline">Salvar</span>
                         </Button>
                         <Button
@@ -593,10 +594,10 @@ export function MasterDashboard() {
                             setEditingUser(null)
                             setTempPermissions({})
                           }}
-                          className="text-xs sm:text-sm"
+                          className="text-xs sm:text-sm min-h-[36px] px-3"
                           style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                         >
-                          <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <X className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                           <span className="hidden sm:inline">Cancelar</span>
                         </Button>
                       </>
@@ -606,10 +607,10 @@ export function MasterDashboard() {
                           size="sm"
                           variant="outline"
                           onClick={() => startEditing(user)}
-                          className="text-xs sm:text-sm"
+                          className="text-xs sm:text-sm min-h-[36px] px-3"
                           style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                         >
-                          <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                           <span className="hidden sm:inline">Editar</span>
                         </Button>
                         <AlertDialog>
@@ -617,7 +618,7 @@ export function MasterDashboard() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm min-h-[36px] px-3"
                               style={{ borderColor: '#FCA5A5' }}
                             >
                               <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -669,7 +670,7 @@ export function MasterDashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(permissionLabels).map(([key, label]) => {
                     const Icon = permissionIcons[key as keyof typeof permissionIcons]
                     const isChecked = editingUser === user.id 
@@ -681,18 +682,18 @@ export function MasterDashboard() {
                         key={key}
                         type="button"
                         onClick={() => editingUser === user.id && updatePermission(user.id, key, !isChecked)}
-                        className={`flex items-center justify-between rounded-md px-3 py-2 border text-left w-full transition-colors ${
+                        className={`flex items-center justify-between rounded-md px-3 py-3 border text-left w-full transition-colors min-h-[48px] ${
                           isChecked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB]'
                         } ${editingUser !== user.id ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:opacity-90 hover:border-[#F7931E]'}`}
                         aria-pressed={isChecked}
                       >
-                        <div className="flex items-center space-x-2">
-                          <Icon className="h-4 w-4" style={{ color: '#6B7280' }} />
-                          <span className="text-sm" style={{ color: '#1F2B3D' }}>{label}</span>
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <Icon className="h-4 w-4 flex-shrink-0" style={{ color: '#6B7280' }} />
+                          <span className="text-sm font-medium truncate" style={{ color: '#1F2B3D' }}>{label}</span>
                         </div>
                         <span
                           aria-hidden
-                          className={`inline-block h-5 w-9 rounded-full transition-colors ${
+                          className={`inline-block h-5 w-9 rounded-full transition-colors flex-shrink-0 ${
                             isChecked ? 'bg-[#F7931E]' : 'bg-[#E5E7EB]'
                           }`}
                         >
