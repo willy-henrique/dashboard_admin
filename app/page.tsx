@@ -96,20 +96,30 @@ export default function LoginPage() {
           {/* Lado esquerdo - Informações e branding */}
           <div className="text-center lg:text-left space-y-8 animate-fade-in">
             <div className="space-y-6">
-              <div className="flex items-center justify-center lg:justify-start space-x-3">
+              <div className="flex items-center justify-center lg:justify-start space-x-4">
                 <div className="relative">
-                  <Logo className="h-20 text-white" showText={true} />
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                    <Sparkles className="h-3 w-3 text-yellow-800" />
+                  <div className="flex items-center space-x-3">
+                    <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl border border-white/30">
+                      <Logo className="h-12 text-white" showText={false} />
+                    </div>
+                    <div className="text-white">
+                      <div className="text-4xl font-bold tracking-tight">
+                        <span className="text-white drop-shadow-lg">Aqui</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 drop-shadow-lg">Resolve</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg">
+                    <Sparkles className="h-4 w-4 text-white" />
                   </div>
                 </div>
               </div>
               
               <div className="space-y-4">
-                <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                  Painel <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">Administrativo</span>
+                <h1 className="text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                  Painel <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400 drop-shadow-lg">Administrativo</span>
                 </h1>
-                <p className="text-xl text-blue-100 max-w-md mx-auto lg:mx-0">
+                <p className="text-xl text-white/90 max-w-md mx-auto lg:mx-0 drop-shadow-md font-medium">
                   Gerencie seu negócio com eficiência e precisão através da nossa plataforma completa
                 </p>
               </div>
@@ -117,33 +127,33 @@ export default function LoginPage() {
 
             {/* Features destacadas */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto lg:mx-0">
-              <div className="flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-                <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <Target className="h-5 w-5 text-green-400" />
+              <div className="flex items-center space-x-3 p-4 bg-white/15 backdrop-blur-sm rounded-lg border border-white/30 shadow-lg hover:bg-white/20 transition-all duration-200">
+                <div className="w-10 h-10 bg-green-500/30 rounded-lg flex items-center justify-center border border-green-400/50">
+                  <Target className="h-5 w-5 text-green-300" />
                 </div>
                 <div className="text-left">
-                  <p className="text-white font-medium text-sm">Controle Total</p>
-                  <p className="text-blue-200 text-xs">Gestão completa</p>
+                  <p className="text-white font-semibold text-sm">Controle Total</p>
+                  <p className="text-white/80 text-xs">Gestão completa</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-blue-400" />
+              <div className="flex items-center space-x-3 p-4 bg-white/15 backdrop-blur-sm rounded-lg border border-white/30 shadow-lg hover:bg-white/20 transition-all duration-200">
+                <div className="w-10 h-10 bg-blue-500/30 rounded-lg flex items-center justify-center border border-blue-400/50">
+                  <TrendingUp className="h-5 w-5 text-blue-300" />
                 </div>
                 <div className="text-left">
-                  <p className="text-white font-medium text-sm">Analytics</p>
-                  <p className="text-blue-200 text-xs">Relatórios detalhados</p>
+                  <p className="text-white font-semibold text-sm">Analytics</p>
+                  <p className="text-white/80 text-xs">Relatórios detalhados</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20">
-                <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                  <Zap className="h-5 w-5 text-purple-400" />
+              <div className="flex items-center space-x-3 p-4 bg-white/15 backdrop-blur-sm rounded-lg border border-white/30 shadow-lg hover:bg-white/20 transition-all duration-200">
+                <div className="w-10 h-10 bg-purple-500/30 rounded-lg flex items-center justify-center border border-purple-400/50">
+                  <Zap className="h-5 w-5 text-purple-300" />
                 </div>
                 <div className="text-left">
-                  <p className="text-white font-medium text-sm">Performance</p>
-                  <p className="text-blue-200 text-xs">Alta velocidade</p>
+                  <p className="text-white font-semibold text-sm">Performance</p>
+                  <p className="text-white/80 text-xs">Alta velocidade</p>
                 </div>
               </div>
             </div>
@@ -298,11 +308,11 @@ export default function LoginPage() {
 
             {/* Informações do sistema */}
             <div className="mt-8 text-center">
-              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-white text-sm font-medium">Sistema Online</span>
+              <div className="inline-flex items-center space-x-2 px-6 py-3 bg-white/15 backdrop-blur-sm rounded-full border border-white/30 shadow-lg">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg"></div>
+                <span className="text-white text-sm font-semibold">Sistema Online</span>
               </div>
-              <p className="text-blue-200 text-sm mt-2">
+              <p className="text-white/80 text-sm mt-3 font-medium">
                 AquiResolve Admin v1.0.0
               </p>
             </div>
