@@ -185,7 +185,7 @@ export default function LoginPage() {
                     </Label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Mail className={`h-5 w-5 transition-colors ${emailError ? 'text-red-500' : email ? 'text-green-500' : 'text-gray-400'}`} />
+                        <Mail className={`h-5 w-5 transition-colors ${emailError ? 'text-red-500' : email ? 'text-green-500' : 'text-gray-300'}`} />
                       </div>
                       <Input
                         id="email"
@@ -223,7 +223,7 @@ export default function LoginPage() {
                     </Label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock className={`h-5 w-5 transition-colors ${passwordError ? 'text-red-500' : password ? 'text-green-500' : 'text-gray-400'}`} />
+                        <Lock className={`h-5 w-5 transition-colors ${passwordError ? 'text-red-500' : password ? 'text-green-500' : 'text-gray-300'}`} />
                       </div>
                       <Input
                         id="password"
@@ -243,7 +243,7 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-300 hover:text-gray-500 transition-colors"
                       >
                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                       </button>
