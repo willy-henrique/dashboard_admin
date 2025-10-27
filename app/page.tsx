@@ -184,16 +184,13 @@ export default function LoginPage() {
                       Email
                     </Label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Mail className={`h-5 w-5 transition-colors ${emailError ? 'text-red-500' : email ? 'text-green-500' : 'text-gray-200'}`} />
-                      </div>
                       <Input
                         id="email"
                         type="email"
                         placeholder="admin@aquiresolve.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className={`pl-12 h-12 border-2 transition-all duration-200 ${
+                        className={`px-4 h-12 border-2 transition-all duration-200 ${
                           emailError 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
                             : email 
@@ -222,16 +219,13 @@ export default function LoginPage() {
                       Senha
                     </Label>
                     <div className="relative group">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock className={`h-5 w-5 transition-colors ${passwordError ? 'text-red-500' : password ? 'text-green-500' : 'text-gray-200'}`} />
-                      </div>
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className={`pl-12 pr-12 h-12 border-2 transition-all duration-200 ${
+                        className={`px-4 pr-12 h-12 border-2 transition-all duration-200 ${
                           passwordError 
                             ? 'border-red-300 focus:border-red-500 focus:ring-red-200' 
                             : password 
@@ -243,9 +237,9 @@ export default function LoginPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-200 hover:text-gray-400 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-300 hover:text-gray-500 transition-colors opacity-60 hover:opacity-100"
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                     {passwordError && (
