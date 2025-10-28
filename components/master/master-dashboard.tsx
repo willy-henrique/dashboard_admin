@@ -38,6 +38,7 @@ import {
   BarChart3,
   CheckCircle,
   X,
+  Key,
 } from "lucide-react"
 
 // Força renderização dinâmica dessa árvore
@@ -52,11 +53,17 @@ export function MasterDashboard() {
     addUsuario, 
     updateUsuario, 
     deleteUsuario,
+    changeUserPassword,
     loading 
   } = useMasterAuth()
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<string | null>(null)
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<MasterUser | null>(null)
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [newUser, setNewUser] = useState({
     nome: "",
     email: "",
@@ -169,6 +176,58 @@ export function MasterDashboard() {
         console.error('Erro ao deletar usuário:', error)
       }
     }
+  }
+
+  const handleChangePassword = async () => {
+    if (!selectedUser) return
+
+    if (!newPassword || !confirmPassword) {
+      setError('Por favor, preencha todos os campos')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('As senhas não coincidem')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres')
+      return
+    }
+
+    setIsChangingPassword(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      await changeUserPassword(selectedUser.id, newPassword)
+      setSuccess('Senha alterada com sucesso!')
+      
+      // Limpar campos e fechar modal
+      setNewPassword("")
+      setConfirmPassword("")
+      setSelectedUser(null)
+      
+      setTimeout(() => {
+        setIsPasswordModalOpen(false)
+        setSuccess(null)
+      }, 1500)
+    } catch (error: any) {
+      setError(error.message || 'Erro ao alterar senha')
+      setTimeout(() => setError(null), 5000)
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  const openPasswordModal = (user: MasterUser) => {
+    setSelectedUser(user)
+    setNewPassword("")
+    setConfirmPassword("")
+    setError(null)
+    setSuccess(null)
+    setIsPasswordModalOpen(true)
   }
 
   const startEditing = (user: any) => {
@@ -613,6 +672,16 @@ export function MasterDashboard() {
                           <Edit className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                           <span className="hidden sm:inline">Editar</span>
                         </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openPasswordModal(user)}
+                          className="text-xs sm:text-sm min-h-[36px] px-3"
+                          style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                        >
+                          <Key className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                          <span className="hidden sm:inline">Senha</span>
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
@@ -736,6 +805,103 @@ export function MasterDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Modal de Alteração de Senha */}
+        <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Key className="h-5 w-5" style={{ color: '#F7931E' }} />
+                <span style={{ color: '#1F2B3D' }}>Alterar Senha</span>
+              </DialogTitle>
+            </DialogHeader>
+            
+            {selectedUser && (
+              <div className="space-y-4">
+                <div className="p-3 rounded-md" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEECDC' }}>
+                      <User className="h-4 w-4" style={{ color: '#F7931E' }} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm" style={{ color: '#1F2B3D' }}>{selectedUser.nome}</p>
+                      <p className="text-xs" style={{ color: '#6B7280' }}>{selectedUser.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="newPassword" style={{ color: '#1F2B3D' }}>Nova Senha</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Digite a nova senha"
+                      className="mt-1"
+                      style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="confirmPassword" style={{ color: '#1F2B3D' }}>Confirmar Senha</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirme a nova senha"
+                      className="mt-1"
+                      style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="p-3 rounded-md" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                    <p className="text-sm" style={{ color: '#DC2626' }}>{error}</p>
+                  </div>
+                )}
+
+                {success && (
+                  <div className="p-3 rounded-md" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+                    <p className="text-sm" style={{ color: '#16A34A' }}>{success}</p>
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-gray-200">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsPasswordModalOpen(false)
+                      setSelectedUser(null)
+                      setNewPassword("")
+                      setConfirmPassword("")
+                      setError(null)
+                      setSuccess(null)
+                    }} 
+                    disabled={isChangingPassword}
+                    className="w-full sm:w-auto min-h-[44px]"
+                    style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button 
+                    onClick={handleChangePassword} 
+                    disabled={isChangingPassword}
+                    className="text-white w-full sm:w-auto min-h-[44px]" 
+                    style={{ backgroundColor: isChangingPassword ? '#9CA3AF' : '#F7931E' }}
+                    onMouseEnter={(e) => !isChangingPassword && (e.currentTarget.style.backgroundColor = '#E67E00')} 
+                    onMouseLeave={(e) => !isChangingPassword && (e.currentTarget.style.backgroundColor = '#F7931E')}
+                  >
+                    {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

@@ -47,6 +47,7 @@ interface MasterAuthContextType {
   updateUsuario: (id: string, permissoes: MasterUser['permissoes']) => Promise<void>
   deleteUsuario: (id: string) => Promise<void>
   refreshUsuarios: () => Promise<void>
+  changeUserPassword: (userId: string, newPassword: string) => Promise<void>
 }
 
 const MasterAuthContext = createContext<MasterAuthContextType>({
@@ -60,6 +61,7 @@ const MasterAuthContext = createContext<MasterAuthContextType>({
   updateUsuario: async () => {},
   deleteUsuario: async () => {},
   refreshUsuarios: () => {},
+  changeUserPassword: async () => {}
 })
 
 export function MasterAuthProvider({ children }: { children: React.ReactNode }) {
@@ -221,6 +223,29 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
     }
   }
 
+  const changeUserPassword = async (userId: string, newPassword: string) => {
+    try {
+      if (!masterUser) throw new Error('Não autenticado como master')
+      
+      const response = await fetch(`/api/adminmaster/users/${userId}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword })
+      })
+
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Falha ao alterar senha')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Erro ao alterar senha:', error)
+      throw error
+    }
+  }
+
   const contextValue = {
     isMasterAuthenticated,
     masterUser,
@@ -231,7 +256,8 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
     addUsuario,
     updateUsuario,
     deleteUsuario,
-    refreshUsuarios
+    refreshUsuarios,
+    changeUserPassword
   }
 
   return React.createElement(
