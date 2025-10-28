@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [loginError, setLoginError] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(true) // Tema escuro por padrão
   const router = useRouter()
   const { login } = useAuth()
 
@@ -32,81 +33,99 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className={`min-h-screen flex transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
       {/* Lado esquerdo - Cards informativos */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-50 to-gray-100 p-12 flex-col justify-center">
+      <div className={`hidden lg:flex lg:w-1/2 p-12 flex-col justify-center transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-purple-900/50 to-indigo-900/50 backdrop-blur-sm' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+        {/* Toggle Theme Button */}
+        <div className="absolute top-6 right-6">
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-3 rounded-full transition-all duration-300 transform hover:scale-110 ${isDarkMode ? 'bg-purple-800/50 hover:bg-purple-700/50 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}
+          >
+            {isDarkMode ? (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12 18.75c-3.728 0-6.75-3.022-6.75-6.75S8.272 5.25 12 5.25s6.75 3.022 6.75 6.75-3.022 6.75-6.75 6.75z"/>
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>
+              </svg>
+            )}
+          </button>
+        </div>
+
         {/* Logo e Título */}
-        <div className="mb-12">
+        <div className="mb-12 animate-fade-in-up">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg animate-pulse">
               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
                 <div className="w-4 h-4 bg-orange-500 rounded-sm"></div>
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">AquiResolve</h1>
-              <p className="text-gray-600 text-sm">Sistema Administrativo</p>
+              <h1 className={`text-3xl font-bold transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>AquiResolve</h1>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-600'}`}>Sistema Administrativo</p>
             </div>
           </div>
           
-          <h2 className="text-4xl font-bold text-gray-800 mb-6 leading-tight">
+          <h2 className={`text-4xl font-bold mb-6 leading-tight transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
             Gerencie seu negócio com inteligência
           </h2>
           
-          <p className="text-gray-600 text-lg leading-relaxed max-w-md">
+          <p className={`text-lg leading-relaxed max-w-md transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-600'}`}>
             Sistema completo para gestão empresarial. Monitore, analise e tome decisões baseadas em dados precisos sobre suas operações.
           </p>
         </div>
 
         {/* Cards de Features */}
         <div className="grid grid-cols-1 gap-4">
-          <div className="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center border border-orange-200">
+          <div className={`flex items-start space-x-4 p-6 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDarkMode ? 'bg-purple-800/30 backdrop-blur-sm border-purple-600/30' : 'bg-white border-gray-200'}`}>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center border border-orange-200 animate-bounce">
               <svg className="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
             </div>
             <div>
-              <h3 className="text-gray-800 font-semibold text-lg mb-2">Gestão Completa</h3>
-              <p className="text-gray-600 text-sm">Controle total sobre pedidos, clientes e operações do seu negócio.</p>
+              <h3 className={`font-semibold text-lg mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Gestão Completa</h3>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-600'}`}>Controle total sobre pedidos, clientes e operações do seu negócio.</p>
             </div>
           </div>
           
-          <div className="flex items-start space-x-4 p-6 bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center border border-orange-200">
+          <div className={`flex items-start space-x-4 p-6 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDarkMode ? 'bg-purple-800/30 backdrop-blur-sm border-purple-600/30' : 'bg-white border-gray-200'}`}>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center border border-orange-200 animate-bounce" style={{animationDelay: '0.2s'}}>
               <svg className="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
             <div>
-              <h3 className="text-gray-800 font-semibold text-lg mb-2">Analytics Avançado</h3>
-              <p className="text-gray-600 text-sm">Relatórios detalhados e insights para otimizar sua operação.</p>
+              <h3 className={`font-semibold text-lg mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Analytics Avançado</h3>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-600'}`}>Relatórios detalhados e insights para otimizar sua operação.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Lado direito - Formulário de login */}
-      <div className="w-full lg:w-1/2 bg-white flex items-center justify-center p-8">
+      <div className={`w-full lg:w-1/2 flex items-center justify-center p-8 transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-purple-900/80 to-indigo-900/80' : 'bg-white'}`}>
         <div className="w-full max-w-md">
           {/* Card do formulário */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+          <div className={`rounded-xl shadow-lg border p-8 transition-all duration-500 hover:shadow-2xl ${isDarkMode ? 'bg-purple-800/40 backdrop-blur-sm border-purple-600/30' : 'bg-white border-gray-200'}`}>
             {/* Header do formulário */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div className="text-center mb-8 animate-fade-in-up">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Bem-vindo de volta</h2>
-              <p className="text-gray-600">Entre com suas credenciais para acessar o sistema</p>
+              <h2 className={`text-3xl font-bold mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Bem-vindo de volta</h2>
+              <p className={`transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-600'}`}>Entre com suas credenciais para acessar o sistema</p>
             </div>
 
             {/* Formulário */}
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Campo Email */}
-              <div className="space-y-2">
-                <label className="text-gray-700 text-sm font-medium">
+              <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+                <label className={`text-sm font-medium transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-700'}`}>
                   Email
                 </label>
                 <input
@@ -114,14 +133,14 @@ export default function LoginPage() {
                   placeholder="admin@aquiresolve.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors"
+                  className={`w-full h-12 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 ${isDarkMode ? 'bg-purple-700/50 border border-purple-600/50 text-white placeholder-purple-300 focus:border-orange-500' : 'bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-orange-500'}`}
                   required
                 />
               </div>
 
               {/* Campo Senha */}
-              <div className="space-y-2">
-                <label className="text-gray-700 text-sm font-medium">
+              <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+                <label className={`text-sm font-medium transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-700'}`}>
                   Senha
                 </label>
                 <div className="relative">
@@ -130,13 +149,13 @@ export default function LoginPage() {
                     placeholder="Digite sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none transition-colors"
+                    className={`w-full h-12 px-4 pr-12 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 ${isDarkMode ? 'bg-purple-700/50 border border-purple-600/50 text-white placeholder-purple-300 focus:border-orange-500' : 'bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-orange-500'}`}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className={`absolute right-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDarkMode ? 'text-purple-300 hover:text-orange-400' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -152,25 +171,25 @@ export default function LoginPage() {
               </div>
 
               {/* Opções */}
-              <div className="flex items-center justify-between">
-                <label className="flex items-center space-x-2 text-gray-700 text-sm">
+              <div className="flex items-center justify-between animate-fade-in-up" style={{animationDelay: '0.3s'}}>
+                <label className={`flex items-center space-x-2 text-sm transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-700'}`}>
                   <input 
                     type="checkbox" 
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 text-orange-500 bg-gray-50 border-gray-300 rounded focus:ring-orange-500" 
+                    className="w-4 h-4 text-orange-500 bg-transparent border-gray-300 rounded focus:ring-orange-500 transition-colors duration-300" 
                   />
                   <span>Lembrar-me</span>
                 </label>
-                <a href="#" className="text-orange-500 hover:text-orange-600 text-sm transition-colors font-medium">
+                <a href="#" className="text-orange-500 hover:text-orange-400 text-sm transition-colors font-medium">
                   Esqueceu a senha?
                 </a>
               </div>
 
               {/* Erro de login */}
               {loginError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 text-sm">{loginError}</p>
+                <div className="p-4 bg-red-900/50 border border-red-700 rounded-lg animate-fade-in">
+                  <p className="text-red-300 text-sm">{loginError}</p>
                 </div>
               )}
 
@@ -178,7 +197,8 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg flex items-center justify-center space-x-2 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+                className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-lg flex items-center justify-center space-x-2 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg animate-fade-in-up"
+                style={{animationDelay: '0.4s'}}
               >
                 {isLoading ? (
                   <>
@@ -197,17 +217,48 @@ export default function LoginPage() {
             </form>
 
             {/* Footer */}
-            <div className="mt-8 text-center">
-              <p className="text-gray-600 text-sm">
+            <div className="mt-8 text-center animate-fade-in-up" style={{animationDelay: '0.5s'}}>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-purple-200' : 'text-gray-600'}`}>
                 Sistema de Administração - AquiResolve
               </p>
-              <p className="text-gray-500 text-xs mt-1">
+              <p className={`text-xs mt-1 transition-colors duration-300 ${isDarkMode ? 'text-purple-300' : 'text-gray-500'}`}>
                 Versão 1.0.0
               </p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* CSS para animações */}
+      <style jsx>{`
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        .animate-fade-in-up {
+          animation: fade-in-up 0.6s ease-out forwards;
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.4s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 }
