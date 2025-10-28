@@ -40,7 +40,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mx-auto mb-4">
             <img 
-              src="/logo-aquiresolve.svg" 
+              src="/aq.jpg" 
               alt="AquiResolve Logo" 
               className="h-20 w-auto"
             />
