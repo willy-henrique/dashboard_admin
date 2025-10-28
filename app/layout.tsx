@@ -9,6 +9,7 @@ import { PermissionsProvider } from "@/hooks/use-permissions"
 import { MasterAuthProvider } from "@/hooks/use-master-auth"
 import { Toaster } from "@/components/ui/toaster"
 import { PerformanceOptimizer } from "@/components/performance-optimizer"
+import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
 
 const inter = Inter({ subsets: ["latin"] })
 
