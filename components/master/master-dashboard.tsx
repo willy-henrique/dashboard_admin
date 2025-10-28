@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { useMasterAuth } from "@/hooks/use-master-auth"
 import { Logo } from "@/components/logo"
 import {
@@ -808,7 +809,9 @@ export function MasterDashboard() {
 
         {/* Modal de Alteração de Senha */}
         <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/20" />
+            <DialogPrimitive.Content className="fixed top-[50%] left-[50%] z-50 grid w-full max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 sm:max-w-md rounded-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center space-x-2">
                 <Key className="h-5 w-5" style={{ color: '#F7931E' }} />
@@ -900,7 +903,8 @@ export function MasterDashboard() {
                 </div>
               </div>
             )}
-          </DialogContent>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
         </Dialog>
       </div>
     </div>
