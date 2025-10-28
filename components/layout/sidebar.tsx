@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -136,6 +136,24 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const { hasPermission } = usePermissions()
   const { user, logout } = useAuth()
 
+  // Expandir automaticamente os menus que contêm a página atual
+  useEffect(() => {
+    const shouldExpand: string[] = []
+    
+    navigation.forEach(item => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(child => 
+          pathname === child.href || pathname.startsWith(child.href + '/')
+        )
+        if (hasActiveChild) {
+          shouldExpand.push(item.name)
+        }
+      }
+    })
+    
+    setExpandedItems(shouldExpand)
+  }, [pathname])
+
   const toggleExpanded = (name: string) => {
     setExpandedItems(prev =>
       prev.includes(name)
@@ -144,7 +162,12 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
     )
   }
 
-  const isActive = (href: string) => pathname === href
+  const isActive = (href: string) => {
+    if (pathname === href) return true
+    // Para rotas que começam com o href (ex: /dashboard/servicos/orcamento)
+    if (href !== '/' && pathname.startsWith(href + '/')) return true
+    return false
+  }
 
   // Filtrar navegação baseada nas permissões
   const filteredNavigation = navigation.filter(item => {
