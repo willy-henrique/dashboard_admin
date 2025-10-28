@@ -1,13 +1,14 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import "./performance.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { QueryProvider } from "@/components/query-provider"
 import { AuthProvider } from "@/components/auth-provider"
 import { PermissionsProvider } from "@/hooks/use-permissions"
 import { MasterAuthProvider } from "@/hooks/use-master-auth"
 import { Toaster } from "@/components/ui/toaster"
-import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
+import { PerformanceOptimizer } from "@/components/performance-optimizer"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -41,11 +42,13 @@ export default function RootLayout({
             <AuthProvider>
               <MasterAuthProvider>
                 <PermissionsProvider>
-                  <GoogleMapsLoader />
-                  <div className="min-h-screen bg-background">
-                    {children}
-                    <Toaster />
-                  </div>
+                  <PerformanceOptimizer>
+                    <GoogleMapsLoader />
+                    <div className="min-h-screen bg-background">
+                      {children}
+                      <Toaster />
+                    </div>
+                  </PerformanceOptimizer>
                 </PermissionsProvider>
               </MasterAuthProvider>
             </AuthProvider>
