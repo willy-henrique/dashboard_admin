@@ -53,7 +53,7 @@ export default function LoginPage() {
       </div>
 
       {/* Lado esquerdo - Cards informativos */}
-      <div className={`hidden lg:flex lg:w-1/2 p-12 flex-col justify-center transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-[#6A00A8]/50 to-[#8B1EFF]/50 backdrop-blur-sm' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
+      <div className={`hidden lg:flex lg:w-1/2 p-12 flex-col justify-center transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-[#6A00A8] to-[#8B1EFF]' : 'bg-gradient-to-br from-gray-50 to-gray-100'}`}>
 
         {/* Logo e Título */}
         <div className="mb-12 animate-fade-in-up">
@@ -80,37 +80,37 @@ export default function LoginPage() {
 
         {/* Cards de Features */}
         <div className="grid grid-cols-1 gap-4">
-          <div className={`flex items-start space-x-4 p-6 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDarkMode ? 'bg-[#8B1EFF]/20 backdrop-blur-sm border-[#8B1EFF]/30' : 'bg-white border-gray-200'}`}>
+          <div className={`flex items-start space-x-4 p-6 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDarkMode ? 'bg-white border-gray-200' : 'bg-white border-gray-200'}`}>
             <div className="w-12 h-12 bg-gradient-to-r from-[#FF8C00]/20 to-[#FFC93C]/20 rounded-lg flex items-center justify-center border border-[#FF8C00]/30 animate-bounce">
               <svg className="w-6 h-6 text-[#FF8C00]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
               </svg>
             </div>
             <div>
-              <h3 className={`font-semibold text-lg mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Gestão Completa</h3>
-              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>Controle total sobre pedidos, clientes e operações do seu negócio.</p>
+              <h3 className={`font-semibold text-lg mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-800'}`}>Gestão Completa</h3>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Controle total sobre pedidos, clientes e operações do seu negócio.</p>
             </div>
           </div>
           
-          <div className={`flex items-start space-x-4 p-6 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDarkMode ? 'bg-[#8B1EFF]/20 backdrop-blur-sm border-[#8B1EFF]/30' : 'bg-white border-gray-200'}`}>
+          <div className={`flex items-start space-x-4 p-6 rounded-xl shadow-sm border transition-all duration-300 hover:shadow-lg hover:scale-105 ${isDarkMode ? 'bg-white border-gray-200' : 'bg-white border-gray-200'}`}>
             <div className="w-12 h-12 bg-gradient-to-r from-[#FF8C00]/20 to-[#FFC93C]/20 rounded-lg flex items-center justify-center border border-[#FF8C00]/30 animate-bounce" style={{animationDelay: '0.2s'}}>
               <svg className="w-6 h-6 text-[#FF8C00]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
             </div>
             <div>
-              <h3 className={`font-semibold text-lg mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Analytics Avançado</h3>
-              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>Relatórios detalhados e insights para otimizar sua operação.</p>
+              <h3 className={`font-semibold text-lg mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-800'}`}>Analytics Avançado</h3>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Relatórios detalhados e insights para otimizar sua operação.</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Lado direito - Formulário de login */}
-      <div className={`w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-[#6A00A8]/80 to-[#8B1EFF]/80' : 'bg-white'}`}>
+      <div className={`w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 transition-all duration-500 ${isDarkMode ? 'bg-gradient-to-br from-[#6A00A8] to-[#8B1EFF]' : 'bg-white'}`}>
         <div className="w-full max-w-md">
           {/* Card do formulário */}
-          <div className={`rounded-xl shadow-lg border p-6 sm:p-8 transition-all duration-500 hover:shadow-2xl ${isDarkMode ? 'bg-[#8B1EFF]/20 backdrop-blur-sm border-[#8B1EFF]/30' : 'bg-white border-gray-200'}`}>
+          <div className={`rounded-xl shadow-lg border p-6 sm:p-8 transition-all duration-500 hover:shadow-2xl ${isDarkMode ? 'bg-white border-gray-200' : 'bg-white border-gray-200'}`}>
             {/* Header do formulário */}
             <div className="text-center mb-6 sm:mb-8 animate-fade-in-up">
               <div className="w-16 h-16 bg-gradient-to-r from-[#FF8C00] to-[#FFC93C] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
@@ -118,15 +118,15 @@ export default function LoginPage() {
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                 </svg>
               </div>
-              <h2 className={`text-2xl sm:text-3xl font-bold mb-2 transition-colors duration-300 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Bem-vindo de volta</h2>
-              <p className={`text-sm sm:text-base transition-colors duration-300 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>Entre com suas credenciais para acessar o sistema</p>
+              <h2 className={`text-2xl sm:text-3xl font-bold mb-2 transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-800'}`}>Bem-vindo de volta</h2>
+              <p className={`text-sm sm:text-base transition-colors duration-300 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>Entre com suas credenciais para acessar o sistema</p>
             </div>
 
             {/* Formulário */}
             <form onSubmit={handleLogin} className="space-y-4 sm:space-y-6">
               {/* Campo Email */}
               <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
-                <label className={`text-sm font-medium transition-colors duration-300 ${isDarkMode ? 'text-white/90' : 'text-gray-700'}`}>
+                <label className={`text-sm font-medium transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-700'}`}>
                   Email
                 </label>
                 <input
@@ -134,14 +134,14 @@ export default function LoginPage() {
                   placeholder="admin@aquiresolve.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`w-full h-12 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF8C00]/50 ${isDarkMode ? 'bg-[#8B1EFF]/30 border border-[#8B1EFF]/50 text-white placeholder-white/60 focus:border-[#FF8C00]' : 'bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-[#FF8C00]'}`}
+                  className={`w-full h-12 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF8C00]/50 ${isDarkMode ? 'bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-[#FF8C00]' : 'bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-[#FF8C00]'}`}
                   required
                 />
               </div>
 
               {/* Campo Senha */}
               <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-                <label className={`text-sm font-medium transition-colors duration-300 ${isDarkMode ? 'text-white/90' : 'text-gray-700'}`}>
+                <label className={`text-sm font-medium transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-700'}`}>
                   Senha
                 </label>
                 <div className="relative">
@@ -150,13 +150,13 @@ export default function LoginPage() {
                     placeholder="Digite sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`w-full h-12 px-4 pr-12 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF8C00]/50 ${isDarkMode ? 'bg-[#8B1EFF]/30 border border-[#8B1EFF]/50 text-white placeholder-white/60 focus:border-[#FF8C00]' : 'bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-[#FF8C00]'}`}
+                    className={`w-full h-12 px-4 pr-12 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#FF8C00]/50 ${isDarkMode ? 'bg-white border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-[#FF8C00]' : 'bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-500 focus:border-[#FF8C00]'}`}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className={`absolute right-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDarkMode ? 'text-white/70 hover:text-[#FFC93C]' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`absolute right-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 ${isDarkMode ? 'text-gray-600 hover:text-[#FF8C00]' : 'text-gray-400 hover:text-gray-600'}`}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -173,7 +173,7 @@ export default function LoginPage() {
 
               {/* Opções */}
               <div className="flex items-center justify-between animate-fade-in-up" style={{animationDelay: '0.3s'}}>
-                <label className={`flex items-center space-x-2 text-sm transition-colors duration-300 ${isDarkMode ? 'text-white/90' : 'text-gray-700'}`}>
+                <label className={`flex items-center space-x-2 text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-700'}`}>
                   <input 
                     type="checkbox" 
                     checked={rememberMe}
@@ -219,10 +219,10 @@ export default function LoginPage() {
 
             {/* Footer */}
             <div className="mt-6 sm:mt-8 text-center animate-fade-in-up" style={{animationDelay: '0.5s'}}>
-              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-white/80' : 'text-gray-600'}`}>
+              <p className={`text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-600' : 'text-gray-600'}`}>
                 Sistema de Administração - AquiResolve
               </p>
-              <p className={`text-xs mt-1 transition-colors duration-300 ${isDarkMode ? 'text-white/60' : 'text-gray-500'}`}>
+              <p className={`text-xs mt-1 transition-colors duration-300 ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
                 Versão 1.0.0
               </p>
             </div>
