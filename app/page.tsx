@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
+import { Logo } from "@/components/logo"
 // Imports removidos - apenas mantendo o essencial
 
 export default function LoginPage() {
@@ -39,11 +40,7 @@ export default function LoginPage() {
         {/* Logo e Título */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mx-auto mb-4">
-            <img 
-              src="/logo-aquiresolve.svg" 
-              alt="AquiResolve Logo" 
-              className="h-20 w-auto"
-            />
+            <Logo className="h-16 text-white" showText={true} />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">
             Painel Administrativo
