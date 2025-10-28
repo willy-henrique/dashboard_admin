@@ -619,8 +619,8 @@ export function MasterDashboard() {
         {/* Users List */}
         <div className="grid gap-4 sm:gap-6">
           {usuarios.map((user) => (
-            <Card key={user.id} className="shadow-sm" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
-              <CardHeader style={{ background: '#FFFFFF' }}>
+            <Card key={user.id} className="shadow-lg border-2" style={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB' }}>
+              <CardHeader style={{ background: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FEECDC' }}>
@@ -715,12 +715,12 @@ export function MasterDashboard() {
               </CardHeader>
               <CardContent>
                 {/* Resumo das permissões */}
-                <div className="mb-4 p-3 rounded-md" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium" style={{ color: '#1F2B3D' }}>
+                <div className="mb-4 p-4 rounded-lg border-2" style={{ backgroundColor: '#F8FAFC', border: '2px solid #E2E8F0' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-semibold" style={{ color: '#1E293B' }}>
                       Permissões Ativas
                     </span>
-                    <span className="text-xs" style={{ color: '#6B7280' }}>
+                    <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ backgroundColor: '#F7931E', color: '#FFFFFF' }}>
                       {Object.values(user.permissoes).filter(Boolean).length} de {Object.keys(user.permissoes).length}
                     </span>
                   </div>
@@ -751,9 +751,9 @@ export function MasterDashboard() {
                         key={key}
                         type="button"
                         onClick={() => editingUser === user.id && updatePermission(user.id, key, !isChecked)}
-                        className={`flex items-center justify-between rounded-md px-3 py-3 border text-left w-full transition-colors min-h-[48px] ${
-                          isChecked ? 'bg-[#FEECDC] border-[#F7931E]' : 'bg-white border-[#E5E7EB]'
-                        } ${editingUser !== user.id ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:opacity-90 hover:border-[#F7931E]'}`}
+                        className={`flex items-center justify-between rounded-lg px-4 py-4 border-2 text-left w-full transition-all duration-200 min-h-[52px] ${
+                          isChecked ? 'bg-[#FEF3C7] border-[#F7931E] shadow-md' : 'bg-white border-[#D1D5DB] hover:border-[#9CA3AF]'
+                        } ${editingUser !== user.id ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}`}
                         aria-pressed={isChecked}
                       >
                         <div className="flex items-center space-x-2 min-w-0 flex-1">
@@ -782,13 +782,13 @@ export function MasterDashboard() {
         </div>
 
         {usuarios.length === 0 && (
-          <Card className="text-center py-12 border-2 border-dashed" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
+          <Card className="text-center py-12 border-2 border-dashed shadow-lg" style={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB' }}>
             <CardContent>
               <Users className="h-16 w-16 mx-auto mb-6" style={{ color: '#6B7280' }} />
-              <h3 className="text-xl font-semibold mb-3" style={{ color: '#1F2B3D' }}>
+              <h3 className="text-xl font-semibold mb-3" style={{ color: '#1E293B' }}>
                 Nenhum usuário cadastrado
               </h3>
-              <p className="mb-6 max-w-md mx-auto" style={{ color: '#6B7280' }}>
+              <p className="mb-6 max-w-md mx-auto" style={{ color: '#64748B' }}>
                 Comece adicionando usuários para gerenciar suas permissões e controlar o acesso ao sistema
               </p>
               <Button 
@@ -818,55 +818,55 @@ export function MasterDashboard() {
             
             {selectedUser && (
               <div className="space-y-4">
-                <div className="p-3 rounded-md" style={{ backgroundColor: '#F9FAFB', border: '1px solid #E5E7EB' }}>
+                <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#F8FAFC', border: '2px solid #E2E8F0' }}>
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FEECDC' }}>
-                      <User className="h-4 w-4" style={{ color: '#F7931E' }} />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: '#FEF3C7' }}>
+                      <User className="h-5 w-5" style={{ color: '#F7931E' }} />
                     </div>
                     <div>
-                      <p className="font-medium text-sm" style={{ color: '#1F2B3D' }}>{selectedUser.nome}</p>
-                      <p className="text-xs" style={{ color: '#6B7280' }}>{selectedUser.email}</p>
+                      <p className="font-semibold text-sm" style={{ color: '#1E293B' }}>{selectedUser.nome}</p>
+                      <p className="text-xs font-medium" style={{ color: '#64748B' }}>{selectedUser.email}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="newPassword" style={{ color: '#1F2B3D' }}>Nova Senha</Label>
+                    <Label htmlFor="newPassword" className="font-semibold" style={{ color: '#1E293B' }}>Nova Senha</Label>
                     <Input
                       id="newPassword"
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Digite a nova senha"
-                      className="mt-1"
-                      style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                      className="mt-2 border-2"
+                      style={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#1E293B' }}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="confirmPassword" style={{ color: '#1F2B3D' }}>Confirmar Senha</Label>
+                    <Label htmlFor="confirmPassword" className="font-semibold" style={{ color: '#1E293B' }}>Confirmar Senha</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirme a nova senha"
-                      className="mt-1"
-                      style={{ backgroundColor: '#FFFFFF', borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                      className="mt-2 border-2"
+                      style={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#1E293B' }}
                     />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="p-3 rounded-md" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
-                    <p className="text-sm" style={{ color: '#DC2626' }}>{error}</p>
+                  <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#FEF2F2', border: '2px solid #FECACA' }}>
+                    <p className="text-sm font-medium" style={{ color: '#DC2626' }}>{error}</p>
                   </div>
                 )}
 
                 {success && (
-                  <div className="p-3 rounded-md" style={{ backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
-                    <p className="text-sm" style={{ color: '#16A34A' }}>{success}</p>
+                  <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#F0FDF4', border: '2px solid #BBF7D0' }}>
+                    <p className="text-sm font-medium" style={{ color: '#16A34A' }}>{success}</p>
                   </div>
                 )}
 
