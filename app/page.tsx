@@ -40,14 +40,32 @@ export default function LoginPage() {
         {/* Logo e Título */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mx-auto mb-4">
-            <Logo className="h-16 text-white" showText={true} />
+            <div className="relative">
+              {/* Background circular com gradiente */}
+              <div className="w-24 h-24 bg-gradient-to-br from-white/20 to-white/10 backdrop-blur-sm rounded-full flex items-center justify-center shadow-2xl border border-white/30 relative overflow-hidden">
+                {/* Efeito de brilho interno */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-white/30 via-transparent to-transparent rounded-full"></div>
+                {/* Logo */}
+                <Logo className="h-12 text-white relative z-10" showText={false} />
+              </div>
+              
+              {/* Elementos decorativos ao redor */}
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+              </div>
+              <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full shadow-md"></div>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Painel Administrativo
-          </h1>
-          <p className="text-blue-100">
-            Entre com suas credenciais para acessar o sistema
-          </p>
+          
+          {/* Título com destaque */}
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-white drop-shadow-lg">
+              Painel <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-400">Administrativo</span>
+            </h1>
+            <p className="text-blue-100 text-lg font-medium">
+              Entre com suas credenciais para acessar o sistema
+            </p>
+          </div>
         </div>
 
         {/* Card de Login */}
