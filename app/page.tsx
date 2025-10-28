@@ -172,7 +172,7 @@ export default function LoginPage() {
               </div>
 
               {/* Opções */}
-              <div className="flex items-center justify-between animate-fade-in-up" style={{animationDelay: '0.3s'}}>
+              <div className="flex items-center animate-fade-in-up" style={{animationDelay: '0.3s'}}>
                 <label className={`flex items-center space-x-2 text-sm transition-colors duration-300 ${isDarkMode ? 'text-gray-800' : 'text-gray-700'}`}>
                   <input 
                     type="checkbox" 
@@ -182,9 +182,6 @@ export default function LoginPage() {
                   />
                   <span>Lembrar-me</span>
                 </label>
-                <a href="#" className="text-[#FF8C00] hover:text-[#FFC93C] text-sm transition-colors font-medium">
-                  Esqueceu a senha?
-                </a>
               </div>
 
               {/* Erro de login */}
