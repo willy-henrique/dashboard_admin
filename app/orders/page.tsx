@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { AppShell } from "@/components/layout/app-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,7 +28,13 @@ export default function OrdersPage() {
   const { orders, loading, error, updateOrder, deleteOrder, assignProvider, updateOrderStatus } = useOrders()
   const { stats: orderStats, loading: statsLoading } = useOrderStats()
   const { trackPageView, trackUserAction } = useAnalytics()
-  const [activeTab, setActiveTab] = useState("dashboard")
+  const searchParams = useSearchParams()
+  const initialTab = (() => {
+    const tab = searchParams?.get("tab") || "dashboard"
+    const allowed = new Set(["dashboard", "todos", "pendentes", "ativos", "concluidos"])
+    return allowed.has(tab) ? tab : "dashboard"
+  })()
+  const [activeTab, setActiveTab] = useState(initialTab)
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view')
   const [isModalOpen, setIsModalOpen] = useState(false)

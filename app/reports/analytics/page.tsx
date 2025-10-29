@@ -24,10 +24,18 @@ import { CalendarIcon, Download, TrendingUp, Users, DollarSign, RefreshCw, Activ
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useState, useMemo } from "react"
+import { useSearchParams } from "next/navigation"
 import { usePagarmeCharges, usePagarmeOrders, usePagarmeAnalytics } from "@/hooks/use-pagarme"
 import { PagarmeService } from "@/lib/services/pagarme-service"
 
 export default function AnalyticsPage() {
+  const searchParams = useSearchParams()
+  const initialAnalyticsTab = (() => {
+    const tab = searchParams?.get("tab") || "evolution"
+    const allowed = new Set(["evolution", "payments", "performance", "insights"])
+    return allowed.has(tab) ? tab : "evolution"
+  })()
+  const [activeTab, setActiveTab] = useState(initialAnalyticsTab)
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     to: new Date(),
@@ -286,7 +294,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Analytics Tabs */}
-      <Tabs defaultValue="evolution" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="evolution">Evolução</TabsTrigger>
           <TabsTrigger value="payments">Pagamentos</TabsTrigger>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -86,7 +86,8 @@ const navigation = [
     permission: "gestaoPedidos",
     children: [
       { name: "Todos os Pedidos", href: "/orders", icon: ShoppingCart },
-      { name: "Pedidos Concluídos", href: "/orders/completed", icon: CheckCircle },
+      // Rota dedicada "/orders/completed" não existe; usamos tab via query param
+      { name: "Pedidos Concluídos", href: "/orders?tab=concluidos", icon: CheckCircle },
     ],
   },
   {
@@ -104,7 +105,8 @@ const navigation = [
     permission: "relatorios",
     children: [
       { name: "Dashboard Analytics", href: "/reports/analytics", icon: BarChart3 },
-      { name: "Performance", href: "/reports/performance", icon: TrendingUp },
+      // Página específica de performance não existe; usamos aba via query param
+      { name: "Performance", href: "/reports/analytics?tab=performance", icon: TrendingUp },
     ],
   },
   {
@@ -135,6 +137,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const { hasPermission } = usePermissions()
   const { user, logout } = useAuth()
+  const router = useRouter()
 
   // Expandir automaticamente os menus que contêm a página atual
   useEffect(() => {
@@ -227,36 +230,40 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                       aria-label={`Submenu de ${item.name}`}
                     >
                       {item.children.map((child) => (
-                        <Link
+                        <button
                           key={child.href}
-                          href={child.href}
                           className={cn(
-                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
+                            "w-full text-left flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
                             isActive(child.href) && "bg-white text-orange-700 font-semibold"
                           )}
-                          onClick={() => setOpen(false)}
+                          onClick={() => {
+                            setOpen(false)
+                            router.push(child.href)
+                          }}
                           aria-current={isActive(child.href) ? 'page' : undefined}
                         >
                           <child.icon className="h-4 w-4" aria-hidden="true" />
                           <span>{child.name}</span>
-                        </Link>
+                        </button>
                       ))}
                     </div>
                   )}
                 </div>
               ) : (
-                <Link
-                  href={item.href}
+                <button
                   className={cn(
-                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
+                    "w-full text-left flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
                     isActive(item.href) && "bg-white text-orange-700 font-semibold"
                   )}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false)
+                    router.push(item.href)
+                  }}
                   aria-current={isActive(item.href) ? 'page' : undefined}
                 >
                   <item.icon className="h-4 w-4" aria-hidden="true" />
                   <span>{item.name}</span>
-                </Link>
+                </button>
               )}
             </div>
           ))}
