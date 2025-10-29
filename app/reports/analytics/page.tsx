@@ -23,12 +23,12 @@ import {
 import { CalendarIcon, Download, TrendingUp, Users, DollarSign, RefreshCw, Activity, CreditCard, Wallet, Target } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { useState, useMemo } from "react"
+import { useState, useMemo, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { usePagarmeCharges, usePagarmeOrders, usePagarmeAnalytics } from "@/hooks/use-pagarme"
 import { PagarmeService } from "@/lib/services/pagarme-service"
 
-export default function AnalyticsPage() {
+function AnalyticsPageContent() {
   const searchParams = useSearchParams()
   const initialAnalyticsTab = (() => {
     const tab = searchParams?.get("tab") || "evolution"
@@ -523,5 +523,13 @@ export default function AnalyticsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={<main className="p-6">Carregando analytics...</main>}>
+      <AnalyticsPageContent />
+    </Suspense>
   )
 }

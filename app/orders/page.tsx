@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { AppShell } from "@/components/layout/app-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { PageWithBack } from "@/components/layout/page-with-back"
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const { orders, loading, error, updateOrder, deleteOrder, assignProvider, updateOrderStatus } = useOrders()
   const { stats: orderStats, loading: statsLoading } = useOrderStats()
   const { trackPageView, trackUserAction } = useAnalytics()
@@ -205,5 +205,13 @@ export default function OrdersPage() {
         />
       </PageWithBack>
     </AppShell>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<main className="p-6">Carregando pedidos...</main>}>
+      <OrdersPageContent />
+    </Suspense>
   )
 }
