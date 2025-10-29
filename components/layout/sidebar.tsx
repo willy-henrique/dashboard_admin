@@ -230,40 +230,36 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                       aria-label={`Submenu de ${item.name}`}
                     >
                       {item.children.map((child) => (
-                        <button
+                        <a
                           key={child.href}
+                          href={child.href}
                           className={cn(
-                            "w-full text-left flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
+                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
                             isActive(child.href) && "bg-white text-orange-700 font-semibold"
                           )}
-                          onClick={() => {
-                            setOpen(false)
-                            router.push(child.href)
-                          }}
+                          onClick={() => setOpen(false)}
                           aria-current={isActive(child.href) ? 'page' : undefined}
                         >
                           <child.icon className="h-4 w-4" aria-hidden="true" />
                           <span>{child.name}</span>
-                        </button>
+                        </a>
                       ))}
                     </div>
                   )}
                 </div>
               ) : (
-                <button
+                <a
+                  href={item.href}
                   className={cn(
-                    "w-full text-left flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
+                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
                     isActive(item.href) && "bg-white text-orange-700 font-semibold"
                   )}
-                  onClick={() => {
-                    setOpen(false)
-                    router.push(item.href)
-                  }}
+                  onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? 'page' : undefined}
                 >
                   <item.icon className="h-4 w-4" aria-hidden="true" />
                   <span>{item.name}</span>
-                </button>
+                </a>
               )}
             </div>
           ))}
