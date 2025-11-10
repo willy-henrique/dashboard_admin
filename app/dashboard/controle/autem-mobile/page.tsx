@@ -17,19 +17,46 @@ import {
   Clock,
   TrendingUp,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  RefreshCw,
+  Loader2
 } from "lucide-react"
 import Link from "next/link"
+import { useAutEMMobile } from "@/hooks/use-autem-mobile"
+import { formatDistanceToNow } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 export default function AutEMMobilePage() {
-  const stats = {
-    totalUsuarios: 6,
-    conectados: 4,
-    desconectados: 2,
-    totalAcessos: 156,
-    quilometragemTotal: 23,
-    recusas: 8,
-    rastreamentos: 45
+  const { stats, realtimeStatus, loading, error, refetch, lastUpdate } = useAutEMMobile({
+    autoRefresh: true,
+    refreshInterval: 30000 // 30 segundos
+  })
+
+  // Função para formatar tempo relativo
+  const formatTimeAgo = (date?: Date) => {
+    if (!date) return "N/A"
+    try {
+      return formatDistanceToNow(date, { 
+        addSuffix: true, 
+        locale: ptBR 
+      })
+    } catch {
+      return "N/A"
+    }
+  }
+
+  // Valores padrão enquanto carrega
+  const displayStats = stats || {
+    totalUsuarios: 0,
+    conectados: 0,
+    desconectados: 0,
+    totalAcessos: 0,
+    quilometragemTotal: 0,
+    recusas: 0,
+    rastreamentos: 0,
+    taxaRecusa: 0,
+    precisaoMedia: 0,
+    profissionaisAtivos: 0
   }
 
   return (
@@ -41,12 +68,47 @@ export default function AutEMMobilePage() {
           <p className="text-slate-600 dark:text-slate-400 mt-1">
             Controle e monitoramento do aplicativo móvel
           </p>
+          {lastUpdate && (
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+              Última atualização: {formatTimeAgo(lastUpdate)}
+            </p>
+          )}
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
-          <Activity className="h-4 w-4 mr-2" />
-          Status do Sistema
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button 
+            onClick={() => refetch()} 
+            disabled={loading}
+            variant="outline"
+            className="w-full sm:w-auto"
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Atualizar
+          </Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white w-full sm:w-auto">
+            <Activity className="h-4 w-4 mr-2" />
+            Status do Sistema
+          </Button>
+        </div>
       </div>
+
+      {/* Erro */}
+      {error && (
+        <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-sm font-medium text-red-900 dark:text-red-200">Erro ao carregar dados</p>
+                <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Estatísticas */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -54,9 +116,15 @@ export default function AutEMMobilePage() {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
               <Users className="h-8 w-8 text-blue-600" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Usuários Ativos</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.conectados}/{stats.totalUsuarios}</p>
+                {loading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mt-1" />
+                ) : (
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {displayStats.conectados}/{displayStats.totalUsuarios}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -66,9 +134,13 @@ export default function AutEMMobilePage() {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
               <LogIn className="h-8 w-8 text-green-600" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Total de Acessos</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.totalAcessos}</p>
+                {loading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mt-1" />
+                ) : (
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{displayStats.totalAcessos}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -78,9 +150,13 @@ export default function AutEMMobilePage() {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
               <Route className="h-8 w-8 text-orange-600" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Quilometragem</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.quilometragemTotal}km</p>
+                {loading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mt-1" />
+                ) : (
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{displayStats.quilometragemTotal}km</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -90,9 +166,13 @@ export default function AutEMMobilePage() {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
               <XCircle className="h-8 w-8 text-red-600" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm text-slate-600 dark:text-slate-400">Recusas</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{stats.recusas}</p>
+                {loading ? (
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400 mt-1" />
+                ) : (
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">{displayStats.recusas}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -119,15 +199,17 @@ export default function AutEMMobilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Conexões Hoje</span>
-                  <Badge variant="secondary">{stats.totalAcessos}</Badge>
+                  <Badge variant="secondary">{displayStats.totalAcessos}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Última Atividade</span>
-                  <span className="text-xs text-slate-500">2 min atrás</span>
+                  <span className="text-xs text-slate-500">
+                    {displayStats.ultimaAtividade ? formatTimeAgo(displayStats.ultimaAtividade) : "N/A"}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Usuários Ativos</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">{stats.conectados}</Badge>
+                  <Badge variant="outline" className="text-green-600 border-green-200">{displayStats.conectados}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -152,15 +234,15 @@ export default function AutEMMobilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Total Hoje</span>
-                  <Badge variant="secondary">{stats.quilometragemTotal}km</Badge>
+                  <Badge variant="secondary">{displayStats.quilometragemTotal}km</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Profissionais</span>
-                  <Badge variant="outline">2</Badge>
+                  <Badge variant="outline">{displayStats.profissionaisAtivos}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Precisão Média</span>
-                  <span className="text-xs text-slate-500">7m</span>
+                  <span className="text-xs text-slate-500">{displayStats.precisaoMedia}m</span>
                 </div>
               </div>
             </CardContent>
@@ -185,11 +267,13 @@ export default function AutEMMobilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Ativos</span>
-                  <Badge variant="secondary">{stats.rastreamentos}</Badge>
+                  <Badge variant="secondary">{displayStats.rastreamentos}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Última Atualização</span>
-                  <span className="text-xs text-slate-500">30s atrás</span>
+                  <span className="text-xs text-slate-500">
+                    {lastUpdate ? formatTimeAgo(lastUpdate) : "N/A"}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Sinal</span>
@@ -218,11 +302,11 @@ export default function AutEMMobilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Total Hoje</span>
-                  <Badge variant="secondary">{stats.recusas}</Badge>
+                  <Badge variant="secondary">{displayStats.recusas}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Taxa de Recusa</span>
-                  <span className="text-xs text-slate-500">5.1%</span>
+                  <span className="text-xs text-slate-500">{displayStats.taxaRecusa.toFixed(1)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Motivo Principal</span>
@@ -251,15 +335,15 @@ export default function AutEMMobilePage() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Total</span>
-                  <Badge variant="secondary">{stats.totalUsuarios}</Badge>
+                  <Badge variant="secondary">{displayStats.totalUsuarios}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Online</span>
-                  <Badge variant="outline" className="text-green-600 border-green-200">{stats.conectados}</Badge>
+                  <Badge variant="outline" className="text-green-600 border-green-200">{displayStats.conectados}</Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Offline</span>
-                  <Badge variant="outline" className="text-red-600 border-red-200">{stats.desconectados}</Badge>
+                  <Badge variant="outline" className="text-red-600 border-red-200">{displayStats.desconectados}</Badge>
                 </div>
               </div>
             </CardContent>
@@ -313,32 +397,55 @@ export default function AutEMMobilePage() {
           <CardTitle className="text-lg text-slate-900 dark:text-white flex items-center space-x-2">
             <Activity className="h-5 w-5 text-blue-600" />
             <span>Status em Tempo Real</span>
+            {loading && <Loader2 className="h-4 w-4 animate-spin text-slate-400" />}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">JOCIMAR</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Online - v1.0.206</p>
-              </div>
+          {loading && realtimeStatus.length === 0 ? (
+            <div className="flex items-center justify-center p-8">
+              <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">ANTONIO</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Online - v1.0.206</p>
-              </div>
+          ) : realtimeStatus.length === 0 ? (
+            <div className="text-center p-8 text-slate-500 dark:text-slate-400">
+              <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Nenhum profissional conectado no momento</p>
             </div>
-            <div className="flex items-center space-x-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-white">MICHEL</p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">Offline - v1.0.204</p>
-              </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {realtimeStatus.map((provider) => (
+                <div
+                  key={provider.id}
+                  className={`flex items-center space-x-3 p-3 rounded-lg ${
+                    provider.status === 'online'
+                      ? 'bg-green-50 dark:bg-green-900/20'
+                      : 'bg-red-50 dark:bg-red-900/20'
+                  }`}
+                >
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      provider.status === 'online'
+                        ? 'bg-green-500 animate-pulse'
+                        : 'bg-red-500'
+                    }`}
+                  ></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+                      {provider.nome}
+                    </p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      {provider.status === 'online' ? 'Online' : 'Offline'}
+                      {provider.versao && provider.versao !== 'N/A' && ` - ${provider.versao}`}
+                    </p>
+                    {provider.ultimaAtualizacao && (
+                      <p className="text-xs text-slate-500 mt-1">
+                        {formatTimeAgo(provider.ultimaAtualizacao)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </main>
