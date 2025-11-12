@@ -78,7 +78,7 @@ export default function FaturamentoPage() {
     const withEarnings = providers.filter(p => p.totalEarnings > 0).length
     const totalJobs = providers.reduce((sum, p) => sum + (p.totalJobs || 0), 0)
     
-    return {
+      return {
       totalProviders: providers.length,
       withEarnings,
       totalEarnings,
@@ -318,19 +318,19 @@ export default function FaturamentoPage() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
+          <Table>
+            <TableHeader>
+              <TableRow>
                   <TableHead>Prestador</TableHead>
                   <TableHead>Contato</TableHead>
                   <TableHead>Chave PIX</TableHead>
                   <TableHead className="text-right">Total de Serviços</TableHead>
                   <TableHead className="text-right">Ganhos Acumulados</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
                 {filteredProviders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-gray-500">
@@ -363,8 +363,8 @@ export default function FaturamentoPage() {
                             </p>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell>
+                  </TableCell>
+                  <TableCell>
                         {provider.pixKey ? (
                           <div>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -380,8 +380,8 @@ export default function FaturamentoPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <span className="font-medium">{provider.totalJobs || 0}</span>
-                      </TableCell>
-                      <TableCell className="text-right">
+                  </TableCell>
+                  <TableCell className="text-right">
                         <span className={`font-bold text-lg ${
                           provider.totalEarnings > 0 
                             ? 'text-green-600 dark:text-green-400' 
@@ -404,8 +404,8 @@ export default function FaturamentoPage() {
                               Verificado
                             </Badge>
                           )}
-                        </div>
-                      </TableCell>
+                    </div>
+                  </TableCell>
                       <TableCell className="text-right">
                         <Button
                           size="sm"
@@ -417,18 +417,18 @@ export default function FaturamentoPage() {
                           Pagar
                         </Button>
                       </TableCell>
-                    </TableRow>
+                </TableRow>
                   ))
                 )}
-              </TableBody>
-            </Table>
+            </TableBody>
+          </Table>
           </div>
         </CardContent>
       </Card>
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-[550px] z-[100] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
           <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
             <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
@@ -446,12 +446,12 @@ export default function FaturamentoPage() {
               {/* Valor Disponível - Destaque */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Valor Disponível</Label>
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700">
                   <div className="flex items-center justify-between">
-                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                    <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
                       {formatCurrency(selectedProvider.totalEarnings)}
                     </p>
-                    <Wallet className="h-8 w-8 text-green-500 dark:text-green-400" />
+                    <Wallet className="h-8 w-8 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </div>
@@ -512,19 +512,19 @@ export default function FaturamentoPage() {
 
               {/* Informações PIX */}
               {selectedProvider.pixKey && (
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700">
                   <div className="flex items-start space-x-3">
                     <div className="w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-600 flex items-center justify-center flex-shrink-0">
                       <CreditCard className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
                         Chave PIX
                       </p>
-                      <p className="text-base font-mono font-medium text-blue-800 dark:text-blue-200 mb-2">
+                      <p className="text-base font-mono font-medium text-slate-800 dark:text-slate-200 mb-2 break-all">
                         {selectedProvider.pixKey}
                       </p>
-                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
                         Tipo: <span className="font-semibold">{selectedProvider.pixKeyType?.toUpperCase() || 'PIX'}</span>
                       </p>
                     </div>
@@ -534,7 +534,7 @@ export default function FaturamentoPage() {
             </div>
           )}
 
-          <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-700 gap-3">
+          <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-700 gap-3 sticky bottom-0 bg-white dark:bg-gray-900">
             <Button
               variant="outline"
               onClick={() => setPaymentDialogOpen(false)}
