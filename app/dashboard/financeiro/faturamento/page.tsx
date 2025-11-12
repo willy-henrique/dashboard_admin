@@ -40,12 +40,19 @@ export default function FaturamentoPage() {
   const [paymentDescription, setPaymentDescription] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("pix")
   const [processingPayment, setProcessingPayment] = useState(false)
+  const [amountError, setAmountError] = useState<string | null>(null)
   
   const { toast } = useToast()
   const { providers, loading, error, refetch, totalEarnings } = useProvidersBilling({ 
     autoRefresh: true,
     refreshInterval: 30000 // Atualizar a cada 30 segundos
   })
+
+  // Nome exibido do prestador (fallback inteligente)
+  const getProviderDisplayName = (p: any) => {
+    if (!p) return ""
+    return (p.nome && String(p.nome).trim()) || p.email || p.phone || `ID: ${String(p.uid || p.id || "").slice(0, 8)}...`
+  }
 
   // Filtrar prestadores
   const filteredProviders = useMemo(() => {
@@ -102,13 +109,48 @@ export default function FaturamentoPage() {
     setPaymentDescription(`Pagamento de ganhos acumulados para ${provider.nome}`)
     setPaymentMethod("pix")
     setPaymentDialogOpen(true)
+    setAmountError(null)
+  }
+
+  // Atualiza valor a pagar com bloqueio automático e validação
+  const handleAmountChange = (value: string) => {
+    // Aceitar vírgula como separador decimal
+    const normalized = value.replace(",", ".")
+    const available = Number(selectedProvider?.totalEarnings || 0)
+    let parsed = Number(normalized)
+
+    if (Number.isNaN(parsed)) {
+      setPaymentAmount(value)
+      setAmountError("Informe um valor numérico válido")
+      return
+    }
+
+    // Bloquear automaticamente acima do disponível
+    if (parsed > available) {
+      parsed = available
+    }
+
+    // Bloqueio mínimo positivo (permitir 0 ao limpar)
+    if (parsed < 0) parsed = 0
+
+    const finalValue = parsed === 0 ? "" : parsed.toFixed(2)
+    setPaymentAmount(finalValue)
+
+    // Mensagem de validação
+    if (parsed === 0) {
+      setAmountError("Valor deve ser maior que 0")
+    } else if (parsed > available) {
+      setAmountError("Valor maior que o disponível")
+    } else {
+      setAmountError(null)
+    }
   }
 
   // Processar pagamento
   const handleProcessPayment = async () => {
     if (!selectedProvider) return
 
-    const amount = parseFloat(paymentAmount)
+    const amount = parseFloat((paymentAmount || "0").replace(",", "."))
     
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -428,7 +470,7 @@ export default function FaturamentoPage() {
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl">
           <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
             <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
@@ -437,7 +479,7 @@ export default function FaturamentoPage() {
               <span className="text-gray-900 dark:text-white">Confirmar Pagamento</span>
             </DialogTitle>
             <DialogDescription className="text-base text-gray-600 dark:text-gray-300 mt-2">
-              Processar pagamento para <span className="font-semibold text-gray-900 dark:text-white">{selectedProvider?.nome}</span>
+              Processar pagamento para <span className="font-semibold text-gray-900 dark:text-white">{getProviderDisplayName(selectedProvider)}</span>
             </DialogDescription>
           </DialogHeader>
           
@@ -468,31 +510,51 @@ export default function FaturamentoPage() {
                   min="0.01"
                   max={selectedProvider.totalEarnings}
                   value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00"
                   className="text-lg font-medium h-12"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Máximo disponível: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
                 </p>
+                {amountError && (
+                  <p className="text-xs text-red-600 dark:text-red-400">{amountError}</p>
+                )}
               </div>
 
-              {/* Método de Pagamento */}
-              <div className="space-y-2">
-                <Label htmlFor="method" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Método de Pagamento
-                </Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger id="method" className="h-12">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pix">💳 PIX</SelectItem>
-                    <SelectItem value="ted">🏦 TED</SelectItem>
-                    <SelectItem value="doc">📄 DOC</SelectItem>
-                    <SelectItem value="transfer">💸 Transferência Bancária</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Método de Pagamento + Chave PIX (lado a lado em telas maiores) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="method" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Método de Pagamento
+                  </Label>
+                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                    <SelectTrigger id="method" className="h-12">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pix">💳 PIX</SelectItem>
+                      <SelectItem value="ted">🏦 TED</SelectItem>
+                      <SelectItem value="doc">📄 DOC</SelectItem>
+                      <SelectItem value="transfer">💸 Transferência Bancária</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {paymentMethod === "pix" && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Chave PIX</Label>
+                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                      {selectedProvider?.pixKey ? (
+                        <div className="truncate w-full text-sm font-medium text-slate-900 dark:text-slate-100" title={selectedProvider.pixKey}>
+                          {selectedProvider.pixKey}
+                        </div>
+                      ) : (
+                        <div className="w-full text-sm text-slate-500 dark:text-slate-400">Prestador sem chave PIX</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Descrição */}
@@ -545,8 +607,8 @@ export default function FaturamentoPage() {
             </Button>
             <Button
               onClick={handleProcessPayment}
-              disabled={processingPayment || !paymentAmount || parseFloat(paymentAmount) <= 0}
-              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg flex-1 sm:flex-none min-w-[180px]"
+              disabled={processingPayment || !paymentAmount || !!amountError || parseFloat((paymentAmount || '0').replace(',', '.')) <= 0}
+              className="bg-green-600 hover:bg-green-700 text-white shadow-lg flex-1 sm:flex-none min-w-[180px]"
             >
               {processingPayment ? (
                 <>
