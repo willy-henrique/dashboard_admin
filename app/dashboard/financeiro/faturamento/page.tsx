@@ -476,16 +476,16 @@ export default function FaturamentoPage() {
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-gray-900 border-gray-800 rounded-2xl shadow-xl text-white">
-          <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
+        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white dark:bg-white border-slate-200 rounded-2xl shadow-xl text-slate-900">
+          <DialogHeader className="pb-4 border-b border-slate-200">
             <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
                 <CreditCard className="h-6 w-6 text-white" />
               </div>
-              <span className="text-white">Confirmar Pagamento</span>
+              <span className="text-slate-900">Confirmar Pagamento</span>
             </DialogTitle>
-            <DialogDescription className="text-base text-white/80 mt-2">
-              Processar pagamento para <span className="font-semibold text-white">{getProviderDisplayName(selectedProvider)}</span>
+            <DialogDescription className="text-base text-slate-600 mt-2">
+              Processar pagamento para <span className="font-semibold text-slate-900">{getProviderDisplayName(selectedProvider)}</span>
             </DialogDescription>
           </DialogHeader>
           
@@ -493,20 +493,20 @@ export default function FaturamentoPage() {
             <div className="space-y-6 py-6">
               {/* Valor Disponível - Destaque */}
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-white">Valor Disponível</Label>
-                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
+                <Label className="text-sm font-semibold text-slate-900">Valor Disponível</Label>
+                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
                   <div className="flex items-center justify-between">
-                    <p className="text-3xl font-bold text-white">
+                    <p className="text-3xl font-bold text-slate-900">
                       {formatCurrency(selectedProvider.totalEarnings)}
                     </p>
-                    <Wallet className="h-8 w-8 text-orange-400" />
+                    <Wallet className="h-8 w-8 text-orange-500" />
                   </div>
                 </div>
               </div>
 
               {/* Valor a Pagar */}
               <div className="space-y-2">
-                <Label htmlFor="amount" className="text-sm font-semibold text-white">
+                <Label htmlFor="amount" className="text-sm font-semibold text-slate-900">
                   Valor a Pagar <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -518,27 +518,27 @@ export default function FaturamentoPage() {
                   value={paymentAmount}
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00"
-                  className="text-lg font-medium h-12 text-white placeholder:text-white/60 bg-slate-800 border-slate-600 focus-visible:ring-[3px] focus-visible:ring-orange-500/40 focus-visible:border-orange-500"
+                  className="text-lg font-medium h-12 text-slate-900 placeholder:text-slate-400 bg-white border-slate-300 focus-visible:ring-[3px] focus-visible:ring-orange-500/30 focus-visible:border-orange-500"
                 />
-                <p className="text-xs text-white/70">
+                <p className="text-xs text-slate-600">
                   Máximo disponível: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
                 </p>
                 {amountError && (
-                  <p className="text-xs text-red-400">{amountError}</p>
+                  <p className="text-xs text-red-600">{amountError}</p>
                 )}
               </div>
 
               {/* Método de Pagamento + Chave PIX (lado a lado em telas maiores) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="method" className="text-sm font-semibold text-white">
+                  <Label htmlFor="method" className="text-sm font-semibold text-slate-900">
                     Método de Pagamento
                   </Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger id="method" className="h-12 text-white bg-slate-800 border-slate-600 focus-visible:ring-[3px] focus-visible:ring-orange-500/40 focus-visible:border-orange-500">
+                    <SelectTrigger id="method" className="h-12 text-slate-900 bg-white border-slate-300 focus-visible:ring-[3px] focus-visible:ring-orange-500/30 focus-visible:border-orange-500">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-900 text-white border-slate-700">
+                    <SelectContent className="bg-white text-slate-900 border-slate-200">
                       <SelectItem value="pix">💳 PIX</SelectItem>
                       <SelectItem value="ted">🏦 TED</SelectItem>
                       <SelectItem value="doc">📄 DOC</SelectItem>
@@ -549,14 +549,14 @@ export default function FaturamentoPage() {
 
                 {paymentMethod === "pix" && (
                   <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-white">Chave PIX</Label>
-                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-700 bg-slate-800 focus-within:border-orange-500">
+                    <Label className="text-sm font-semibold text-slate-900">Chave PIX</Label>
+                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-200 bg-slate-50 focus-within:border-orange-500">
                       {selectedProvider?.pixKey ? (
-                        <div className="truncate w-full text-sm font-medium text-white" title={selectedProvider.pixKey}>
+                        <div className="truncate w-full text-sm font-medium text-slate-900" title={selectedProvider.pixKey}>
                           {selectedProvider.pixKey}
                         </div>
                       ) : (
-                        <div className="w-full text-sm text-white/70">Prestador sem chave PIX</div>
+                        <div className="w-full text-sm text-slate-500">Prestador sem chave PIX</div>
                       )}
                     </div>
                   </div>
@@ -565,8 +565,8 @@ export default function FaturamentoPage() {
 
               {/* Descrição */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-semibold text-white">
-                  Descrição <span className="text-white/60 text-xs font-normal">(opcional)</span>
+                <Label htmlFor="description" className="text-sm font-semibold text-slate-900">
+                  Descrição <span className="text-slate-500 text-xs font-normal">(opcional)</span>
                 </Label>
                 <Textarea
                   id="description"
@@ -574,7 +574,7 @@ export default function FaturamentoPage() {
                   onChange={(e) => setPaymentDescription(e.target.value)}
                   placeholder="Descrição do pagamento..."
                   rows={3}
-                  className="resize-none text-white placeholder:text-white/60 bg-slate-800 border-slate-600 focus-visible:ring-[3px] focus-visible:ring-orange-500/40 focus-visible:border-orange-500"
+                  className="resize-none text-slate-900 placeholder:text-slate-400 bg-white border-slate-300 focus-visible:ring-[3px] focus-visible:ring-orange-500/30 focus-visible:border-orange-500"
                 />
               </div>
 
@@ -582,7 +582,7 @@ export default function FaturamentoPage() {
             </div>
           )}
 
-          <DialogFooter className="pt-4 border-t border-gray-700 gap-3 sticky bottom-0 bg-gray-900">
+          <DialogFooter className="pt-4 border-t border-slate-200 gap-3 sticky bottom-0 bg-white dark:bg-white">
             <Button
               variant="outline"
               onClick={() => setPaymentDialogOpen(false)}
