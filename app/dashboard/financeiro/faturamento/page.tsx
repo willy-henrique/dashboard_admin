@@ -428,7 +428,7 @@ export default function FaturamentoPage() {
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] z-[100] bg-white dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle>Confirmar Pagamento</DialogTitle>
             <DialogDescription>
