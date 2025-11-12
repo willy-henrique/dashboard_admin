@@ -476,16 +476,16 @@ export default function FaturamentoPage() {
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-2xl shadow-xl">
+        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-gray-900 border-gray-800 rounded-2xl shadow-xl text-white">
           <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
             <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
                 <CreditCard className="h-6 w-6 text-white" />
               </div>
-              <span className="text-gray-900 dark:text-white">Confirmar Pagamento</span>
+              <span className="text-white">Confirmar Pagamento</span>
             </DialogTitle>
-            <DialogDescription className="text-base text-gray-600 dark:text-gray-300 mt-2">
-              Processar pagamento para <span className="font-semibold text-gray-900 dark:text-white">{getProviderDisplayName(selectedProvider)}</span>
+            <DialogDescription className="text-base text-white/80 mt-2">
+              Processar pagamento para <span className="font-semibold text-white">{getProviderDisplayName(selectedProvider)}</span>
             </DialogDescription>
           </DialogHeader>
           
@@ -493,20 +493,20 @@ export default function FaturamentoPage() {
             <div className="space-y-6 py-6">
               {/* Valor Disponível - Destaque */}
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Valor Disponível</Label>
-                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700">
+                <Label className="text-sm font-semibold text-white">Valor Disponível</Label>
+                <div className="p-4 bg-slate-800 rounded-lg border border-slate-700">
                   <div className="flex items-center justify-between">
-                    <p className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+                    <p className="text-3xl font-bold text-white">
                       {formatCurrency(selectedProvider.totalEarnings)}
                     </p>
-                    <Wallet className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <Wallet className="h-8 w-8 text-green-400" />
                   </div>
                 </div>
               </div>
 
               {/* Valor a Pagar */}
               <div className="space-y-2">
-                <Label htmlFor="amount" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <Label htmlFor="amount" className="text-sm font-semibold text-white">
                   Valor a Pagar <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -518,24 +518,24 @@ export default function FaturamentoPage() {
                   value={paymentAmount}
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00"
-                  className="text-lg font-medium h-12"
+                  className="text-lg font-medium h-12 text-white placeholder:text-white/50"
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-white/70">
                   Máximo disponível: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
                 </p>
                 {amountError && (
-                  <p className="text-xs text-red-600 dark:text-red-400">{amountError}</p>
+                  <p className="text-xs text-red-400">{amountError}</p>
                 )}
               </div>
 
               {/* Método de Pagamento + Chave PIX (lado a lado em telas maiores) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="method" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="method" className="text-sm font-semibold text-white">
                     Método de Pagamento
                   </Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger id="method" className="h-12">
+                    <SelectTrigger id="method" className="h-12 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -549,14 +549,14 @@ export default function FaturamentoPage() {
 
                 {paymentMethod === "pix" && (
                   <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Chave PIX</Label>
-                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                    <Label className="text-sm font-semibold text-white">Chave PIX</Label>
+                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-700 bg-slate-800">
                       {selectedProvider?.pixKey ? (
-                        <div className="truncate w-full text-sm font-medium text-slate-900 dark:text-slate-100" title={selectedProvider.pixKey}>
+                        <div className="truncate w-full text-sm font-medium text-white" title={selectedProvider.pixKey}>
                           {selectedProvider.pixKey}
                         </div>
                       ) : (
-                        <div className="w-full text-sm text-slate-500 dark:text-slate-400">Prestador sem chave PIX</div>
+                        <div className="w-full text-sm text-white/70">Prestador sem chave PIX</div>
                       )}
                     </div>
                   </div>
@@ -565,8 +565,8 @@ export default function FaturamentoPage() {
 
               {/* Descrição */}
               <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Descrição <span className="text-gray-400 text-xs font-normal">(opcional)</span>
+                <Label htmlFor="description" className="text-sm font-semibold text-white">
+                  Descrição <span className="text-white/60 text-xs font-normal">(opcional)</span>
                 </Label>
                 <Textarea
                   id="description"
@@ -574,7 +574,7 @@ export default function FaturamentoPage() {
                   onChange={(e) => setPaymentDescription(e.target.value)}
                   placeholder="Descrição do pagamento..."
                   rows={3}
-                  className="resize-none"
+                  className="resize-none text-white placeholder:text-white/50"
                 />
               </div>
 
@@ -582,12 +582,12 @@ export default function FaturamentoPage() {
             </div>
           )}
 
-          <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-700 gap-3 sticky bottom-0 bg-white dark:bg-gray-900">
+          <DialogFooter className="pt-4 border-t border-gray-700 gap-3 sticky bottom-0 bg-gray-900">
             <Button
               variant="outline"
               onClick={() => setPaymentDialogOpen(false)}
               disabled={processingPayment}
-              className="flex-1 sm:flex-none"
+              className="flex-1 sm:flex-none bg-slate-200 text-slate-900 hover:bg-slate-300"
             >
               Cancelar
             </Button>
