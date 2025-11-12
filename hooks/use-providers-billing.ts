@@ -52,34 +52,84 @@ export function useProvidersBilling(options?: {
       snapshot.forEach((doc) => {
         const data = doc.data()
         
+        // Debug: Log completo do documento para verificar estrutura
+        console.log(`[DEBUG] Provider ${doc.id}:`, {
+          email: data.email,
+          phone: data.phone,
+          hasServices: !!data.services,
+          services: data.services,
+          servicesType: typeof data.services,
+          allKeys: Object.keys(data)
+        })
+        
         // Filtrar apenas providers ativos (ou que não tenham o campo, assumindo como ativo)
         const isActive = data.isActive !== false // Se não existir, assume true
         
         // Extrair totalEarnings do campo services.totalEarnings
+        // Tentar diferentes caminhos possíveis
         const services = data.services || {}
+        
+        // Debug: Log do objeto services
+        console.log(`[DEBUG] Provider ${doc.id} - services object:`, {
+          services,
+          servicesKeys: services ? Object.keys(services) : [],
+          totalEarnings: services?.totalEarnings,
+          totalEarningsType: typeof services?.totalEarnings,
+          totalEarningsValue: services?.totalEarnings,
+          // Verificar também se está no nível raiz
+          directTotalEarnings: data.totalEarnings,
+          directTotalJobs: data.totalJobs
+        })
+        
         // Garantir que lemos o valor corretamente, mesmo que seja 0 ou um valor pequeno
         let totalEarnings = 0
-        if (services.totalEarnings !== undefined && services.totalEarnings !== null) {
-          totalEarnings = typeof services.totalEarnings === 'number' 
-            ? services.totalEarnings 
-            : parseFloat(services.totalEarnings) || 0
+        let foundEarnings = false
+        
+        // Tentar primeiro services.totalEarnings
+        if (services && typeof services === 'object' && services !== null) {
+          if (services.totalEarnings !== undefined && services.totalEarnings !== null) {
+            foundEarnings = true
+            const value = services.totalEarnings
+            totalEarnings = typeof value === 'number' 
+              ? value 
+              : (typeof value === 'string' ? parseFloat(value) : Number(value)) || 0
+          }
+        }
+        
+        // Se não encontrou em services, tentar no nível raiz (fallback)
+        if (!foundEarnings && data.totalEarnings !== undefined && data.totalEarnings !== null) {
+          foundEarnings = true
+          const value = data.totalEarnings
+          totalEarnings = typeof value === 'number' 
+            ? value 
+            : (typeof value === 'string' ? parseFloat(value) : Number(value)) || 0
+          console.log(`[DEBUG] Provider ${doc.id} - Usando totalEarnings do nível raiz:`, totalEarnings)
         }
         
         let totalJobs = 0
-        if (services.totalJobs !== undefined && services.totalJobs !== null) {
-          totalJobs = typeof services.totalJobs === 'number' 
-            ? services.totalJobs 
-            : parseInt(services.totalJobs) || 0
+        if (services && typeof services === 'object' && services !== null) {
+          if (services.totalJobs !== undefined && services.totalJobs !== null) {
+            const value = services.totalJobs
+            totalJobs = typeof value === 'number' 
+              ? value 
+              : (typeof value === 'string' ? parseInt(value) : Number(value)) || 0
+          }
+        }
+        
+        // Se não encontrou, tentar no nível raiz (fallback)
+        if (totalJobs === 0 && data.totalJobs !== undefined && data.totalJobs !== null) {
+          const value = data.totalJobs
+          totalJobs = typeof value === 'number' 
+            ? value 
+            : (typeof value === 'string' ? parseInt(value) : Number(value)) || 0
         }
 
-        // Debug: log para verificar valores
-        if (totalEarnings > 0) {
-          console.log(`Provider ${doc.id}: totalEarnings = ${totalEarnings}`, {
-            raw: services.totalEarnings,
-            type: typeof services.totalEarnings,
-            services
-          })
-        }
+        // Debug: log final do valor extraído
+        console.log(`[DEBUG] Provider ${doc.id} - Valores extraídos:`, {
+          totalEarnings,
+          totalJobs,
+          email: data.email
+        })
 
         // Incluir apenas providers ativos
         if (isActive) {
