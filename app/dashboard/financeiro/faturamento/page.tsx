@@ -428,27 +428,39 @@ export default function FaturamentoPage() {
 
       {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] z-[100] bg-white dark:bg-gray-800">
-          <DialogHeader>
-            <DialogTitle>Confirmar Pagamento</DialogTitle>
-            <DialogDescription>
-              Processar pagamento para {selectedProvider?.nome}
+        <DialogContent className="sm:max-w-[550px] z-[100] bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+          <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
+            <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                <CreditCard className="h-6 w-6 text-white" />
+              </div>
+              <span className="text-gray-900 dark:text-white">Confirmar Pagamento</span>
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600 dark:text-gray-300 mt-2">
+              Processar pagamento para <span className="font-semibold text-gray-900 dark:text-white">{selectedProvider?.nome}</span>
             </DialogDescription>
           </DialogHeader>
           
           {selectedProvider && (
-            <div className="space-y-4 py-4">
+            <div className="space-y-6 py-6">
+              {/* Valor Disponível - Destaque */}
               <div className="space-y-2">
-                <Label>Valor Disponível</Label>
-                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                  <p className="text-2xl font-bold text-green-600">
-                    {formatCurrency(selectedProvider.totalEarnings)}
-                  </p>
+                <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Valor Disponível</Label>
+                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-between">
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                      {formatCurrency(selectedProvider.totalEarnings)}
+                    </p>
+                    <Wallet className="h-8 w-8 text-green-500 dark:text-green-400" />
+                  </div>
                 </div>
               </div>
 
+              {/* Valor a Pagar */}
               <div className="space-y-2">
-                <Label htmlFor="amount">Valor a Pagar *</Label>
+                <Label htmlFor="amount" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Valor a Pagar <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   id="amount"
                   type="number"
@@ -458,63 +470,83 @@ export default function FaturamentoPage() {
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
                   placeholder="0.00"
+                  className="text-lg font-medium h-12"
                 />
-                <p className="text-xs text-gray-500">
-                  Máximo: {formatCurrency(selectedProvider.totalEarnings)}
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Máximo disponível: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
                 </p>
               </div>
 
+              {/* Método de Pagamento */}
               <div className="space-y-2">
-                <Label htmlFor="method">Método de Pagamento</Label>
+                <Label htmlFor="method" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Método de Pagamento
+                </Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger id="method">
+                  <SelectTrigger id="method" className="h-12">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="ted">TED</SelectItem>
-                    <SelectItem value="doc">DOC</SelectItem>
-                    <SelectItem value="transfer">Transferência Bancária</SelectItem>
+                    <SelectItem value="pix">💳 PIX</SelectItem>
+                    <SelectItem value="ted">🏦 TED</SelectItem>
+                    <SelectItem value="doc">📄 DOC</SelectItem>
+                    <SelectItem value="transfer">💸 Transferência Bancária</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Descrição */}
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição (opcional)</Label>
+                <Label htmlFor="description" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Descrição <span className="text-gray-400 text-xs font-normal">(opcional)</span>
+                </Label>
                 <Textarea
                   id="description"
                   value={paymentDescription}
                   onChange={(e) => setPaymentDescription(e.target.value)}
                   placeholder="Descrição do pagamento..."
                   rows={3}
+                  className="resize-none"
                 />
               </div>
 
+              {/* Informações PIX */}
               {selectedProvider.pixKey && (
-                <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                    Chave PIX: {selectedProvider.pixKey}
-                  </p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">
-                    Tipo: {selectedProvider.pixKeyType?.toUpperCase() || 'PIX'}
-                  </p>
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-600 flex items-center justify-center flex-shrink-0">
+                      <CreditCard className="h-5 w-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                        Chave PIX
+                      </p>
+                      <p className="text-base font-mono font-medium text-blue-800 dark:text-blue-200 mb-2">
+                        {selectedProvider.pixKey}
+                      </p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        Tipo: <span className="font-semibold">{selectedProvider.pixKeyType?.toUpperCase() || 'PIX'}</span>
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="pt-4 border-t border-gray-200 dark:border-gray-700 gap-3">
             <Button
               variant="outline"
               onClick={() => setPaymentDialogOpen(false)}
               disabled={processingPayment}
+              className="flex-1 sm:flex-none"
             >
               Cancelar
             </Button>
             <Button
               onClick={handleProcessPayment}
               disabled={processingPayment || !paymentAmount || parseFloat(paymentAmount) <= 0}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg flex-1 sm:flex-none min-w-[180px]"
             >
               {processingPayment ? (
                 <>
