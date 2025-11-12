@@ -57,8 +57,29 @@ export function useProvidersBilling(options?: {
         
         // Extrair totalEarnings do campo services.totalEarnings
         const services = data.services || {}
-        const totalEarnings = services.totalEarnings || 0
-        const totalJobs = services.totalJobs || 0
+        // Garantir que lemos o valor corretamente, mesmo que seja 0 ou um valor pequeno
+        let totalEarnings = 0
+        if (services.totalEarnings !== undefined && services.totalEarnings !== null) {
+          totalEarnings = typeof services.totalEarnings === 'number' 
+            ? services.totalEarnings 
+            : parseFloat(services.totalEarnings) || 0
+        }
+        
+        let totalJobs = 0
+        if (services.totalJobs !== undefined && services.totalJobs !== null) {
+          totalJobs = typeof services.totalJobs === 'number' 
+            ? services.totalJobs 
+            : parseInt(services.totalJobs) || 0
+        }
+
+        // Debug: log para verificar valores
+        if (totalEarnings > 0) {
+          console.log(`Provider ${doc.id}: totalEarnings = ${totalEarnings}`, {
+            raw: services.totalEarnings,
+            type: typeof services.totalEarnings,
+            services
+          })
+        }
 
         // Incluir apenas providers ativos
         if (isActive) {
@@ -70,8 +91,8 @@ export function useProvidersBilling(options?: {
             email: data.email || '',
             pixKey: data.pixKey || '',
             pixKeyType: data.pixKeyType || '',
-            totalEarnings: typeof totalEarnings === 'number' ? totalEarnings : 0,
-            totalJobs: typeof totalJobs === 'number' ? totalJobs : 0,
+            totalEarnings,
+            totalJobs,
             isActive: true,
             isVerified: data.isVerified ?? false,
             verificationStatus: data.verificationStatus || 'pending',

@@ -52,8 +52,20 @@ export async function GET(request: NextRequest) {
       
       // Extrair totalEarnings do campo services.totalEarnings
       const services = data.services || {}
-      const totalEarnings = services.totalEarnings || 0
-      const totalJobs = services.totalJobs || 0
+      // Garantir que lemos o valor corretamente, mesmo que seja 0 ou um valor pequeno
+      let totalEarnings = 0
+      if (services.totalEarnings !== undefined && services.totalEarnings !== null) {
+        totalEarnings = typeof services.totalEarnings === 'number' 
+          ? services.totalEarnings 
+          : parseFloat(services.totalEarnings) || 0
+      }
+      
+      let totalJobs = 0
+      if (services.totalJobs !== undefined && services.totalJobs !== null) {
+        totalJobs = typeof services.totalJobs === 'number' 
+          ? services.totalJobs 
+          : parseInt(services.totalJobs) || 0
+      }
 
       // Incluir apenas providers ativos
       if (isActive) {
@@ -65,8 +77,8 @@ export async function GET(request: NextRequest) {
           email: data.email || '',
           pixKey: data.pixKey || '',
           pixKeyType: data.pixKeyType || '',
-          totalEarnings: typeof totalEarnings === 'number' ? totalEarnings : 0,
-          totalJobs: typeof totalJobs === 'number' ? totalJobs : 0,
+          totalEarnings,
+          totalJobs,
           isActive: true,
           isVerified: data.isVerified ?? false,
           verificationStatus: data.verificationStatus || 'pending',
