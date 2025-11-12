@@ -51,7 +51,13 @@ export default function FaturamentoPage() {
   // Nome exibido do prestador (fallback inteligente)
   const getProviderDisplayName = (p: any) => {
     if (!p) return ""
-    return (p.nome && String(p.nome).trim()) || p.email || p.phone || `ID: ${String(p.uid || p.id || "").slice(0, 8)}...`
+    const name = String(p.nome || "").trim()
+    // Se vier "Sem nome" (ou variações), considerar como ausente e usar fallback
+    const isPlaceholder =
+      name.length === 0 ||
+      ["sem nome", "sem-nome", "—", "-", "na"].includes(name.toLowerCase())
+    if (!isPlaceholder) return name
+    return p.email || p.phone || `ID: ${String(p.uid || p.id || "").slice(0, 8)}...`
   }
 
   // Filtrar prestadores
@@ -572,27 +578,7 @@ export default function FaturamentoPage() {
                 />
               </div>
 
-              {/* Informações PIX */}
-              {selectedProvider.pixKey && (
-                <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-300 dark:border-slate-700">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-600 flex items-center justify-center flex-shrink-0">
-                      <CreditCard className="h-5 w-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-1">
-                        Chave PIX
-                      </p>
-                      <p className="text-base font-mono font-medium text-slate-800 dark:text-slate-200 mb-2 break-all">
-                        {selectedProvider.pixKey}
-                      </p>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        Tipo: <span className="font-semibold">{selectedProvider.pixKeyType?.toUpperCase() || 'PIX'}</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Informações PIX (removido duplicado - agora fica ao lado do método) */}
             </div>
           )}
 
