@@ -464,7 +464,7 @@ export default function FaturamentoPage() {
                           <CreditCard className="h-4 w-4 mr-2" />
                           Pagar
                         </Button>
-                      </TableCell>
+                  </TableCell>
                 </TableRow>
                   ))
                 )}
@@ -479,7 +479,7 @@ export default function FaturamentoPage() {
         <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-gray-900 border-gray-800 rounded-2xl shadow-xl text-white">
           <DialogHeader className="pb-4 border-b border-gray-200 dark:border-gray-700">
             <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
                 <CreditCard className="h-6 w-6 text-white" />
               </div>
               <span className="text-white">Confirmar Pagamento</span>
@@ -499,7 +499,7 @@ export default function FaturamentoPage() {
                     <p className="text-3xl font-bold text-white">
                       {formatCurrency(selectedProvider.totalEarnings)}
                     </p>
-                    <Wallet className="h-8 w-8 text-green-400" />
+                    <Wallet className="h-8 w-8 text-orange-400" />
                   </div>
                 </div>
               </div>
@@ -518,7 +518,7 @@ export default function FaturamentoPage() {
                   value={paymentAmount}
                   onChange={(e) => handleAmountChange(e.target.value)}
                   placeholder="0.00"
-                  className="text-lg font-medium h-12 text-white placeholder:text-white/50"
+                  className="text-lg font-medium h-12 text-white placeholder:text-white/60 bg-slate-800 border-slate-600 focus-visible:ring-[3px] focus-visible:ring-orange-500/40 focus-visible:border-orange-500"
                 />
                 <p className="text-xs text-white/70">
                   Máximo disponível: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
@@ -535,10 +535,10 @@ export default function FaturamentoPage() {
                     Método de Pagamento
                   </Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger id="method" className="h-12 text-white">
+                    <SelectTrigger id="method" className="h-12 text-white bg-slate-800 border-slate-600 focus-visible:ring-[3px] focus-visible:ring-orange-500/40 focus-visible:border-orange-500">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-900 text-white border-slate-700">
                       <SelectItem value="pix">💳 PIX</SelectItem>
                       <SelectItem value="ted">🏦 TED</SelectItem>
                       <SelectItem value="doc">📄 DOC</SelectItem>
@@ -550,7 +550,7 @@ export default function FaturamentoPage() {
                 {paymentMethod === "pix" && (
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-white">Chave PIX</Label>
-                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-700 bg-slate-800">
+                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-700 bg-slate-800 focus-within:border-orange-500">
                       {selectedProvider?.pixKey ? (
                         <div className="truncate w-full text-sm font-medium text-white" title={selectedProvider.pixKey}>
                           {selectedProvider.pixKey}
@@ -574,7 +574,7 @@ export default function FaturamentoPage() {
                   onChange={(e) => setPaymentDescription(e.target.value)}
                   placeholder="Descrição do pagamento..."
                   rows={3}
-                  className="resize-none text-white placeholder:text-white/50"
+                  className="resize-none text-white placeholder:text-white/60 bg-slate-800 border-slate-600 focus-visible:ring-[3px] focus-visible:ring-orange-500/40 focus-visible:border-orange-500"
                 />
               </div>
 
