@@ -54,11 +54,22 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
       setIsLoading(true)
       try {
         await onDownload(document)
-      } catch (error) {
-        console.error('Erro ao baixar documento:', error)
+      } catch (error: any) {
+        console.error('❌ Erro ao baixar documento:', {
+          code: error?.code,
+          message: error?.message,
+          documentName: document.name
+        })
+        // Se a URL não funcionar, tenta abrir em nova aba
+        if (document.url) {
+          window.open(document.url, '_blank')
+        }
       } finally {
         setIsLoading(false)
       }
+    } else if (document.url) {
+      // Fallback: abrir em nova aba se não houver handler
+      window.open(document.url, '_blank')
     }
   }
 
@@ -137,7 +148,7 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
 
           {/* Visualização do documento */}
           <div className="flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden min-h-[400px]">
-            {document.type === 'image' ? (
+            {document.type === 'image' && document.url ? (
               <img
                 src={document.url}
                 alt={document.name}
@@ -148,50 +159,58 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
                   const parent = target.parentElement
-                  const documentData = document as any
                   
-                  // Tentar URLs alternativas em sequência
-                  if (documentData.urlAlt && target.src !== documentData.urlAlt) {
-                    console.log('🔄 Modal: Tentando URL alternativa:', documentData.urlAlt)
-                    target.src = documentData.urlAlt
-                    return
-                  }
-                  
-                  if (documentData.urlDirect && target.src !== documentData.urlDirect) {
-                    console.log('🔄 Modal: Tentando URL direta:', documentData.urlDirect)
-                    target.src = documentData.urlDirect
-                    return
-                  }
+                  console.error('❌ Erro ao carregar imagem:', {
+                    url: document.url,
+                    name: document.name
+                  })
                   
                   if (parent) {
                     parent.innerHTML = `
                       <div class="text-center p-8 w-full">
-                        <div class="w-16 h-16 mx-auto mb-4 text-red-400">
+                        <div class="w-16 h-16 mx-auto mb-4 text-orange-400">
                           <svg fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                           </svg>
                         </div>
-                        <p class="text-red-600 mb-4">Erro ao carregar a imagem</p>
-                        <p class="text-sm text-gray-500 mb-4">URL: ${document.url}</p>
-                        <button onclick="window.open('${document.url}', '_blank')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                          Abrir em nova aba
-                        </button>
+                        <p class="text-orange-600 font-medium mb-2">Não foi possível carregar a imagem</p>
+                        <p class="text-sm text-gray-500 mb-4">O arquivo pode ter sido removido ou não está mais acessível</p>
+                        <div class="flex gap-2 justify-center">
+                          <button onclick="window.open('${document.url}', '_blank')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                            Tentar abrir em nova aba
+                          </button>
+                        </div>
                       </div>
                     `
                   }
                 }}
-                onLoad={(e) => {
+                onLoad={() => {
                   console.log('✅ Imagem carregada no modal:', document.name)
                 }}
               />
+            ) : !document.url ? (
+              <div className="text-center p-8 w-full">
+                <AlertCircle className="h-16 w-16 mx-auto text-orange-400 mb-4" />
+                <p className="text-orange-600 font-medium mb-2">URL do documento não disponível</p>
+                <p className="text-sm text-gray-500">O documento pode ter sido removido ou não está mais acessível no Storage</p>
+              </div>
             ) : (
               <div className="text-center p-8">
                 <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-600 mb-4">Visualização não disponível para este tipo de arquivo</p>
-                <Button onClick={handleDownload} disabled={isLoading}>
+                <Button onClick={handleDownload} disabled={isLoading || !document.url}>
                   <Download className="h-4 w-4 mr-2" />
                   {isLoading ? 'Baixando...' : 'Baixar Arquivo'}
                 </Button>
+                {document.url && (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.open(document.url, '_blank')}
+                    className="ml-2"
+                  >
+                    Abrir em Nova Aba
+                  </Button>
+                )}
               </div>
             )}
           </div>
@@ -267,10 +286,25 @@ export const DocumentViewer = ({
   }
 
   const handleDownloadDocument = async (document: StorageDocument) => {
+    if (!document.url) {
+      console.error('❌ URL do documento não disponível:', document.name)
+      return
+    }
+    
     try {
       await downloadDocument(document.url, document.name)
-    } catch (error) {
-      console.error('Erro ao baixar documento:', error)
+    } catch (error: any) {
+      console.error('❌ Erro ao baixar documento:', {
+        code: error?.code,
+        message: error?.message,
+        documentName: document.name,
+        url: document.url
+      })
+      
+      // Fallback: tentar abrir em nova aba se o download falhar
+      if (document.url) {
+        window.open(document.url, '_blank')
+      }
     }
   }
 
@@ -309,7 +343,7 @@ export const DocumentViewer = ({
             <CardContent className="p-4 space-y-3">
               {/* Preview do documento */}
               <div className="relative">
-                {document.type === 'image' ? (
+                {document.type === 'image' && document.url ? (
                   <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
                        onClick={() => handleViewDocument(document)}>
                     <img
@@ -319,46 +353,39 @@ export const DocumentViewer = ({
                       onError={(e) => {
                         const target = e.target as HTMLImageElement
                         const parent = target.parentElement
-                        const documentData = document as any
                         
-                        // Tentar URLs alternativas em sequência
-                        if (documentData.urlAlt && target.src !== documentData.urlAlt) {
-                          console.log('🔄 Tentando URL alternativa:', documentData.urlAlt)
-                          target.src = documentData.urlAlt
-                          return
-                        }
-                        
-                        if (documentData.urlDirect && target.src !== documentData.urlDirect) {
-                          console.log('🔄 Tentando URL direta:', documentData.urlDirect)
-                          target.src = documentData.urlDirect
-                          return
-                        }
+                        console.error('❌ Erro ao carregar preview da imagem:', {
+                          url: document.url,
+                          name: document.name
+                        })
                         
                         if (parent) {
                           parent.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center bg-red-50">
-                              <div class="text-center">
-                                <div class="w-8 h-8 mx-auto mb-2 text-red-400">
-                                  <svg fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                  </svg>
-                                </div>
-                                <p class="text-xs text-red-600">Erro ao carregar imagem</p>
-                                <p class="text-xs text-red-500">URL: ${document.url}</p>
-                                <button onclick="window.open('${document.url}', '_blank')" class="mt-2 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600">
-                                  Abrir em nova aba
-                                </button>
+                            <div class="w-full h-full flex items-center justify-center bg-orange-50">
+                              <div class="text-center p-2">
+                                <svg class="w-8 h-8 mx-auto mb-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <p class="text-xs text-orange-600 font-medium">Imagem não disponível</p>
+                                <p class="text-xs text-gray-500">Clique para ver detalhes</p>
                               </div>
                             </div>
                           `
                         }
                       }}
-                      onLoad={(e) => {
-                        console.log('✅ Imagem carregada:', document.name)
+                      onLoad={() => {
+                        console.log('✅ Preview da imagem carregado:', document.name)
                       }}
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
                       <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    </div>
+                  </div>
+                ) : !document.url ? (
+                  <div className="aspect-video bg-orange-50 rounded-lg flex items-center justify-center">
+                    <div className="text-center p-4">
+                      <AlertCircle className="h-10 w-10 mx-auto text-orange-400 mb-2" />
+                      <p className="text-xs text-orange-600 font-medium">URL não disponível</p>
                     </div>
                   </div>
                 ) : (

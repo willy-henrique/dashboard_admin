@@ -1,7 +1,7 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
-import { User, onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signOut as firebaseSignOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth"
+import { createContext, useContext, useEffect, useState, useCallback } from "react"
+import { User, onAuthStateChanged, signInWithEmailAndPassword, signOut as firebaseSignOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 
 interface AuthContextType {
@@ -23,31 +23,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser)
       setLoading(false)
     })
 
     return () => unsubscribe()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Login automático em desenvolvimento
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && !user && !loading) {
-      signInAnonymously(auth).catch(console.error)
-    }
-  }, [user, loading])
-
-  const login = async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
-    // Autenticação real com Firebase Auth
+  const login = useCallback(async ({ email, password, rememberMe }: { email: string; password: string; rememberMe?: boolean }) => {
     const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence
     await setPersistence(auth, persistence)
     await signInWithEmailAndPassword(auth, email, password)
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await firebaseSignOut(auth)
-  }
+  }, [])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout }}>

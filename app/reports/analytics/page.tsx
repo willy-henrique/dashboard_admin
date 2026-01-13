@@ -27,6 +27,7 @@ import { useState, useMemo, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { usePagarmeCharges, usePagarmeOrders, usePagarmeAnalytics } from "@/hooks/use-pagarme"
 import { PagarmeService } from "@/lib/services/pagarme-service"
+import { AppShell } from "@/components/layout/app-shell"
 
 function AnalyticsPageContent() {
   const searchParams = useSearchParams()
@@ -166,7 +167,8 @@ function AnalyticsPageContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <AppShell>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -522,7 +524,8 @@ function AnalyticsPageContent() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </AppShell>
   )
 }
 

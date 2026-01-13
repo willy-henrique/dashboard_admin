@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, User, Clock, Phone, RefreshCw } from "lucide-react"
@@ -27,8 +27,8 @@ export function ProvidersMap() {
     refreshInterval: 30000 // Atualiza a cada 30 segundos
   })
 
-  // Fallback para dados mock se não houver prestadores
-  const displayProviders = providers.length > 0 ? providers : [
+  // Fallback para dados mock se não houver prestadores - memoizado para evitar re-renders
+  const mockProviders: Provider[] = useMemo(() => [
     {
       id: "mock-1",
       nome: "João Silva",
@@ -55,7 +55,11 @@ export function ProvidersMap() {
       avaliacao: 4.9,
       totalServicos: 203
     }
-  ]
+  ], [])
+
+  const displayProviders = useMemo(() => {
+    return providers.length > 0 ? providers : mockProviders
+  }, [providers, mockProviders])
 
   // Inicializar o mapa
   useEffect(() => {
@@ -103,8 +107,8 @@ export function ProvidersMap() {
     }
   }, [mapLoaded])
 
-  // Criar mapa mock quando Google Maps não estiver disponível
-  const createMockMap = () => {
+  // Criar mapa mock quando Google Maps não estiver disponível - memoizado
+  const createMockMap = useCallback(() => {
     if (!mapRef.current) return
 
     const mapContainer = mapRef.current
@@ -159,17 +163,20 @@ export function ProvidersMap() {
         </div>
       </div>
     `
-  }
+  }, [displayProviders])
 
   // Atualizar marcadores quando os prestadores mudarem
   useEffect(() => {
-    if (!displayProviders.length) return
+    if (!mapLoaded || !displayProviders.length) return
 
     if (mapInstance && window.google && window.google.maps) {
       // Google Maps está disponível
-      // Limpar marcadores existentes
-      markers.forEach(marker => marker.setMap(null))
-      setMarkers([])
+      // Limpar marcadores existentes usando referência atual
+      markers.forEach(marker => {
+        if (marker && marker.setMap) {
+          marker.setMap(null)
+        }
+      })
 
       // Adicionar novos marcadores
       const newMarkers: any[] = []
@@ -214,11 +221,28 @@ export function ProvidersMap() {
       })
 
       setMarkers(newMarkers)
-    } else {
+    } else if (mapLoaded) {
       // Usar mapa mock - recriar com novos dados
       createMockMap()
     }
-  }, [mapInstance, displayProviders])
+  }, [mapInstance, mapLoaded, displayProviders, createMockMap])
+
+  // Cleanup: remover marcadores quando o componente desmontar ou quando markers mudar
+  const markersRef = useRef(markers)
+  useEffect(() => {
+    markersRef.current = markers
+  }, [markers])
+
+  useEffect(() => {
+    return () => {
+      // Limpar marcadores ao desmontar usando ref para evitar dependência
+      markersRef.current.forEach(marker => {
+        if (marker && marker.setMap) {
+          marker.setMap(null)
+        }
+      })
+    }
+  }, [])
 
   return (
     <div className="space-y-4">

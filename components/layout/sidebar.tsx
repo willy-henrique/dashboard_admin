@@ -104,7 +104,8 @@ const navigation = [
     icon: BarChart3,
     permission: "relatorios",
     children: [
-      { name: "Dashboard Analytics", href: "/reports/analytics", icon: BarChart3 },
+      { name: "Relatórios e Analytics", href: "/reports", icon: BarChart3 },
+      { name: "Dashboard Analytics", href: "/reports/analytics", icon: TrendingUp },
       // Página específica de performance não existe; usamos aba via query param
       { name: "Performance", href: "/reports/analytics?tab=performance", icon: TrendingUp },
     ],
@@ -179,15 +180,24 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   })
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gradient-to-b from-orange-100 to-orange-200 text-slate-900">
+    <div className="flex h-full flex-col bg-gradient-to-b from-orange-50 via-amber-50 to-orange-100 text-slate-800">
       {/* Header fixo */}
-      <div className="flex h-16 items-center justify-between px-6 flex-shrink-0">
-        <Logo className="h-8" showText={true} />
+      <div className="flex h-16 items-center justify-between px-5 flex-shrink-0 border-b border-orange-200/50">
+        <button
+          onClick={() => {
+            router.push('/dashboard')
+            setOpen(false)
+          }}
+          className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
+          aria-label="Ir para o dashboard"
+        >
+          <Logo className="h-8" showText={true} />
+        </button>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setOpen(false)}
-          className="lg:hidden text-slate-900 hover:bg-black/10"
+          className="lg:hidden text-slate-700 hover:bg-orange-200/50"
           aria-label="Fechar menu lateral"
         >
           <X className="h-4 w-4" />
@@ -195,8 +205,8 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       </div>
       
       {/* Área rolável para navegação */}
-      <ScrollArea className="flex-1 px-3 py-2 overflow-hidden">
-        <nav className="space-y-2 pb-4" role="navigation" aria-label="Navegação principal">
+      <ScrollArea className="flex-1 px-3 py-4 overflow-hidden">
+        <nav className="space-y-1.5 pb-4" role="navigation" aria-label="Navegação principal">
           {filteredNavigation.map((item) => (
             <div key={item.name}>
               {item.children ? (
@@ -204,27 +214,32 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "w-full justify-between transition-colors text-slate-900 hover:bg-black/10",
-                      expandedItems.includes(item.name) && "bg-white/70"
+                      "w-full justify-between transition-all text-slate-700 hover:bg-white/60 hover:text-orange-700 rounded-xl h-11",
+                      expandedItems.includes(item.name) && "bg-white/80 text-orange-700 shadow-sm"
                     )}
                     onClick={() => toggleExpanded(item.name)}
                     aria-expanded={expandedItems.includes(item.name)}
                     aria-controls={`submenu-${item.name}`}
                     aria-label={`${item.name}, ${expandedItems.includes(item.name) ? 'recolher' : 'expandir'} submenu`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <item.icon className="h-4 w-4" aria-hidden="true" />
-                      <span>{item.name}</span>
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "p-1.5 rounded-lg transition-colors",
+                        expandedItems.includes(item.name) ? "bg-orange-100 text-orange-600" : "bg-white/50 text-slate-500"
+                      )}>
+                        <item.icon className="h-4 w-4" aria-hidden="true" />
+                      </div>
+                      <span className="font-medium text-sm">{item.name}</span>
                     </div>
                     {expandedItems.includes(item.name) ? (
-                      <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                      <ChevronDown className="h-4 w-4 text-orange-500" aria-hidden="true" />
                     ) : (
                       <ChevronRight className="h-4 w-4" aria-hidden="true" />
                     )}
                   </Button>
                   {expandedItems.includes(item.name) && (
                     <div 
-                      className="ml-6 mt-2 space-y-1"
+                      className="ml-4 mt-1.5 space-y-1 border-l-2 border-orange-200 pl-3"
                       id={`submenu-${item.name}`}
                       role="region"
                       aria-label={`Submenu de ${item.name}`}
@@ -234,13 +249,13 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                           key={child.href}
                           href={child.href}
                           className={cn(
-                            "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
-                            isActive(child.href) && "bg-white text-orange-700 font-semibold"
+                            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all text-slate-600 hover:bg-white/60 hover:text-orange-700",
+                            isActive(child.href) && "bg-white text-orange-700 font-semibold shadow-sm"
                           )}
                           onClick={() => setOpen(false)}
                           aria-current={isActive(child.href) ? 'page' : undefined}
                         >
-                          <child.icon className="h-4 w-4" aria-hidden="true" />
+                          <child.icon className="h-3.5 w-3.5" aria-hidden="true" />
                           <span>{child.name}</span>
                         </a>
                       ))}
@@ -251,14 +266,19 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                 <a
                   href={item.href}
                   className={cn(
-                    "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors text-slate-900 hover:bg-black/10",
-                    isActive(item.href) && "bg-white text-orange-700 font-semibold"
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all text-slate-700 hover:bg-white/60 hover:text-orange-700",
+                    isActive(item.href) && "bg-white text-orange-700 font-semibold shadow-sm"
                   )}
                   onClick={() => setOpen(false)}
                   aria-current={isActive(item.href) ? 'page' : undefined}
                 >
-                  <item.icon className="h-4 w-4" aria-hidden="true" />
-                  <span>{item.name}</span>
+                  <div className={cn(
+                    "p-1.5 rounded-lg transition-colors",
+                    isActive(item.href) ? "bg-orange-100 text-orange-600" : "bg-white/50 text-slate-500"
+                  )}>
+                    <item.icon className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                  <span className="font-medium">{item.name}</span>
                 </a>
               )}
             </div>
@@ -267,26 +287,26 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
       </ScrollArea>
 
       {/* Footer fixo da Sidebar */}
-      <div className="border-t border-black/10 p-4 flex-shrink-0">
-        <div className="flex items-center space-x-3 text-slate-900">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white">
+      <div className="border-t border-orange-200/50 p-4 flex-shrink-0 bg-white/30">
+        <div className="flex items-center gap-3 text-slate-800">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20">
             {user?.photoURL ? (
               <img 
                 src={user.photoURL} 
                 alt="Avatar" 
-                className="w-8 h-8 rounded-full object-cover"
+                className="w-10 h-10 rounded-xl object-cover"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm">
+              <span className="text-white font-semibold text-sm">
                 {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'A'}
-              </div>
+              </span>
             )}
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-slate-800 truncate">
               {user?.displayName || user?.email?.split('@')[0] || 'Usuário'}
             </p>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-slate-500 truncate">
               {user?.email || 'admin@aquiresolve.com'}
             </p>
           </div>
@@ -294,7 +314,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             variant="ghost"
             size="sm"
             onClick={logout}
-            className="text-slate-900 hover:bg-black/10"
+            className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
             aria-label="Sair do sistema"
           >
             <LogOut className="h-4 w-4" aria-hidden="true" />

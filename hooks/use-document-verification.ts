@@ -36,53 +36,94 @@ export const useDocumentVerification = () => {
       console.log('🔍 Buscando verificações de documentos...')
       
       // Buscar documentos diretamente do Firebase Storage
-      const storageProviders = await getAllPendingProviders()
-      console.log(`✅ Encontrados ${storageProviders.length} prestadores com documentos`)
+      let storageProviders: ProviderDocuments[] = []
+      try {
+        storageProviders = await getAllPendingProviders()
+        console.log(`✅ Encontrados ${storageProviders.length} prestadores com documentos`)
+      } catch (storageError: any) {
+        console.error('❌ Erro ao buscar documentos do Storage:', {
+          code: storageError?.code,
+          message: storageError?.message
+        })
+        
+        // Se for erro de Storage, mostra mensagem específica
+        if (storageError?.code?.includes('storage')) {
+          toast({
+            title: "Erro no Firebase Storage",
+            description: "Não foi possível acessar os documentos. Verifique as permissões do Storage.",
+            variant: "destructive"
+          })
+        } else {
+          toast({
+            title: "Erro",
+            description: "Não foi possível carregar os documentos do Storage.",
+            variant: "destructive"
+          })
+        }
+        
+        // Continua mesmo com erro, mas sem documentos
+        storageProviders = []
+      }
+
+      // Se não houver prestadores, retorna vazio
+      if (storageProviders.length === 0) {
+        setVerifications([])
+        setStats({
+          total: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0,
+          totalDocuments: 0,
+          documentsByType: {}
+        })
+        return
+      }
 
       // Processar todos os prestadores em paralelo para acelerar
-      const verificationsDataArray = await Promise.all(
+      const verificationsDataArray = await Promise.allSettled(
         storageProviders.map(async (provider) => {
           try {
             // Busca em providers primeiro; se não existir, busca em users
             let userData: any = null
             let dataSource = ''
 
-            const providerSnap = await getDoc(doc(db, 'providers', provider.providerId))
-            if (providerSnap.exists()) {
-              userData = providerSnap.data()
-              dataSource = 'providers'
-            } else {
-              const userSnap = await getDoc(doc(db, 'users', provider.providerId))
-              if (userSnap.exists()) {
-                userData = userSnap.data()
-                dataSource = 'users'
+            try {
+              const providerSnap = await getDoc(doc(db, 'providers', provider.providerId))
+              if (providerSnap.exists()) {
+                userData = providerSnap.data()
+                dataSource = 'providers'
+              } else {
+                const userSnap = await getDoc(doc(db, 'users', provider.providerId))
+                if (userSnap.exists()) {
+                  userData = userSnap.data()
+                  dataSource = 'users'
+                }
               }
+            } catch (dbError) {
+              console.warn(`⚠️ Erro ao buscar dados do Firestore para ${provider.providerId}:`, dbError)
+              // Continua mesmo sem dados do Firestore
             }
 
             // Buscar status atual em provider_verifications
             let currentStatus: 'pending' | 'approved' | 'rejected' = 'pending'
             let submittedAtOverride: Date | undefined
-            const verificationsRef = collection(db, 'provider_verifications')
-            const statusSnap = await getDocs(query(verificationsRef, where('providerId', '==', provider.providerId)))
-            if (!statusSnap.empty) {
-              const vData = statusSnap.docs[0].data() as any
-              currentStatus = mapStatus(vData?.status)
-              if (vData?.submittedAt?.toDate) {
-                submittedAtOverride = vData.submittedAt.toDate()
+            
+            try {
+              const verificationsRef = collection(db, 'provider_verifications')
+              const statusSnap = await getDocs(query(verificationsRef, where('providerId', '==', provider.providerId)))
+              if (!statusSnap.empty) {
+                const vData = statusSnap.docs[0].data() as any
+                currentStatus = mapStatus(vData?.status)
+                if (vData?.submittedAt?.toDate) {
+                  submittedAtOverride = vData.submittedAt.toDate()
+                }
+              } else if (userData?.verificationStatus) {
+                currentStatus = mapStatus(userData.verificationStatus)
               }
-            } else if (userData?.verificationStatus) {
-              currentStatus = mapStatus(userData.verificationStatus)
+            } catch (statusError) {
+              console.warn(`⚠️ Erro ao buscar status para ${provider.providerId}:`, statusError)
+              // Continua com status padrão 'pending'
             }
-
-            console.log(`📊 Dados do prestador ${provider.providerId}:`, {
-              source: dataSource,
-              nome: userData?.fullName || userData?.nome,
-              cpf: userData?.cpf,
-              telefone: userData?.phone || userData?.telefone,
-              email: userData?.email,
-              endereco: userData?.address || userData?.endereco,
-              enderecoTipo: typeof userData?.address
-            })
 
             const verification: DocumentVerification = {
               id: `verification_${provider.providerId}`,
@@ -102,16 +143,24 @@ export const useDocumentVerification = () => {
               submittedAt: submittedAtOverride || provider.firstUploadedAt || provider.uploadedAt,
             }
 
-            console.log(`✅ Verificação criada: ${verification.providerName} | CPF: ${verification.providerCpf || 'não cadastrado'}`)
             return verification
-          } catch (error) {
-            console.error(`Erro ao processar prestador ${provider.providerId}:`, error)
+          } catch (error: any) {
+            console.error(`❌ Erro ao processar prestador ${provider.providerId}:`, {
+              code: error?.code,
+              message: error?.message
+            })
             return null
           }
         })
       )
 
-      const verificationsData: DocumentVerification[] = verificationsDataArray.filter((v): v is DocumentVerification => v !== null)
+      // Filtrar apenas resultados bem-sucedidos
+      const verificationsData: DocumentVerification[] = verificationsDataArray
+        .filter((result): result is PromiseFulfilledResult<DocumentVerification | null> => 
+          result.status === 'fulfilled' && result.value !== null
+        )
+        .map(result => result.value!)
+        .filter((v): v is DocumentVerification => v !== null)
 
       setVerifications(verificationsData)
       
@@ -140,11 +189,15 @@ export const useDocumentVerification = () => {
       setStats(newStats)
       
       console.log(`✅ Verificações carregadas: ${verificationsData.length} prestadores`)
-    } catch (error) {
-      console.error('❌ Erro ao buscar verificações:', error)
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar verificações:', {
+        code: error?.code,
+        message: error?.message,
+        stack: error?.stack
+      })
       toast({
         title: "Erro",
-        description: "Não foi possível carregar as verificações.",
+        description: error?.message || "Não foi possível carregar as verificações.",
         variant: "destructive"
       })
     } finally {

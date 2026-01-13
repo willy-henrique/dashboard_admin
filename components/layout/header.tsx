@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -61,7 +62,9 @@ export function Header({ onMenuClick }: HeaderProps) {
               </Button>
 
               {/* Logo */}
-              <Logo className="h-6 sm:h-7 lg:h-8" showText={true} />
+              <Link href="/dashboard" className="hover:opacity-80 transition-opacity">
+                <Logo className="h-6 sm:h-7 lg:h-8" showText={true} />
+              </Link>
             </div>
 
             {/* Center - Search (hidden on mobile) */}

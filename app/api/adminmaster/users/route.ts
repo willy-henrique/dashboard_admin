@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as admin from 'firebase-admin'
-import { adminApp } from '@/lib/firebase-admin'
-import { getFirestore } from 'firebase-admin/firestore'
+import { adminApp, getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,18 +21,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Dados inválidos' }, { status: 400 })
     }
 
-    if (!adminApp) {
-      console.error('❌ Firebase Admin não inicializado')
-      console.error('❌ Verifique se FIREBASE_SERVICE_ACCOUNT está configurado no Vercel')
+    let auth: admin.auth.Auth
+    let db: admin.firestore.Firestore
+
+    try {
+      auth = getAdminAuth()
+      db = getAdminFirestore()
+      console.log('✅ Firebase Admin disponível, criando usuário...')
+    } catch (error: any) {
+      console.error('❌ Erro ao obter Firebase Admin:', error.message)
+      console.error('❌ Verifique se FIREBASE_SERVICE_ACCOUNT está configurado no .env.local')
       return NextResponse.json({ 
         success: false, 
-        error: 'Firebase Admin não inicializado. Verifique as configurações no Vercel.' 
+        error: 'Firebase Admin não inicializado. Verifique se FIREBASE_SERVICE_ACCOUNT está configurado no .env.local' 
       }, { status: 500 })
     }
-
-    console.log('✅ Firebase Admin disponível, criando usuário...')
-    const auth = admin.auth()
-    const db = getFirestore()
 
     // Verifica se o usuário já existe
     try {

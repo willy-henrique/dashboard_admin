@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as admin from 'firebase-admin'
-import { adminApp } from '@/lib/firebase-admin'
-import { getFirestore } from 'firebase-admin/firestore'
+import { adminApp, getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin'
 
 export async function PUT(
   request: NextRequest,
@@ -37,8 +36,19 @@ export async function PUT(
       }, { status: 400 })
     }
 
-    const auth = admin.auth()
-    const db = getFirestore()
+    let auth: admin.auth.Auth
+    let db: admin.firestore.Firestore
+
+    try {
+      auth = getAdminAuth()
+      db = getAdminFirestore()
+    } catch (error: any) {
+      console.error('❌ Erro ao obter Firebase Admin:', error.message)
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Firebase Admin não inicializado. Verifique se FIREBASE_SERVICE_ACCOUNT está configurado no .env.local' 
+      }, { status: 500 })
+    }
 
     // Verificar se o usuário existe
     try {
