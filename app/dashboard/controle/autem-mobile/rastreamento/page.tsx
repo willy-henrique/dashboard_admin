@@ -128,7 +128,7 @@ export default function RastreamentoPage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Rastreamento</h1>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              autem.com.br > controle > autem mobile > rastreamento
+              autem.com.br &gt; controle &gt; autem mobile &gt; rastreamento
             </p>
           </div>
         </div>

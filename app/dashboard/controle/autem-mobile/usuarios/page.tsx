@@ -180,7 +180,7 @@ export default function UsuariosPage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Usuários</h1>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              autem.com.br > controle > autem mobile > usuários
+              autem.com.br &gt; controle &gt; autem mobile &gt; usuários
             </p>
           </div>
         </div>
