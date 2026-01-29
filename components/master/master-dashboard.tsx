@@ -18,7 +18,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { useMasterAuth } from "@/hooks/use-master-auth"
 import { Logo } from "@/components/logo"
 import {
@@ -403,7 +402,7 @@ export function MasterDashboard() {
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden" style={{ backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' }}>
+            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden !bg-white shadow-2xl border-2 border-gray-200 rounded-xl">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl" style={{ color: '#1F2B3D' }}>Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
@@ -694,16 +693,16 @@ export function MasterDashboard() {
                               <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="!bg-white shadow-2xl border-2 border-gray-200 rounded-xl">
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Remover usuário?</AlertDialogTitle>
-                              <AlertDialogDescription>
+                              <AlertDialogTitle className="text-gray-900">Remover usuário?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-gray-600">
                                 Esta ação não pode ser desfeita. O usuário será removido da lista de permissões da Área Master.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleDeleteUser(user.id)}>
+                              <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white" onClick={() => handleDeleteUser(user.id)}>
                                 Remover
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -809,71 +808,67 @@ export function MasterDashboard() {
 
         {/* Modal de Alteração de Senha */}
         <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-          <DialogPrimitive.Portal>
-            <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/20" />
-            <DialogPrimitive.Content className="fixed top-[50%] left-[50%] z-50 grid w-full max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border bg-white p-6 shadow-lg duration-200 sm:max-w-md rounded-lg">
+          <DialogContent className="!bg-white shadow-2xl border-2 border-gray-200 rounded-xl w-full max-w-md sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
+              <DialogTitle className="flex items-center space-x-2 text-gray-900">
                 <Key className="h-5 w-5" style={{ color: '#F7931E' }} />
-                <span style={{ color: '#1F2B3D' }}>Alterar Senha</span>
+                <span>Alterar Senha</span>
               </DialogTitle>
             </DialogHeader>
             
             {selectedUser && (
               <div className="space-y-4">
-                <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#F8FAFC', border: '2px solid #E2E8F0' }}>
+                <div className="p-4 rounded-lg border-2 bg-gray-50 border-gray-200">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: '#FEF3C7' }}>
-                      <User className="h-5 w-5" style={{ color: '#F7931E' }} />
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-amber-100">
+                      <User className="h-5 w-5 text-amber-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm" style={{ color: '#1E293B' }}>{selectedUser.nome}</p>
-                      <p className="text-xs font-medium" style={{ color: '#64748B' }}>{selectedUser.email}</p>
+                      <p className="font-semibold text-sm text-gray-900">{selectedUser.nome}</p>
+                      <p className="text-xs font-medium text-gray-500">{selectedUser.email}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="newPassword" className="font-semibold" style={{ color: '#1E293B' }}>Nova Senha</Label>
+                    <Label htmlFor="newPassword" className="font-semibold text-gray-900">Nova Senha</Label>
                     <Input
                       id="newPassword"
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Digite a nova senha"
-                      className="mt-2 border-2"
-                      style={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#1E293B' }}
+                      className="mt-2 border-2 bg-white border-gray-200 text-gray-900"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="confirmPassword" className="font-semibold" style={{ color: '#1E293B' }}>Confirmar Senha</Label>
+                    <Label htmlFor="confirmPassword" className="font-semibold text-gray-900">Confirmar Senha</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirme a nova senha"
-                      className="mt-2 border-2"
-                      style={{ backgroundColor: '#FFFFFF', borderColor: '#D1D5DB', color: '#1E293B' }}
+                      className="mt-2 border-2 bg-white border-gray-200 text-gray-900"
                     />
                   </div>
                 </div>
 
                 {error && (
-                  <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#FEF2F2', border: '2px solid #FECACA' }}>
-                    <p className="text-sm font-medium" style={{ color: '#DC2626' }}>{error}</p>
+                  <div className="p-4 rounded-lg border-2 bg-red-50 border-red-200">
+                    <p className="text-sm font-medium text-red-600">{error}</p>
                   </div>
                 )}
 
                 {success && (
-                  <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#F0FDF4', border: '2px solid #BBF7D0' }}>
-                    <p className="text-sm font-medium" style={{ color: '#16A34A' }}>{success}</p>
+                  <div className="p-4 rounded-lg border-2 bg-green-50 border-green-200">
+                    <p className="text-sm font-medium text-green-700">{success}</p>
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200">
                   <Button 
                     variant="outline" 
                     onClick={() => {
@@ -885,26 +880,21 @@ export function MasterDashboard() {
                       setSuccess(null)
                     }} 
                     disabled={isChangingPassword}
-                    className="w-full sm:w-auto min-h-[44px]"
-                    style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
+                    className="w-full sm:w-auto min-h-[44px] border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     Cancelar
                   </Button>
                   <Button 
                     onClick={handleChangePassword} 
                     disabled={isChangingPassword}
-                    className="text-white w-full sm:w-auto min-h-[44px]" 
-                    style={{ backgroundColor: isChangingPassword ? '#9CA3AF' : '#F7931E' }}
-                    onMouseEnter={(e) => !isChangingPassword && (e.currentTarget.style.backgroundColor = '#E67E00')} 
-                    onMouseLeave={(e) => !isChangingPassword && (e.currentTarget.style.backgroundColor = '#F7931E')}
+                    className="w-full sm:w-auto min-h-[44px] text-white bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400" 
                   >
                     {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
                   </Button>
                 </div>
               </div>
             )}
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
+          </DialogContent>
         </Dialog>
       </div>
     </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, createContext, useContext } from "react"
 import { getDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { AdminMasterService } from "@/lib/services/admin-master-service"
+import { clientSessionEncryption } from "@/lib/client-session-encryption"
 
 export interface MasterUser {
   id: string
@@ -71,36 +72,41 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
   const [loading, setLoading] = useState(true)
 
 
-  // Verificar se existe AdminMaster na inicialização
+  // Sempre exigir login ao acessar /master. Não restauramos sessão; uso de sessionStorage
+  // criptografado apenas durante a navegação na mesma aba (evita re-login a cada clique).
   useEffect(() => {
     const checkMasterAuth = async () => {
       try {
         setLoading(true)
-        const masterAuthData = localStorage.getItem('masterAuth')
-        if (masterAuthData) {
-          const { userId } = JSON.parse(masterAuthData)
-          const userDoc = await getDoc(doc(db, 'adminmaster', 'master'))
-          if (userDoc.exists()) {
-            const userData = userDoc.data() as AdminMaster
-            setMasterUser({
-              id: userDoc.id,
-              email: userData.email,
-              nome: userData.nome,
-              permissoes: userData.permissoes
-            })
-            setIsMasterAuthenticated(true)
-            await loadUsuarios(userDoc.id)
-          } else {
-            // Limpar dados inválidos
-            localStorage.removeItem('masterAuth')
-            setMasterUser(null)
-            setIsMasterAuthenticated(false)
-          }
+        const payload = await clientSessionEncryption.load()
+        if (!payload?.userId) {
+          setLoading(false)
+          return
         }
+        const userDoc = await getDoc(doc(db, 'adminmaster', 'master'))
+        if (!userDoc.exists()) {
+          clientSessionEncryption.clear()
+          setLoading(false)
+          return
+        }
+        const userData = userDoc.data() as AdminMaster
+        if (userData.email !== payload.email) {
+          clientSessionEncryption.clear()
+          setLoading(false)
+          return
+        }
+        const user: MasterUser = {
+          id: userDoc.id,
+          email: userData.email,
+          nome: userData.nome,
+          permissoes: userData.permissoes
+        }
+        setMasterUser(user)
+        setIsMasterAuthenticated(true)
+        await loadUsuarios(userDoc.id)
       } catch (error) {
         console.error('Erro ao verificar autenticação master:', error)
-        // Em caso de erro, limpar dados
-        localStorage.removeItem('masterAuth')
+        clientSessionEncryption.clear()
         setMasterUser(null)
         setIsMasterAuthenticated(false)
       } finally {
@@ -148,11 +154,15 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
 
       setMasterUser(user)
       setIsMasterAuthenticated(true)
-      
-      // Salvar no localStorage
-      localStorage.setItem('masterAuth', JSON.stringify({ userId: adminMaster.id }))
-      
-      // Carregar usuários
+
+      await clientSessionEncryption.save({
+        userId: adminMaster.id,
+        email: adminMaster.email,
+        nome: adminMaster.nome,
+        permissoes: adminMaster.permissoes,
+        loggedAt: Date.now()
+      })
+
       await loadUsuarios(adminMaster.id)
     } catch (error) {
       console.error('Erro no login master:', error)
@@ -168,7 +178,7 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
     setMasterUser(null)
     setIsMasterAuthenticated(false)
     setUsuarios([])
-    localStorage.removeItem('masterAuth')
+    clientSessionEncryption.clear()
   }
 
   const loadUsuarios = async (adminId: string) => {
