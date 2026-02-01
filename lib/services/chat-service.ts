@@ -1,4 +1,4 @@
-import { getCollection, getDocument, addDocument, updateDocument, deleteDocument } from '../firestore'
+import { getCollection, getDocument, getSubcollection } from '../firestore'
 import { where, orderBy, limit, Timestamp, query } from 'firebase/firestore'
 import { db } from '../firebase'
 import type { OrderData } from './firestore-analytics'
@@ -20,6 +20,7 @@ export interface LegacyChatMessage {
 export interface LegacyChatConversation {
   id: string
   orderId: string
+  orderProtocol?: string
   clientId: string
   clientName: string
   clientEmail: string
@@ -112,15 +113,13 @@ export class ChatService {
             
             legacyConversations.push(conversation)
           }
-        } catch (error) {
+    } catch {
           // Se não existe coleção de mensagens para este pedido, pular
-          console.log(`Nenhuma mensagem encontrada para o pedido ${order.id}`)
         }
       }
 
       return legacyConversations
-    } catch (error) {
-      console.error('Erro ao buscar conversas legadas:', error)
+    } catch {
       return []
     }
   }
@@ -134,30 +133,35 @@ export class ChatService {
       for (const order of orders) {
         try {
           // Buscar mensagens da subcoleção messages para este pedido
-          const messages = await getCollection(`orders/${order.id}/messages`)
+          const messages = await getSubcollection('orders', order.id, 'messages')
           
+          const lastMsg = messages[messages.length - 1]
+          const msgContent = lastMsg?.message ?? lastMsg?.content
+          const msgTimestamp = lastMsg?.timestamp?.toDate?.() ?? lastMsg?.timestamp
+
           const conversation: LegacyChatConversation = {
             id: `orders_${order.id}`,
             orderId: order.id,
+            orderProtocol: (order as { protocol?: string })?.protocol || order.id,
             clientId: order.clientId || order.id,
             clientName: order.clientName || 'Cliente',
             clientEmail: order.clientEmail || '',
-            clientPhone: order.phone || '',
+            clientPhone: (order as { phone?: string })?.phone || '',
             status: this.mapOrderStatusToChatStatus(order.status || 'active'),
             priority: order.isEmergency ? 'urgent' : 'medium',
-            createdAt: order.createdAt?.toDate() || new Date(),
+            createdAt: order.createdAt?.toDate?.() || new Date(),
             updatedAt: messages.length > 0 
-              ? (messages[messages.length - 1].timestamp?.toDate() || order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date())
-              : (order.assignedAt?.toDate() || order.createdAt?.toDate() || new Date()),
+              ? (msgTimestamp || order.assignedAt?.toDate?.() || order.createdAt?.toDate?.() || new Date())
+              : (order.assignedAt?.toDate?.() || order.createdAt?.toDate?.() || new Date()),
             lastMessage: messages.length > 0 ? {
-              content: messages[messages.length - 1].content || `Pedido ${order.id} - ${order.description || 'Serviço solicitado'}`,
-              senderName: messages[messages.length - 1].senderName || order.clientName || 'Cliente',
-              timestamp: messages[messages.length - 1].timestamp?.toDate() || new Date(),
-              messageType: messages[messages.length - 1].messageType || 'text'
+              content: msgContent || `Pedido - ${(order as { description?: string })?.description || 'Serviço solicitado'}`,
+              senderName: lastMsg?.senderName || order.clientName || 'Cliente',
+              timestamp: msgTimestamp || new Date(),
+              messageType: (lastMsg?.messageType as any) || 'text'
             } : {
-              content: `Pedido criado: ${order.description || 'Serviço solicitado'}`,
+              content: `Pedido criado: ${(order as { description?: string })?.description || 'Serviço solicitado'}`,
               senderName: order.clientName || 'Cliente',
-              timestamp: order.createdAt?.toDate() || new Date(),
+              timestamp: order.createdAt?.toDate?.() || new Date(),
               messageType: 'text'
             },
             unreadCount: {
@@ -168,14 +172,15 @@ export class ChatService {
             source: 'legacy',
             orderData: order
           }
-          
+
           conversations.push(conversation)
           
-        } catch (error) {
-          // Criar conversa mesmo sem mensagens
+        } catch {
+          // Criar conversa mesmo sem mensagens (para pedidos recentes)
           const conversation: LegacyChatConversation = {
             id: `orders_${order.id}`,
             orderId: order.id,
+            orderProtocol: (order as { protocol?: string })?.protocol || order.id,
             clientId: order.clientId || order.id,
             clientName: order.clientName || 'Cliente',
             clientEmail: order.clientEmail || '',
@@ -204,8 +209,7 @@ export class ChatService {
       }
 
       return conversations
-    } catch (error) {
-      console.error('❌ Erro ao buscar conversas dos pedidos com mensagens:', error)
+    } catch {
       return []
     }
   }
@@ -238,8 +242,8 @@ export class ChatService {
           if (orderId !== 'general') {
             try {
               orderData = await getDocument('orders', orderId)
-            } catch (error) {
-              console.log(`Pedido ${orderId} não encontrado`)
+            } catch {
+              // Pedido não encontrado
             }
           }
 
@@ -274,8 +278,7 @@ export class ChatService {
       }
 
       return conversations
-    } catch (error) {
-      console.error('Erro ao buscar conversas de suporte:', error)
+    } catch {
       return []
     }
   }
@@ -307,17 +310,27 @@ export class ChatService {
         source: 'new'
       }))
 
-      // Combinar e ordenar por data de atualização
+      // Combinar - evitar duplicatas (orders_ tem prioridade sobre legacy_ para mesmo orderId)
+      const seenOrderIds = new Set<string>()
+      const uniqueLegacy = legacyConversations.filter(c => {
+        const oid = c.orderId
+        if (seenOrderIds.has(oid)) return false
+        if (ordersWithMessages.some(o => o.orderId === oid)) {
+          seenOrderIds.add(oid)
+          return false
+        }
+        seenOrderIds.add(oid)
+        return true
+      })
+
       const allConversations = [
         ...convertedNewConversations,
-        ...legacyConversations,
+        ...uniqueLegacy,
         ...supportConversations,
         ...ordersWithMessages
       ]
 
-      return allConversations.sort((a, b) => 
-        b.updatedAt.getTime() - a.updatedAt.getTime()
-      )
+      return allConversations.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
     } catch (error) {
       console.error('Erro ao buscar todas as conversas:', error)
       return []
@@ -327,27 +340,20 @@ export class ChatService {
   // Buscar mensagens de uma conversa específica
   static async getConversationMessages(conversationId: string): Promise<ChatMessage[]> {
     try {
-      console.log('🔍 Buscando mensagens para conversa:', conversationId)
-      console.log('🔍 Firebase db disponível:', !!db)
-      
       // Primeiro, tentar buscar da nova coleção
-      const newMessages = await getCollection('chatMessages', [
+      const newMessages = await getCollection('chatMessages',
         where('chatId', '==', conversationId),
         orderBy('timestamp', 'asc')
-      ])
-
-      console.log('📨 Mensagens da nova coleção:', newMessages.length)
+      )
 
       if (newMessages.length > 0) {
-        const mappedMessages = newMessages.map(doc => ({
+        return newMessages.map(doc => ({
           id: doc.id,
           ...doc,
           timestamp: doc.timestamp?.toDate() || new Date(),
           readBy: doc.readBy || [],
           metadata: doc.metadata || {}
         })) as ChatMessage[]
-        console.log('✅ Mensagens mapeadas da nova coleção:', mappedMessages)
-        return mappedMessages
       }
 
       // Se não encontrar, tentar buscar das mensagens legadas
@@ -370,18 +376,18 @@ export class ChatService {
             readBy: [],
             metadata: {}
           })) as ChatMessage[]
-        } catch (error) {
-          console.log(`Nenhuma mensagem encontrada para ${messagesCollection}`)
+        } catch {
+          // Coleção legada não existe
         }
       }
 
       // Se for conversa de suporte
       if (conversationId.startsWith('support_')) {
         const orderId = conversationId.replace('support_', '')
-        const supportMessages = await getCollection('support_messages', [
+        const supportMessages = await getCollection('support_messages',
           where('orderId', '==', orderId === 'suporte-geral' ? null : orderId),
           orderBy('timestamp', 'asc')
-        ])
+        )
 
         return supportMessages.map(doc => ({
           id: doc.id,
@@ -398,114 +404,36 @@ export class ChatService {
         })) as ChatMessage[]
       }
 
-      // Se for conversa dos pedidos com mensagens
+      // Se for conversa dos pedidos com mensagens (orders/{orderId}/messages)
       if (conversationId.startsWith('orders_')) {
         const orderId = conversationId.replace('orders_', '')
-        console.log('📦 Buscando mensagens do pedido:', orderId)
-        const messages = await getCollection(`orders/${orderId}/messages`)
-        console.log('📨 Mensagens encontradas no pedido:', messages.length, messages)
+        const messages = await getSubcollection('orders', orderId, 'messages', orderBy('timestamp', 'asc'))
 
-        // Se não encontrar mensagens, retornar mensagens de exemplo para teste
         if (messages.length === 0) {
-          console.log('⚠️ Nenhuma mensagem encontrada, retornando dados de exemplo')
-          const exampleMessages: ChatMessage[] = [
-            {
-              id: 'msg1',
-              chatId: conversationId,
-              senderId: 'client123',
-              senderName: 'Cliente',
-              senderType: 'cliente',
-              content: 'Olá, preciso de ajuda com meu pedido. O prestador não chegou no horário combinado.',
-              messageType: 'text',
-              timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 horas atrás
-              isRead: false,
-              readBy: [],
-              metadata: {}
-            },
-            {
-              id: 'msg2',
-              chatId: conversationId,
-              senderId: 'provider456',
-              senderName: 'Prestador',
-              senderType: 'prestador',
-              content: 'Desculpe pelo atraso. Tive um problema no trânsito, mas estou a caminho. Chego em 30 minutos.',
-              messageType: 'text',
-              timestamp: new Date(Date.now() - 11 * 60 * 60 * 1000), // 11 horas atrás
-              isRead: false,
-              readBy: [],
-              metadata: {}
-            },
-            {
-              id: 'msg3',
-              chatId: conversationId,
-              senderId: 'client123',
-              senderName: 'Cliente',
-              senderType: 'cliente',
-              content: 'Ok, obrigado pela informação. Vou aguardar.',
-              messageType: 'text',
-              timestamp: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 horas atrás
-              isRead: false,
-              readBy: [],
-              metadata: {}
-            }
-          ]
-          console.log('✅ Retornando mensagens de exemplo:', exampleMessages)
-          return exampleMessages
+          return []
         }
 
-        const mappedMessages = messages.map(doc => ({
-          id: doc.id,
-          chatId: conversationId,
-          senderId: doc.senderId || doc.clientId || 'unknown',
-          senderName: doc.senderName || doc.clientName || 'Cliente',
-          senderType: this.mapSenderToType(doc.sender || 'user'),
-          content: doc.content || 'Mensagem',
-          messageType: doc.messageType || 'text' as const,
-          timestamp: doc.timestamp?.toDate() || doc.createdAt?.toDate() || new Date(),
-          isRead: doc.isRead || false,
-          readBy: doc.readBy || [],
-          metadata: doc.metadata || {}
-        })) as ChatMessage[]
-        
-        console.log('✅ Mensagens mapeadas do pedido:', mappedMessages)
-        return mappedMessages
+        return messages.map(doc => {
+          const content = doc.message ?? doc.content ?? ''
+          const ts = doc.timestamp?.toDate?.() ?? doc.timestamp ?? doc.createdAt?.toDate?.()
+          return {
+            id: doc.id,
+            chatId: conversationId,
+            senderId: doc.senderId || doc.clientId || 'unknown',
+            senderName: doc.senderName || doc.clientName || 'Cliente',
+            senderType: this.mapSenderTypeFromFirestore(doc.senderType || doc.sender || 'user'),
+            content: content || '(mensagem vazia)',
+            messageType: (doc.messageType || 'text') as const,
+            timestamp: ts || new Date(),
+            isRead: doc.isRead ?? false,
+            readBy: doc.readBy || [],
+            metadata: { ...doc.metadata, imageUrl: doc.imageUrl, documentUrl: doc.documentUrl } || {}
+          }
+        }) as ChatMessage[]
       }
 
-      // Se chegou até aqui, não encontrou mensagens em nenhuma coleção
-      // Retornar mensagens de exemplo para teste
-      console.log('⚠️ Nenhuma mensagem encontrada em nenhuma coleção, retornando dados de exemplo')
-      const exampleMessages: ChatMessage[] = [
-        {
-          id: 'example1',
-          chatId: conversationId,
-          senderId: 'client123',
-          senderName: 'Cliente',
-          senderType: 'cliente',
-          content: 'Olá! Como posso ajudar você hoje?',
-          messageType: 'text',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 horas atrás
-          isRead: false,
-          readBy: [],
-          metadata: {}
-        },
-        {
-          id: 'example2',
-          chatId: conversationId,
-          senderId: 'admin789',
-          senderName: 'Administrador',
-          senderType: 'admin',
-          content: 'Bem-vindo ao nosso sistema de suporte! Estou aqui para ajudar.',
-          messageType: 'text',
-          timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hora atrás
-          isRead: false,
-          readBy: [],
-          metadata: {}
-        }
-      ]
-      console.log('✅ Retornando mensagens de exemplo genéricas:', exampleMessages)
-      return exampleMessages
-    } catch (error) {
-      console.error('❌ Erro ao buscar mensagens da conversa:', error)
+      return []
+    } catch {
       return []
     }
   }
@@ -551,15 +479,29 @@ export class ChatService {
   }
 
   private static mapSenderToType(sender: string): ChatMessage['senderType'] {
-    switch (sender) {
+    switch (String(sender).toLowerCase()) {
       case 'user':
+      case 'client':
+      case 'cliente':
         return 'cliente'
       case 'support':
+      case 'admin':
+      case 'sistema':
         return 'admin'
-      case 'system':
-        return 'admin'
+      case 'provider':
+      case 'prestador':
+        return 'prestador'
       default:
         return 'cliente'
     }
+  }
+
+  /** Mapeia senderType do Firestore (orders/messages) para o tipo do chat */
+  private static mapSenderTypeFromFirestore(senderType: string): ChatMessage['senderType'] {
+    const s = String(senderType || '').toLowerCase()
+    if (s === 'client' || s === 'cliente') return 'cliente'
+    if (s === 'provider' || s === 'prestador') return 'prestador'
+    if (s === 'admin' || s === 'support' || s === 'system') return 'admin'
+    return this.mapSenderToType(senderType)
   }
 }

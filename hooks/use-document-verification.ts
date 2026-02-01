@@ -5,7 +5,7 @@ import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasPro
 import { useToast } from '@/hooks/use-toast'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, getDocs, collection, query, where, updateDoc, addDoc, serverTimestamp, documentId } from 'firebase/firestore'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -22,10 +22,10 @@ export const useDocumentVerification = () => {
 
   const mapStatus = (status: any): 'pending' | 'approved' | 'rejected' => {
     if (!status) return 'pending'
-    const s = String(status).toUpperCase()
-    if (s === 'APPROVED' || s === 'APPROVADO' || s === 'APPROVED_STATUS') return 'approved'
-    if (s === 'REJECTED' || s === 'REJEITADO') return 'rejected'
-    // UNDER_REVIEW, PENDING, etc
+    const s = String(status).toLowerCase()
+    if (['verificado', 'verified', 'approved', 'approvado', 'approved_status'].includes(s)) return 'approved'
+    if (['rejected', 'rejeitado'].includes(s)) return 'rejected'
+    // under_review, pending, etc -> pendente
     return 'pending'
   }
 
@@ -33,18 +33,11 @@ export const useDocumentVerification = () => {
   const fetchVerifications = useCallback(async () => {
     setLoading(true)
     try {
-      console.log('🔍 Buscando verificações de documentos...')
-      
       // Buscar documentos diretamente do Firebase Storage
       let storageProviders: ProviderDocuments[] = []
       try {
         storageProviders = await getAllPendingProviders()
-        console.log(`✅ Encontrados ${storageProviders.length} prestadores com documentos`)
       } catch (storageError: any) {
-        console.error('❌ Erro ao buscar documentos do Storage:', {
-          code: storageError?.code,
-          message: storageError?.message
-        })
         
         // Se for erro de Storage, mostra mensagem específica
         if (storageError?.code?.includes('storage')) {
@@ -79,88 +72,65 @@ export const useDocumentVerification = () => {
         return
       }
 
-      // Processar todos os prestadores em paralelo para acelerar
-      const verificationsDataArray = await Promise.allSettled(
-        storageProviders.map(async (provider) => {
-          try {
-            // Busca em providers primeiro; se não existir, busca em users
-            let userData: any = null
-            let dataSource = ''
+      const providerIds = storageProviders.map(p => p.providerId)
 
-            try {
-              const providerSnap = await getDoc(doc(db, 'providers', provider.providerId))
-              if (providerSnap.exists()) {
-                userData = providerSnap.data()
-                dataSource = 'providers'
-              } else {
-                const userSnap = await getDoc(doc(db, 'users', provider.providerId))
-                if (userSnap.exists()) {
-                  userData = userSnap.data()
-                  dataSource = 'users'
-                }
-              }
-            } catch (dbError) {
-              console.warn(`⚠️ Erro ao buscar dados do Firestore para ${provider.providerId}:`, dbError)
-              // Continua mesmo sem dados do Firestore
-            }
+      // Buscar providers e verifications em batch (Firestore limita 'in' a 30 itens)
+      const BATCH_SIZE = 30
+      const providersMap: Record<string, any> = {}
+      const verificationsMap: Record<string, { status: string; submittedAt?: Date }> = {}
 
-            // Buscar status atual em provider_verifications
-            let currentStatus: 'pending' | 'approved' | 'rejected' = 'pending'
-            let submittedAtOverride: Date | undefined
-            
-            try {
-              const verificationsRef = collection(db, 'provider_verifications')
-              const statusSnap = await getDocs(query(verificationsRef, where('providerId', '==', provider.providerId)))
-              if (!statusSnap.empty) {
-                const vData = statusSnap.docs[0].data() as any
-                currentStatus = mapStatus(vData?.status)
-                if (vData?.submittedAt?.toDate) {
-                  submittedAtOverride = vData.submittedAt.toDate()
-                }
-              } else if (userData?.verificationStatus) {
-                currentStatus = mapStatus(userData.verificationStatus)
-              }
-            } catch (statusError) {
-              console.warn(`⚠️ Erro ao buscar status para ${provider.providerId}:`, statusError)
-              // Continua com status padrão 'pending'
-            }
-
-            const verification: DocumentVerification = {
-              id: `verification_${provider.providerId}`,
-              providerId: provider.providerId,
-              providerName: userData?.fullName || userData?.nome || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
-              providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
-              providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
-              providerCpf: userData?.cpf || userData?.document || '',
-              providerRg: userData?.rg || '',
-              providerAddress: typeof userData?.address === 'string' ? userData.address : 
-                             typeof userData?.address === 'object' && userData?.address ? 
-                             `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
-                             userData?.endereco || '',
-              providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
-              status: currentStatus,
-              documents: provider.documents,
-              submittedAt: submittedAtOverride || provider.firstUploadedAt || provider.uploadedAt,
-            }
-
-            return verification
-          } catch (error: any) {
-            console.error(`❌ Erro ao processar prestador ${provider.providerId}:`, {
-              code: error?.code,
-              message: error?.message
-            })
-            return null
+      for (let i = 0; i < providerIds.length; i += BATCH_SIZE) {
+        const batchIds = providerIds.slice(i, i + BATCH_SIZE)
+        const providerRefs = batchIds.map(id => doc(db, 'providers', id))
+        const [providersSnap, verifSnap] = await Promise.all([
+          getDocs(query(collection(db, 'providers'), where(documentId(), 'in', providerRefs))).catch(() => null),
+          getDocs(query(collection(db, 'provider_verifications'), where('providerId', 'in', batchIds)))
+        ])
+        providersSnap?.forEach(d => { providersMap[d.id] = d.data() })
+        verifSnap?.forEach(d => {
+          const data = d.data() as any
+          verificationsMap[data.providerId] = {
+            status: data.status,
+            submittedAt: data.submittedAt?.toDate?.()
           }
         })
-      )
+      }
 
-      // Filtrar apenas resultados bem-sucedidos
-      const verificationsData: DocumentVerification[] = verificationsDataArray
-        .filter((result): result is PromiseFulfilledResult<DocumentVerification | null> => 
-          result.status === 'fulfilled' && result.value !== null
-        )
-        .map(result => result.value!)
-        .filter((v): v is DocumentVerification => v !== null)
+      // Buscar em users os que não estão em providers
+      const missingIds = providerIds.filter(id => !providersMap[id])
+      for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
+        const batchIds = missingIds.slice(i, i + BATCH_SIZE)
+        const userRefs = batchIds.map(id => doc(db, 'users', id))
+        const usersSnap = await getDocs(query(collection(db, 'users'), where(documentId(), 'in', userRefs))).catch(() => null)
+        usersSnap?.forEach(d => { providersMap[d.id] = d.data() })
+      }
+
+      // Montar verificações (dados em memória, sem I/O)
+      const verificationsData: DocumentVerification[] = storageProviders.map(provider => {
+        const userData = providersMap[provider.providerId]
+        const verifData = verificationsMap[provider.providerId]
+        let currentStatus: 'pending' | 'approved' | 'rejected' = 'pending'
+        if (verifData) currentStatus = mapStatus(verifData.status)
+        else if (userData?.verificationStatus) currentStatus = mapStatus(userData.verificationStatus)
+
+        return {
+          id: `verification_${provider.providerId}`,
+          providerId: provider.providerId,
+          providerName: userData?.fullName || userData?.nome || userData?.displayName || `Prestador ${provider.providerId.slice(-8)}`,
+          providerEmail: userData?.email || `prestador${provider.providerId.slice(-8)}@email.com`,
+          providerPhone: userData?.phone || userData?.telefone || userData?.phoneNumber || '',
+          providerCpf: userData?.cpf || userData?.document || '',
+          providerRg: userData?.rg || '',
+          providerAddress: typeof userData?.address === 'string' ? userData.address :
+            typeof userData?.address === 'object' && userData?.address ?
+              `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
+              userData?.endereco || '',
+          providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
+          status: currentStatus,
+          documents: provider.documents,
+          submittedAt: verifData?.submittedAt || provider.firstUploadedAt || provider.uploadedAt,
+        }
+      })
 
       setVerifications(verificationsData)
       
@@ -187,14 +157,7 @@ export const useDocumentVerification = () => {
       })
 
       setStats(newStats)
-      
-      console.log(`✅ Verificações carregadas: ${verificationsData.length} prestadores`)
     } catch (error: any) {
-      console.error('❌ Erro ao buscar verificações:', {
-        code: error?.code,
-        message: error?.message,
-        stack: error?.stack
-      })
       toast({
         title: "Erro",
         description: error?.message || "Não foi possível carregar as verificações.",
@@ -252,7 +215,6 @@ export const useDocumentVerification = () => {
     try {
       return await hasProviderDocuments(providerId)
     } catch (error) {
-      console.error(`Erro ao verificar documentos do prestador ${providerId}:`, error)
       return false
     }
   }, [])
@@ -296,22 +258,21 @@ export const useDocumentVerification = () => {
         })
       }
 
-      // 2) Atualizar provider (status em lowercase)
+      // 2) Atualizar verificationStatus no documento do prestador (verified = apto ao app)
       const providerRef = doc(db, 'providers', verification.providerId)
       const providerSnap = await getDoc(providerRef)
       if (providerSnap.exists()) {
         await updateDoc(providerRef, {
-          verificationStatus: 'approved',
+          verificationStatus: 'verificado',
           isVerified: true,
           updatedAt: serverTimestamp(),
         })
       } else {
-        // fallback: tentar em users se for esse o cadastro ativo
         const userRef = doc(db, 'users', verification.providerId)
         const userSnap = await getDoc(userRef)
         if (userSnap.exists()) {
           await updateDoc(userRef, {
-            verificationStatus: 'approved',
+            verificationStatus: 'verificado',
             isVerified: true,
             updatedAt: serverTimestamp(),
           })
@@ -387,6 +348,7 @@ export const useDocumentVerification = () => {
       if (providerSnap.exists()) {
         await updateDoc(providerRef, {
           verificationStatus: 'rejected',
+          isVerified: false,
           updatedAt: serverTimestamp(),
         })
       } else {
@@ -395,6 +357,7 @@ export const useDocumentVerification = () => {
         if (userSnap.exists()) {
           await updateDoc(userRef, {
             verificationStatus: 'rejected',
+            isVerified: false,
             updatedAt: serverTimestamp(),
           })
         }
@@ -415,7 +378,6 @@ export const useDocumentVerification = () => {
 
       return true
     } catch (error) {
-      console.error('Erro ao rejeitar verificação:', error)
       toast({
         title: "Erro",
         description: "Não foi possível rejeitar a verificação.",

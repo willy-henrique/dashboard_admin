@@ -144,7 +144,7 @@ export function ConversationsList({ onSelectConversation, selectedConversationId
             placeholder="Buscar conversas..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-20 h-9 text-sm"
+            className="pl-10 h-9 text-sm"
           />
         </div>
       </div>

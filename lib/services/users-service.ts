@@ -25,15 +25,12 @@ export class UsersService {
   // Buscar todos os usuários com filtros opcionais
   static async getUsers(filters?: UserFilters, limitCount?: number) {
     try {
-      console.log('🔍 Buscando usuários com filtros:', filters)
       let users = await getCollection('users')
-      console.log('📊 Total de usuários encontrados:', users.length)
       
       // Aplicar filtros
       if (filters) {
         if (filters.role) {
           users = users.filter(user => user.role === filters.role)
-          console.log(`👥 Usuários filtrados por role '${filters.role}':`, users.length)
         }
         
         if (filters.userType) {
@@ -45,12 +42,10 @@ export class UsersService {
                                (filters.userType === 'provider' && user.role === 'prestador')
             return matchesUserType || matchesRole
           })
-          console.log(`👥 Usuários filtrados por userType '${filters.userType}':`, users.length)
         }
         
         if (filters.isActive !== undefined) {
           users = users.filter(user => user.isActive === filters.isActive)
-          console.log(`👥 Usuários filtrados por isActive '${filters.isActive}':`, users.length)
         }
         
         if (filters.dateFrom) {
@@ -250,30 +245,14 @@ export class UsersService {
   // Buscar todos os clientes (múltiplas formas de identificação)
   static async getAllClients() {
     try {
-      console.log('🔍 [CLIENTS] Buscando todos os clientes...')
       const allUsers = await getCollection('users')
-      console.log('📊 [CLIENTS] Total de usuários no banco:', allUsers.length)
       
       const clients = allUsers.filter(user => {
-        const isClient = user.userType === 'client' || 
-                        user.role === 'cliente' || 
-                        user.role === 'client' ||
-                        (user.userType === 'client')
-        
-        if (isClient) {
-          console.log('👤 [CLIENTS] Cliente encontrado:', {
-            id: user.id,
-            userType: user.userType,
-            role: user.role,
-            name: user.fullName || user.name || user.nome,
-            email: user.email
-          })
-        }
-        
-        return isClient
+        return user.userType === 'client' || 
+               user.role === 'cliente' || 
+               user.role === 'client' ||
+               (user.userType === 'client')
       })
-      
-      console.log('✅ [CLIENTS] Total de clientes encontrados:', clients.length)
       return clients as UserData[]
     } catch (error) {
       console.error('❌ [CLIENTS] Erro ao buscar clientes:', error)

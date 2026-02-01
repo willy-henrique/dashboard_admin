@@ -1,44 +1,67 @@
 # ============================================================
-# SUBIR ALTERACOES PRO GITHUB
+# SUBIR PROJETO PRO GITHUB
 # ============================================================
-# Rode FORA do Cursor:
-#   1. Feche o Cursor (para liberar o .git/index.lock)
-#   2. Abra PowerShell como Admin ou normal
-#   3. cd c:\willydev\dashboard_admin
-#   4. .\scripts\push-to-github.ps1
+# Uso:
+#   powershell -ExecutionPolicy Bypass -File .\scripts\push-to-github.ps1
+#   OU pelo npm: pnpm run push:github
+#   OU dê duplo-clique em push-to-github.bat
 # ============================================================
 
 $ErrorActionPreference = "Stop"
-Set-Location $PSScriptRoot\..
+$projectRoot = $PSScriptRoot + "\.."
+Set-Location $projectRoot
 
-Write-Host "`n>>> Removendo index.lock..." -ForegroundColor Yellow
+Write-Host "`n========================================" -ForegroundColor Cyan
+Write-Host "  SUBIR PRO GITHUB - Dashboard Admin" -ForegroundColor Cyan
+Write-Host "========================================`n" -ForegroundColor Cyan
+
+# 1. Remover index.lock se existir
+Write-Host "[1/5] Verificando lock do Git..." -ForegroundColor Yellow
 if (Test-Path .git\index.lock) {
     Remove-Item -Force .git\index.lock
-    Write-Host "    Removido." -ForegroundColor Green
+    Write-Host "      index.lock removido." -ForegroundColor Green
 } else {
-    Write-Host "    Nao existia." -ForegroundColor Gray
+    Write-Host "      OK." -ForegroundColor Gray
 }
 
-# Proxy apontando para 127.0.0.1:9 quebra o push
-Write-Host "`n>>> Verificando proxy do Git..." -ForegroundColor Yellow
-$hp = git config --global --get http.proxy 2>$null
-$hsp = git config --global --get https.proxy 2>$null
-if ($hp -or $hsp) {
-    Write-Host "    Removendo proxy (http.proxy / https.proxy)..." -ForegroundColor Cyan
-    git config --global --unset http.proxy 2>$null
-    git config --global --unset https.proxy 2>$null
-    Write-Host "    Proxy removido." -ForegroundColor Green
-} else {
-    Write-Host "    Nenhum proxy configurado." -ForegroundColor Gray
+# 2. Build do projeto (cmd evita que avisos do Node ex: API_KEY interrompam o script)
+Write-Host "`n[2/5] Executando build..." -ForegroundColor Yellow
+cmd /c "pnpm run build"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "      ERRO: Build falhou. Corrija os erros antes de subir." -ForegroundColor Red
+    exit 1
 }
+Write-Host "      Build concluido com sucesso." -ForegroundColor Green
 
-Write-Host "`n>>> Adicionando arquivos..." -ForegroundColor Cyan
-git add lib/client-session-encryption.ts components/master/master-dashboard.tsx env.example env.local.example hooks/use-master-auth.ts
+# 3. Status do Git
+Write-Host "`n[3/5] Status do repositório..." -ForegroundColor Yellow
+$status = git status --short
+if ([string]::IsNullOrWhiteSpace($status)) {
+    Write-Host "      Nenhuma alteracao pendente. Nada para subir." -ForegroundColor Gray
+    exit 0
+}
+Write-Host $status -ForegroundColor Gray
 
-Write-Host ">>> Commit..." -ForegroundColor Cyan
-git commit -m "feat(master): login obrigatorio, criptografia de sessao e modais com fundo branco"
+# 4. Adicionar e commit
+Write-Host "`n[4/5] Adicionando arquivos e commitando..." -ForegroundColor Yellow
+git add .
+$commitMsg = ($args -join " ").Trim()
+if ([string]::IsNullOrWhiteSpace($commitMsg)) {
+    $commitMsg = "chore: atualizacao do projeto $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+}
+git commit -m "$commitMsg"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "      Commit cancelado ou sem alteracoes." -ForegroundColor Yellow
+    exit 0
+}
+Write-Host "      Commit realizado." -ForegroundColor Green
 
-Write-Host ">>> Push para GitHub..." -ForegroundColor Cyan
+# 5. Push para GitHub
+Write-Host "`n[5/5] Enviando para GitHub..." -ForegroundColor Yellow
 git push
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "      ERRO: Push falhou. Verifique sua conexao e credenciais." -ForegroundColor Red
+    exit 1
+}
 
-Write-Host "`n*** Concluido! ***`n" -ForegroundColor Green
+Write-Host "`n*** Concluido com sucesso! ***`n" -ForegroundColor Green

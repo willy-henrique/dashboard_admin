@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "push:github": "powershell -ExecutionPolicy Bypass -File ./scripts/push-to-github.ps1",
     "dev": "next dev",
     "dev:server": "ts-node -P tsconfig.server.json src/server.ts",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:server\"",

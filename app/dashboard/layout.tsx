@@ -26,13 +26,13 @@ export default function DashboardLayout({
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg shadow-orange-500/30">
-            <Shield className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg shadow-primary/30">
+            <Shield className="w-8 h-8 text-primary-foreground" />
           </div>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-slate-500 font-medium">Carregando...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground font-medium">Carregando...</p>
         </div>
       </div>
     )
@@ -44,7 +44,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-background">
       {/* Sidebar */}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
@@ -61,8 +61,8 @@ export default function DashboardLayout({
         </main>
         
         {/* Footer */}
-        <footer className="border-t border-slate-200 bg-white/50 py-4 px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-500">
+        <footer className="border-t border-border bg-card/50 py-4 px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
             <p>© 2024 AquiResolve. Todos os direitos reservados.</p>
             <p className="flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>

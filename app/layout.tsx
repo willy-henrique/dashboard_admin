@@ -45,7 +45,7 @@ export default function RootLayout({
                 <PermissionsProvider>
                   <PerformanceOptimizer>
                     <GoogleMapsLoader />
-                    <div className="min-h-screen bg-background">
+                    <div className="min-h-screen bg-background overflow-x-hidden max-w-full">
                       {children}
                       <Toaster />
                     </div>

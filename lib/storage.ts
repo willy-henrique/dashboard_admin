@@ -3,73 +3,100 @@ import * as firebaseModule from './firebase';
 const storageInstance = firebaseModule.storage as FirebaseStorage | null;
 import { StorageDocument, ProviderDocuments } from '@/types/verification';
 
+// Processar em lotes para limitar concorrência
+const runInBatches = async <T, R>(
+  items: T[],
+  batchSize: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> => {
+  const results: R[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.allSettled(batch.map(fn));
+    batchResults.forEach(r => {
+      if (r.status === 'fulfilled' && r.value != null) results.push(r.value);
+    });
+  }
+  return results;
+};
+
 // Helper para obter URL de download com retry e tratamento de erro robusto
 const getDownloadURLWithRetry = async (
   itemRef: ReturnType<typeof ref>,
-  retries = 2
+  retries = 1
 ): Promise<string | null> => {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      const url = await getDownloadURL(itemRef);
-      return url;
+      return await getDownloadURL(itemRef);
     } catch (error: any) {
       const errorCode = error?.code || error?.message || '';
-      const isLastAttempt = attempt === retries;
-      
-      // Se for erro de permissão ou arquivo não encontrado, não tenta novamente
       if (errorCode.includes('storage/object-not-found') || 
           errorCode.includes('storage/unauthorized') ||
           errorCode.includes('storage/permission-denied')) {
-        console.warn(`⚠️ Arquivo não acessível: ${itemRef.fullPath} - ${errorCode}`);
         return null;
       }
-      
-      // Se for último attempt, loga o erro
-      if (isLastAttempt) {
-        console.error(`❌ Erro ao obter URL após ${retries + 1} tentativas para ${itemRef.fullPath}:`, error);
-        return null;
-      }
-      
-      // Aguarda antes de tentar novamente (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+      if (attempt === retries) return null;
+      await new Promise(r => setTimeout(r, 300 * (attempt + 1)));
     }
   }
   return null;
 };
 
-// Buscar documentos de um prestador específico pelo ID (sem montar URL manual)
-export const getProviderDocuments = async (providerId: string): Promise<ProviderDocuments | null> => {
-  if (!storageInstance) {
-    console.warn('⚠️ Firebase Storage não inicializado');
+// Inferir tipo de documento pelo nome do arquivo
+const inferDocType = (fileName: string): 'cpf' | 'cnh' | 'comprovante_residencia' | 'certificado' | 'outros' => {
+  const lower = fileName.toLowerCase();
+  if (lower.includes('cpf') || lower.includes('rg') || lower.includes('identidade')) return 'cpf';
+  if (lower.includes('cnh') || lower.includes('habilitacao') || lower.includes('carteira')) return 'cnh';
+  if (lower.includes('residencia') || lower.includes('endereco') || lower.includes('comprovante') || lower.includes('conta')) return 'comprovante_residencia';
+  if (lower.includes('certificado') || lower.includes('curso') || lower.includes('diploma') || lower.includes('formacao')) return 'certificado';
+  return 'outros';
+};
+
+// Versão leve: apenas listAll, sem getMetadata/getDownloadURL (para carregamento inicial rápido)
+export const getProviderDocumentsLightweight = async (providerId: string): Promise<ProviderDocuments | null> => {
+  if (!storageInstance) return null;
+  try {
+    const folderRef = ref(storageInstance, `Documentos/${providerId}`);
+    const result = await listAll(folderRef);
+    if (result.items.length === 0) return null;
+
+    const documents: ProviderDocuments = {
+      providerId,
+      documents: {},
+      uploadedAt: new Date(),
+      firstUploadedAt: new Date(),
+      status: 'pending'
+    };
+    const now = new Date();
+
+    for (const itemRef of result.items) {
+      const fileName = itemRef.name.toLowerCase();
+      const ext = fileName.split('.').pop() || '';
+      const docType = inferDocType(fileName);
+      if (!documents.documents[docType]) documents.documents[docType] = [];
+      documents.documents[docType]!.push({
+        id: itemRef.name,
+        name: itemRef.name,
+        url: '', // Será carregado sob demanda
+        type: ext && ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? (ext === 'pdf' ? 'pdf' : 'image') : 'document',
+        size: 0,
+        uploadedAt: now,
+        path: itemRef.fullPath
+      });
+    }
+    return documents;
+  } catch {
     return null;
   }
+};
 
+// Buscar documentos completos (com URLs) - usado quando o usuário abre "Ver Documentos"
+export const getProviderDocuments = async (providerId: string): Promise<ProviderDocuments | null> => {
+  if (!storageInstance) return null;
   try {
-    console.log(`🔍 Buscando documentos para prestador: ${providerId}`);
-    const storagePath = `Documentos/${providerId}`;
-    const folderRef = ref(storageInstance, storagePath);
-    
-    // Listar todos os arquivos na pasta do prestador
-    let result;
-    try {
-      result = await listAll(folderRef);
-    } catch (listError: any) {
-      // Se não conseguir listar, pode ser que a pasta não exista ou não tenha permissão
-      if (listError?.code === 'storage/object-not-found' || 
-          listError?.code === 'storage/unauthorized' ||
-          listError?.code === 'storage/permission-denied') {
-        console.warn(`⚠️ Não foi possível acessar a pasta ${storagePath}:`, listError.code);
-        return null;
-      }
-      throw listError;
-    }
-    
-    console.log(`📁 Encontrados ${result.items.length} arquivos na pasta ${storagePath}`);
-    
-    if (result.items.length === 0) {
-      console.log(`ℹ️ Nenhum documento encontrado para o prestador ${providerId}`);
-      return null;
-    }
+    const folderRef = ref(storageInstance, `Documentos/${providerId}`);
+    const result = await listAll(folderRef);
+    if (result.items.length === 0) return null;
 
     const documents: ProviderDocuments = {
       providerId,
@@ -79,181 +106,69 @@ export const getProviderDocuments = async (providerId: string): Promise<Provider
       status: 'pending'
     };
 
-    // Processar arquivos em paralelo com tratamento de erro individual
-    const processed = await Promise.allSettled(
-      result.items.map(async (itemRef) => {
-        try {
-          // Obter metadata primeiro
-          let metadata;
-          try {
-            metadata = await getMetadata(itemRef);
-          } catch (metaError: any) {
-            console.warn(`⚠️ Erro ao obter metadata de ${itemRef.name}:`, metaError?.code || metaError?.message);
-            return null;
-          }
+    // Processar em lotes de 4 para não sobrecarregar
+    const processed = await runInBatches(result.items, 4, async (itemRef) => {
+      try {
+        const metadata = await getMetadata(itemRef).catch(() => null);
+        const downloadURL = await getDownloadURLWithRetry(itemRef);
+        if (!downloadURL) return null;
 
-          // Obter URL de download com retry
-          const downloadURL = await getDownloadURLWithRetry(itemRef);
-          
-          if (!downloadURL) {
-            console.warn(`⚠️ Não foi possível obter URL para ${itemRef.name}`);
-            // Mesmo sem URL, podemos criar o documento com informações básicas
-            // mas sem URL de download
-            return null;
-          }
+        const fileName = itemRef.name.toLowerCase();
+        const ext = fileName.split('.').pop() || '';
+        const docType = inferDocType(fileName);
 
-          const fileName = itemRef.name.toLowerCase();
-          const fileExtension = fileName.split('.').pop() || '';
-
-          let docType: 'cpf' | 'cnh' | 'comprovante_residencia' | 'certificado' | 'outros' = 'outros';
-          if (fileName.includes('cpf') || fileName.includes('rg') || fileName.includes('identidade')) {
-            docType = 'cpf';
-          } else if (fileName.includes('cnh') || fileName.includes('habilitacao') || fileName.includes('carteira')) {
-            docType = 'cnh';
-          } else if (fileName.includes('residencia') || fileName.includes('endereco') || fileName.includes('comprovante') || fileName.includes('conta')) {
-            docType = 'comprovante_residencia';
-          } else if (fileName.includes('certificado') || fileName.includes('curso') || fileName.includes('diploma') || fileName.includes('formacao')) {
-            docType = 'certificado';
-          }
-
-          console.log(`✅ Arquivo processado: ${itemRef.name} -> Tipo: ${docType}`);
-
-          const document: StorageDocument = {
-            id: itemRef.name,
-            name: metadata.name || itemRef.name,
-            url: downloadURL,
-            type: getFileType(fileExtension),
-            size: metadata.size || 0,
-            uploadedAt: metadata.timeCreated ? new Date(metadata.timeCreated) : new Date(),
-            path: itemRef.fullPath
-          };
-
-          return { docType, document } as const;
-        } catch (error: any) {
-          console.error(`❌ Erro ao processar arquivo ${itemRef.name}:`, {
-            code: error?.code,
-            message: error?.message,
-            fullPath: itemRef.fullPath
-          });
-          return null;
-        }
-      })
-    );
-
-    // Processar resultados (Promise.allSettled retorna array de {status, value/reason})
-    let minDate: Date | null = null
-    let maxDate: Date | null = null
-    let processedCount = 0;
-    
-    for (const result of processed) {
-      if (result.status === 'fulfilled' && result.value) {
-        const { docType, document } = result.value;
-        if (!documents.documents[docType]) {
-          documents.documents[docType] = [];
-        }
-        documents.documents[docType]!.push(document);
-        processedCount++;
-        
-        // rastrear menor e maior datas
-        if (!minDate || document.uploadedAt < minDate) minDate = document.uploadedAt;
-        if (!maxDate || document.uploadedAt > maxDate) maxDate = document.uploadedAt;
-      } else if (result.status === 'rejected') {
-        console.error('❌ Promise rejeitada ao processar arquivo:', result.reason);
+        const document: StorageDocument = {
+          id: itemRef.name,
+          name: metadata?.name || itemRef.name,
+          url: downloadURL,
+          type: ext && ['jpg','jpeg','png','gif','webp'].includes(ext) ? 'image' : ext === 'pdf' ? 'pdf' : 'document',
+          size: metadata?.size || 0,
+          uploadedAt: metadata?.timeCreated ? new Date(metadata.timeCreated) : new Date(),
+          path: itemRef.fullPath
+        };
+        return { docType, document } as const;
+      } catch {
+        return null;
       }
-    }
+    });
 
-    // Se nenhum documento foi processado com sucesso, retorna null
-    if (processedCount === 0) {
-      console.warn(`⚠️ Nenhum documento pôde ser processado para o prestador ${providerId}`);
-      return null;
-    }
+    let minDate: Date | null = null;
+    let maxDate: Date | null = null;
+    processed.forEach((item) => {
+      if (!item) return;
+      const { docType, document } = item;
+      if (!documents.documents[docType]) documents.documents[docType] = [];
+      documents.documents[docType]!.push(document);
+      if (!minDate || document.uploadedAt < minDate) minDate = document.uploadedAt;
+      if (!maxDate || document.uploadedAt > maxDate) maxDate = document.uploadedAt;
+    });
 
-    // definir primeiro e último upload
+    if (Object.keys(documents.documents).length === 0) return null;
     if (minDate) documents.firstUploadedAt = minDate;
     if (maxDate) documents.uploadedAt = maxDate;
-
-    console.log(`✅ ${processedCount} documento(s) carregado(s) para prestador ${providerId}`);
     return documents;
-  } catch (error: any) {
-    console.error(`❌ Erro ao buscar documentos do prestador ${providerId}:`, {
-      code: error?.code,
-      message: error?.message,
-      stack: error?.stack
-    });
+  } catch {
     return null;
   }
 };
 
-// Buscar todos os prestadores com documentos pendentes
+// Buscar todos os prestadores com documentos pendentes (versão otimizada - só listAll, sem URLs)
 export const getAllPendingProviders = async (): Promise<ProviderDocuments[]> => {
-  // Em produção, buscar via API interna (Admin SDK), para não depender de regras públicas
   try {
-    if (!storageInstance) {
-      console.warn('⚠️ Firebase Storage não inicializado');
-      return [];
-    }
-    
-    const storagePath = 'Documentos';
-    const folderRef = ref(storageInstance, storagePath);
-    
-    // Listar todas as pastas de prestadores
-    let result;
-    try {
-      result = await listAll(folderRef);
-    } catch (listError: any) {
-      // Se não conseguir listar, pode ser problema de permissão ou pasta não existe
-      if (listError?.code === 'storage/object-not-found') {
-        console.warn('⚠️ Pasta Documentos não encontrada no Storage');
-        return [];
-      }
-      if (listError?.code === 'storage/unauthorized' || listError?.code === 'storage/permission-denied') {
-        console.error('❌ Sem permissão para acessar o Storage. Verifique as regras do Firebase Storage.');
-        return [];
-      }
-      console.error('❌ Erro ao listar pastas do Storage:', listError);
-      return [];
-    }
-    
-    console.log(`📁 Encontradas ${result.prefixes.length} pastas de prestadores`);
-    
-    if (result.prefixes.length === 0) {
-      console.log('ℹ️ Nenhuma pasta de prestador encontrada');
-      return [];
-    }
-    
-    // Buscar documentos para todos os prestadores em paralelo com Promise.allSettled
-    const providers = await Promise.allSettled(
-      result.prefixes.map(async (prefixRef) => {
-        try {
-          const clientId = prefixRef.name;
-          const documents = await getProviderDocuments(clientId);
-          return documents;
-        } catch (error: any) {
-          console.error(`❌ Erro ao processar prestador ${prefixRef.name}:`, {
-            code: error?.code,
-            message: error?.message
-          });
-          return null;
-        }
-      })
-    );
+    if (!storageInstance) return [];
 
-    // Filtrar apenas resultados bem-sucedidos e não-nulos
-    const filtered = providers
-      .filter((p): p is PromiseFulfilledResult<ProviderDocuments | null> => 
-        p.status === 'fulfilled' && p.value !== null
-      )
-      .map(p => p.value)
-      .filter((p): p is ProviderDocuments => p !== null);
-    
-    console.log(`✅ Total de prestadores com documentos processados: ${filtered.length}`);
-    return filtered;
-  } catch (error: any) {
-    console.error('❌ Erro ao buscar todos os prestadores:', {
-      code: error?.code,
-      message: error?.message,
-      stack: error?.stack
+    const folderRef = ref(storageInstance, 'Documentos');
+    const result = await listAll(folderRef);
+    if (result.prefixes.length === 0) return [];
+
+    // Processar em lotes de 5 para não sobrecarregar
+    const providers = await runInBatches(result.prefixes, 5, async (prefixRef) => {
+      const docs = await getProviderDocumentsLightweight(prefixRef.name);
+      return docs;
     });
+
+    return providers.filter((p): p is ProviderDocuments => p !== null);
+  } catch {
     return [];
   }
 };

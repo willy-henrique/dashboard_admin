@@ -41,7 +41,7 @@ interface ChatDashboardProps {
 
 export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrderId }: ChatDashboardProps) {
   const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
-  const [activeTab, setActiveTab] = useState("overview")
+  const [activeTab, setActiveTab] = useState("conversations")
 
   const handleSelectConversation = (conversation: LegacyChatConversation) => {
     setSelectedConversation(conversation)
@@ -245,7 +245,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                       <span className="flex items-center gap-2">
                         <span className="truncate">{selectedConversation.clientName}</span>
                         <Badge variant="outline" className="text-xs">
-                          {selectedConversation.orderProtocol || 'N/A'}
+                          {selectedConversation.orderProtocol || selectedConversation.orderId || 'N/A'}
                         </Badge>
                       </span>
                     ) : (

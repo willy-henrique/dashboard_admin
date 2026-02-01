@@ -35,13 +35,14 @@ export function useChatConversations(filter?: ChatFilter) {
           filteredConversations = filteredConversations.filter(conv => conv.priority === filter.priority)
         }
 
-        if (filter?.searchTerm) {
-          const searchLower = filter.searchTerm.toLowerCase()
+        if (filter?.searchTerm?.trim()) {
+          const searchLower = filter.searchTerm.trim().toLowerCase()
           filteredConversations = filteredConversations.filter(conv => 
-            conv.clientName.toLowerCase().includes(searchLower) ||
-            conv.clientEmail.toLowerCase().includes(searchLower) ||
-            conv.orderId.toLowerCase().includes(searchLower) ||
-            conv.lastMessage?.content.toLowerCase().includes(searchLower)
+            conv.clientName?.toLowerCase().includes(searchLower) ||
+            conv.clientEmail?.toLowerCase().includes(searchLower) ||
+            conv.orderId?.toLowerCase().includes(searchLower) ||
+            (conv as { orderProtocol?: string }).orderProtocol?.toLowerCase().includes(searchLower) ||
+            conv.lastMessage?.content?.toLowerCase().includes(searchLower)
           )
         }
 
@@ -51,8 +52,7 @@ export function useChatConversations(filter?: ChatFilter) {
 
         setConversations(filteredConversations)
         setHasLoaded(true)
-      } catch (err) {
-        console.error('❌ Erro ao carregar conversas:', err)
+      } catch {
         setError('Erro ao carregar conversas')
       } finally {
         setLoading(false)
@@ -85,8 +85,7 @@ export function useChatMessages(chatId: string) {
         // Buscar mensagens usando o serviço unificado
         const conversationMessages = await ChatService.getConversationMessages(chatId)
         setMessages(conversationMessages)
-      } catch (err) {
-        console.error('Erro ao carregar mensagens:', err)
+      } catch {
         setError('Erro ao carregar mensagens')
       } finally {
         setLoading(false)
@@ -95,34 +94,65 @@ export function useChatMessages(chatId: string) {
 
     fetchMessages()
 
-    // Para conversas do novo sistema, configurar listener em tempo real
-    if (chatId && !chatId.startsWith('legacy_') && !chatId.startsWith('support_') && !chatId.startsWith('orders_') && db) {
-      const q = query(
-        collection(db, 'chatMessages'),
-        where('chatId', '==', chatId),
-        orderBy('timestamp', 'asc')
-      )
+    // Listener em tempo real: novo sistema (chatMessages) ou orders (orders/{orderId}/messages)
+    if (chatId && db) {
+      if (chatId.startsWith('orders_')) {
+        const orderId = chatId.replace('orders_', '')
+        const messagesRef = collection(db, 'orders', orderId, 'messages')
+        const q = query(messagesRef, orderBy('timestamp', 'asc'))
 
-      const unsubscribe = onSnapshot(q,
-        (snapshot) => {
-          const data = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            timestamp: doc.data().timestamp?.toDate() || new Date(),
-            readBy: doc.data().readBy || [],
-            metadata: doc.data().metadata || {}
-          })) as ChatMessage[]
+        const unsubscribe = onSnapshot(q,
+          (snapshot) => {
+            const data = snapshot.docs.map(d => {
+              const docData = d.data()
+              const content = docData.message ?? docData.content ?? ''
+              return {
+                id: d.id,
+                chatId,
+                senderId: docData.senderId || docData.clientId || 'unknown',
+                senderName: docData.senderName || docData.clientName || 'Cliente',
+                senderType: (['client','cliente'].includes(String(docData.senderType||'').toLowerCase()) ? 'cliente' :
+                  ['provider','prestador'].includes(String(docData.senderType||'').toLowerCase()) ? 'prestador' : 'cliente') as ChatMessage['senderType'],
+                content: content || '(mensagem vazia)',
+                messageType: (docData.messageType || 'text') as const,
+                timestamp: docData.timestamp?.toDate?.() || new Date(),
+                isRead: docData.isRead ?? false,
+                readBy: docData.readBy || [],
+                metadata: { ...docData.metadata, imageUrl: docData.imageUrl, documentUrl: docData.documentUrl }
+              }
+            }) as ChatMessage[]
+            setMessages(data)
+            setLoading(false)
+          },
+          () => setLoading(false)
+        )
+        return () => unsubscribe()
+      }
 
-          setMessages(data.filter(msg => !msg.isDeleted))
-          setLoading(false)
-        },
-        (err) => {
-          console.error('Erro no listener de mensagens:', err)
-          setLoading(false)
-        }
-      )
+      if (!chatId.startsWith('legacy_') && !chatId.startsWith('support_')) {
+        const q = query(
+          collection(db, 'chatMessages'),
+          where('chatId', '==', chatId),
+          orderBy('timestamp', 'asc')
+        )
 
-      return () => unsubscribe()
+        const unsubscribe = onSnapshot(q,
+          (snapshot) => {
+            const data = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+              timestamp: doc.data().timestamp?.toDate() || new Date(),
+              readBy: doc.data().readBy || [],
+              metadata: doc.data().metadata || {}
+            })) as ChatMessage[]
+
+            setMessages(data.filter(msg => !msg.isDeleted))
+            setLoading(false)
+          },
+          () => setLoading(false)
+        )
+        return () => unsubscribe()
+      }
     }
   }, [chatId])
 
@@ -197,8 +227,7 @@ export function useChatActions() {
         updatedAt: Timestamp.now()
       })
       return true
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error)
+    } catch {
       return false
     } finally {
       setLoading(false)
@@ -244,8 +273,7 @@ export function useChatActions() {
       })
 
       return true
-    } catch (error) {
-      console.error('Erro ao atribuir conversa:', error)
+    } catch {
       return false
     } finally {
       setLoading(false)
@@ -312,8 +340,7 @@ export function useChatActions() {
       })
 
       return true
-    } catch (error) {
-      console.error('Erro ao deletar mensagem:', error)
+    } catch {
       return false
     } finally {
       setLoading(false)

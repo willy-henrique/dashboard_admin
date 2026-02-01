@@ -21,7 +21,7 @@ function ChatPageContent() {
 
 export default function ChatMonitoringPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
         <Suspense fallback={
           <div className="flex items-center justify-center h-64">

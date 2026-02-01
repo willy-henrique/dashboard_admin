@@ -80,32 +80,44 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            {document.name}
+      <DialogContent 
+        overlayClassName="z-[10000]"
+        className={cn(
+          "!left-[50%] !top-[50%] !translate-x-[-50%] !translate-y-[-50%]",
+          "!flex flex-col gap-0 p-0",
+          "w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:w-full sm:max-w-4xl",
+          "max-h-[92dvh] sm:max-h-[88vh] overflow-hidden",
+          "z-[10001] rounded-xl sm:rounded-2xl border shadow-2xl bg-background",
+          "mx-2 sm:mx-0"
+        )}
+      >
+        <DialogHeader className="flex-shrink-0 px-4 pt-4 sm:px-6 sm:pt-6 pb-2">
+          <DialogTitle className="flex items-center gap-2 text-sm sm:text-base truncate pr-12">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+            <span className="truncate">{document.name}</span>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
           {/* Controles */}
-          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 bg-gray-50 p-2 sm:p-3 rounded-lg">
+            <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setZoom(Math.max(50, zoom - 25))}
                 disabled={zoom <= 50}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-medium min-w-[60px] text-center">{zoom}%</span>
+              <span className="text-xs sm:text-sm font-medium min-w-[50px] sm:min-w-[60px] text-center">{zoom}%</span>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setZoom(Math.min(300, zoom + 25))}
                 disabled={zoom >= 300}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
                 <ZoomIn className="h-4 w-4" />
               </Button>
@@ -113,6 +125,7 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 variant="outline"
                 size="sm"
                 onClick={() => setRotation((rotation + 90) % 360)}
+                className="h-8 w-8 sm:h-9 sm:w-9 p-0"
               >
                 <RotateCw className="h-4 w-4" />
               </Button>
@@ -120,34 +133,39 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 variant="outline"
                 size="sm"
                 onClick={resetView}
+                className="h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
               >
                 Reset
               </Button>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center sm:justify-end gap-2 flex-wrap">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
                 disabled={isLoading}
+                className="flex-1 sm:flex-none text-xs sm:text-sm"
               >
-                <Download className="h-4 w-4 mr-2" />
-                {isLoading ? 'Baixando...' : 'Baixar'}
+                <Download className="h-4 w-4 sm:mr-2 flex-shrink-0" />
+                <span className="hidden sm:inline">{isLoading ? 'Baixando...' : 'Baixar'}</span>
+                <span className="sm:hidden">{isLoading ? '...' : 'Baixar'}</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(document.url, '_blank')}
+                className="flex-1 sm:flex-none text-xs sm:text-sm"
               >
-                <Maximize2 className="h-4 w-4 mr-2" />
-                Abrir em Nova Aba
+                <Maximize2 className="h-4 w-4 sm:mr-2 flex-shrink-0" />
+                <span className="hidden xs:inline">Abrir em Nova Aba</span>
+                <span className="xs:hidden">Abrir</span>
               </Button>
             </div>
           </div>
 
           {/* Visualização do documento */}
-          <div className="flex justify-center items-center bg-gray-100 rounded-lg overflow-hidden min-h-[400px]">
+          <div className="flex justify-center items-center bg-gray-100 rounded-lg overflow-auto min-h-[160px] sm:min-h-[250px] md:min-h-[350px] max-h-[50dvh] sm:max-h-[55dvh] w-full">
             {document.type === 'image' && document.url ? (
               <img
                 src={document.url}
@@ -184,9 +202,7 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                     `
                   }
                 }}
-                onLoad={() => {
-                  console.log('✅ Imagem carregada no modal:', document.name)
-                }}
+                onLoad={() => {}}
               />
             ) : !document.url ? (
               <div className="text-center p-8 w-full">
@@ -216,7 +232,7 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
           </div>
 
           {/* Informações do documento */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
             <div>
               <p className="font-medium text-gray-500">Tamanho</p>
               <p>{formatFileSize(document.size)}</p>
@@ -326,21 +342,21 @@ export const DocumentViewer = ({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg capitalize flex items-center gap-2">
+    <div className="space-y-4 min-w-0">
+      <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2">
+        <h3 className="font-semibold text-base sm:text-lg capitalize flex items-center gap-2 truncate">
           {getDocumentTypeIcon(documentType)}
           {documentType.replace('_', ' ')}
         </h3>
-        <Badge variant="outline" className="flex items-center gap-1">
+        <Badge variant="outline" className="flex items-center gap-1 flex-shrink-0 w-fit">
           {documents.length} {documents.length === 1 ? 'documento' : 'documentos'}
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 min-w-0">
         {documents.map((document) => (
-          <Card key={document.id} className="group hover:shadow-md transition-shadow">
-            <CardContent className="p-4 space-y-3">
+          <Card key={document.id} className="group hover:shadow-md transition-shadow min-w-0 overflow-hidden">
+            <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
               {/* Preview do documento */}
               <div className="relative">
                 {document.type === 'image' && document.url ? (
@@ -373,9 +389,7 @@ export const DocumentViewer = ({
                           `
                         }
                       }}
-                      onLoad={() => {
-                        console.log('✅ Preview da imagem carregado:', document.name)
-                      }}
+                      onLoad={() => {}}
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
                       <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />

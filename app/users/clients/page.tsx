@@ -85,13 +85,11 @@ export default function ClientsPage() {
         )
       }
       
-      console.log('✅ [CLIENTS] Usando hook específico - Clientes encontrados:', filteredClients.length)
       return filteredClients
     }
     
     // Prioridade 2: Usar usuários filtrados se existirem
     if (users.length > 0) {
-      console.log('✅ [CLIENTS] Usando filtro normal - Clientes encontrados:', users.length)
       return users
     }
     
@@ -122,11 +120,6 @@ export default function ClientsPage() {
       
       return isClient
     })
-    
-    console.log('🔍 [CLIENTS] Usuários filtrados:', users.length)
-    console.log('🔍 [CLIENTS] Clientes específicos:', allClients.length)
-    console.log('🔍 [CLIENTS] Clientes manuais encontrados:', manualClients.length)
-    console.log('🔍 [CLIENTS] Total de usuários no banco:', allUsers.length)
     
     return manualClients
   }, [users, allClients, allUsers, search, statusFilter])

@@ -1,8 +1,5 @@
 import { 
   collection, 
-  query, 
-  where, 
-  orderBy, 
   onSnapshot, 
   doc,
   updateDoc,
@@ -34,7 +31,7 @@ export interface FirebaseProvider {
 export class FirebaseProvidersService {
   private static collectionName = 'providers'
 
-  // Buscar todos os prestadores
+  // Buscar todos os prestadores (filtro/ordenação em memória - sem índice composto)
   static async getProviders(): Promise<FirebaseProvider[]> {
     if (!db) {
       console.warn('Firebase não inicializado, retornando dados mock')
@@ -42,17 +39,14 @@ export class FirebaseProvidersService {
     }
 
     try {
-      const q = query(
-        collection(db, this.collectionName),
-        where('ativo', '==', true),
-        orderBy('ultimaAtualizacao', 'desc')
-      )
-      
-      const snapshot = await getDocs(q)
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as FirebaseProvider[]
+      const snapshot = await getDocs(collection(db, this.collectionName))
+      const mapped = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as FirebaseProvider[]
+      const providers = mapped.filter(p => p.ativo === true)
+      return providers.sort((a, b) => {
+        const aDate = a.ultimaAtualizacao?.toDate?.() ?? a.ultimaAtualizacao ?? new Date(0)
+        const bDate = b.ultimaAtualizacao?.toDate?.() ?? b.ultimaAtualizacao ?? new Date(0)
+        return new Date(bDate).getTime() - new Date(aDate).getTime()
+      })
     } catch (error) {
       console.error('Erro ao buscar prestadores:', error)
       return this.getMockProviders()
@@ -68,18 +62,16 @@ export class FirebaseProvidersService {
     }
 
     try {
-      const q = query(
-        collection(db, this.collectionName),
-        where('ativo', '==', true),
-        where('status', 'in', ['disponivel', 'ocupado', 'online']),
-        orderBy('ultimaAtualizacao', 'desc')
+      const snapshot = await getDocs(collection(db, this.collectionName))
+      const mapped = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as FirebaseProvider[]
+      const providers = mapped.filter(p =>
+        p.ativo === true && ['disponivel', 'ocupado', 'online'].includes(p.status)
       )
-      
-      const snapshot = await getDocs(q)
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as FirebaseProvider[]
+      return providers.sort((a, b) => {
+        const aDate = a.ultimaAtualizacao?.toDate?.() ?? a.ultimaAtualizacao ?? new Date(0)
+        const bDate = b.ultimaAtualizacao?.toDate?.() ?? b.ultimaAtualizacao ?? new Date(0)
+        return new Date(bDate).getTime() - new Date(aDate).getTime()
+      })
     } catch (error) {
       console.error('Erro ao buscar prestadores ativos:', error)
       return this.getMockProviders().filter(p => 
@@ -163,18 +155,19 @@ export class FirebaseProvidersService {
     }
 
     try {
-      const q = query(
-        collection(db, this.collectionName),
-        where('ativo', '==', true),
-        where('status', 'in', ['disponivel', 'ocupado', 'online']),
-        orderBy('ultimaAtualizacao', 'desc')
-      )
+      const colRef = collection(db, this.collectionName)
 
-      return onSnapshot(q, (snapshot) => {
-        const providers = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as FirebaseProvider[]
+      return onSnapshot(colRef, (snapshot) => {
+        const mapped = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as FirebaseProvider[]
+        const allProviders = mapped.filter(p =>
+          p.ativo === true && ['disponivel', 'ocupado', 'online'].includes(p.status)
+        )
+        const providers = allProviders
+          .sort((a, b) => {
+            const aDate = a.ultimaAtualizacao?.toDate?.() ?? a.ultimaAtualizacao ?? new Date(0)
+            const bDate = b.ultimaAtualizacao?.toDate?.() ?? b.ultimaAtualizacao ?? new Date(0)
+            return new Date(bDate).getTime() - new Date(aDate).getTime()
+          })
         callback(providers)
       })
     } catch (error) {

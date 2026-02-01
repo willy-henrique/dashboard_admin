@@ -16,38 +16,44 @@ import { db } from "./firebase"
 
 // Generic Firestore helpers
 export const getCollection = async (collectionName: string, ...constraints: QueryConstraint[]) => {
-  console.log('🔍 getCollection chamado:', collectionName, constraints)
-  
-  if (!db) {
-    console.warn('❌ Firestore não inicializado, retornando dados vazios')
-    return []
-  }
+  if (!db) return []
   
   try {
-    console.log('✅ Firebase db disponível, fazendo query...')
     const q = query(collection(db, collectionName), ...constraints)
     const snapshot = await getDocs(q)
-    const result = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-    console.log(`✅ getCollection resultado para ${collectionName}:`, result.length, 'documentos')
-    return result
-  } catch (error) {
-    console.error('❌ Erro ao buscar coleção:', collectionName, error)
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+  } catch {
+    return []
+  }
+}
+
+// Buscar subcoleção (ex: orders/orderId/messages)
+export const getSubcollection = async (
+  parentCollection: string,
+  parentId: string,
+  subcollectionName: string,
+  ...constraints: QueryConstraint[]
+) => {
+  if (!db) return []
+  
+  try {
+    const ref = collection(db, parentCollection, parentId, subcollectionName)
+    const q = constraints.length > 0 ? query(ref, ...constraints) : ref
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+  } catch {
     return []
   }
 }
 
 export const getDocument = async (collectionName: string, docId: string) => {
-  if (!db) {
-    console.warn('Firestore não inicializado, retornando null')
-    return null
-  }
+  if (!db) return null
   
   try {
     const docRef = doc(db, collectionName, docId)
     const docSnap = await getDoc(docRef)
     return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null
-  } catch (error) {
-    console.error('Erro ao buscar documento:', error)
+  } catch {
     return null
   }
 }
@@ -65,7 +71,6 @@ export const addDocument = async (collectionName: string, data: any) => {
     })
     return docRef.id
   } catch (error) {
-    console.error('Erro ao adicionar documento:', error)
     throw error
   }
 }
@@ -82,7 +87,6 @@ export const updateDocument = async (collectionName: string, docId: string, data
       updatedAt: Timestamp.now(),
     })
   } catch (error) {
-    console.error('Erro ao atualizar documento:', error)
     throw error
   }
 }
@@ -96,7 +100,6 @@ export const deleteDocument = async (collectionName: string, docId: string) => {
     const docRef = doc(db, collectionName, docId)
     await deleteDoc(docRef)
   } catch (error) {
-    console.error('Erro ao deletar documento:', error)
     throw error
   }
 }
@@ -106,10 +109,7 @@ export const listenToCollection = (
   callback: (data: DocumentData[]) => void,
   ...constraints: QueryConstraint[]
 ) => {
-  if (!db) {
-    console.warn('Firestore não inicializado, retornando função vazia')
-    return () => {}
-  }
+  if (!db) return () => {}
   
   try {
     const q = query(collection(db, collectionName), ...constraints)
@@ -117,8 +117,7 @@ export const listenToCollection = (
       const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       callback(data)
     })
-  } catch (error) {
-    console.error('Erro ao configurar listener de coleção:', error)
+  } catch {
     return () => {}
   }
 }
@@ -128,10 +127,7 @@ export const listenToDocument = (
   docId: string,
   callback: (data: DocumentData | null) => void,
 ) => {
-  if (!db) {
-    console.warn('Firestore não inicializado, retornando função vazia')
-    return () => {}
-  }
+  if (!db) return () => {}
   
   try {
     const docRef = doc(db, collectionName, docId)
@@ -139,8 +135,7 @@ export const listenToDocument = (
       const data = doc.exists() ? { id: doc.id, ...doc.data() } : null
       callback(data)
     })
-  } catch (error) {
-    console.error('Erro ao configurar listener de documento:', error)
+  } catch {
     return () => {}
   }
 }
