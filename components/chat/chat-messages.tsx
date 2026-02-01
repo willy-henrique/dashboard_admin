@@ -77,6 +77,17 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
     }
   }
 
+  const getImageUrl = (message: ChatMessage): string | undefined => {
+    const url = message.metadata?.imageUrl ?? message.metadata?.mediaUrl ?? message.metadata?.attachmentUrl
+    if (url) return url
+    const docUrl = message.metadata?.documentUrl
+    if (docUrl) {
+      const ext = docUrl.split('.').pop()?.split('?')[0]?.toLowerCase()
+      if (ext && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)) return docUrl
+    }
+    return undefined
+  }
+
   const handleDeleteMessage = async (messageId: string) => {
     if (confirm("Tem certeza que deseja deletar esta mensagem?")) {
       await deleteMessage(messageId, "admin", "Administrador")
@@ -214,12 +225,23 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                   </div>
 
                   <div className="text-sm text-gray-700 space-y-2">
-                    {message.messageType === "image" && message.metadata?.imageUrl && (
-                      <img
-                        src={message.metadata.imageUrl}
-                        alt="Imagem"
-                        className="max-w-xs rounded-lg"
-                      />
+                    {(message.messageType === "image" || getImageUrl(message)) && getImageUrl(message) && (
+                      <div className="space-y-1">
+                        <a
+                          href={getImageUrl(message)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block hover:opacity-90 transition-opacity"
+                        >
+                          <img
+                            src={getImageUrl(message)!}
+                            alt="Imagem do chat"
+                            className="max-w-xs max-h-64 rounded-lg border object-contain cursor-pointer"
+                            loading="lazy"
+                          />
+                        </a>
+                        <p className="text-xs text-muted-foreground">Clique na imagem para ampliar</p>
+                      </div>
                     )}
 
                     {message.messageType === "file" && (
@@ -239,7 +261,9 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
                       </div>
                     )}
 
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    {message.content && !(getImageUrl(message) && /^Imagem enviada\.?$/i.test(message.content.trim())) && (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
                   </div>
                 </div>
 

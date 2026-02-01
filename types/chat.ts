@@ -14,6 +14,9 @@ export interface ChatMessage {
     fileSize?: number
     fileType?: string
     imageUrl?: string
+    documentUrl?: string
+    mediaUrl?: string
+    attachmentUrl?: string
     location?: {
       lat: number
       lng: number

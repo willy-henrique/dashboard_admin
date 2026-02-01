@@ -106,6 +106,8 @@ export function useChatMessages(chatId: string) {
             const data = snapshot.docs.map(d => {
               const docData = d.data()
               const content = docData.message ?? docData.content ?? ''
+              const imageUrl = docData.imageUrl ?? docData.image_url ?? docData.mediaUrl ?? docData.attachmentUrl ?? docData.photoUrl ?? docData.metadata?.imageUrl
+              const documentUrl = docData.documentUrl ?? docData.fileUrl ?? docData.metadata?.documentUrl
               return {
                 id: d.id,
                 chatId,
@@ -118,7 +120,7 @@ export function useChatMessages(chatId: string) {
                 timestamp: docData.timestamp?.toDate?.() || new Date(),
                 isRead: docData.isRead ?? false,
                 readBy: docData.readBy || [],
-                metadata: { ...docData.metadata, imageUrl: docData.imageUrl, documentUrl: docData.documentUrl }
+                metadata: { ...docData.metadata, imageUrl, documentUrl }
               }
             }) as ChatMessage[]
             setMessages(data)

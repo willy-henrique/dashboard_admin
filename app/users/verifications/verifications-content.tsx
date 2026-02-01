@@ -664,10 +664,10 @@ export const VerificationsPageContent = () => {
         </Card>
 
         {showDetails && selectedVerification && (
-          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto overscroll-contain bg-slate-900/60 backdrop-blur-md">
-            <div className="w-full max-w-full sm:max-w-7xl sm:my-4 flex flex-col bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border-0 sm:border border-slate-200/80 min-h-[80dvh] sm:min-h-0 sm:max-h-[90dvh] max-h-[100dvh] touch-pan-y">
-              {/* Header fixo */}
-              <div className="flex-shrink-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
+          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden bg-slate-900/60 backdrop-blur-md">
+            <div className="w-full max-w-full sm:max-w-7xl h-[85dvh] sm:h-[90dvh] sm:max-h-[90vh] flex flex-col bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border-0 sm:border border-slate-200/80 touch-pan-y overflow-hidden">
+              {/* Header fixo - sempre visível no topo */}
+              <div className="flex-shrink-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6 rounded-t-2xl sm:rounded-t-2xl shadow-md">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">

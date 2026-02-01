@@ -416,6 +416,8 @@ export class ChatService {
         return messages.map(doc => {
           const content = doc.message ?? doc.content ?? ''
           const ts = doc.timestamp?.toDate?.() ?? doc.timestamp ?? doc.createdAt?.toDate?.()
+          const imageUrl = doc.imageUrl ?? doc.image_url ?? doc.mediaUrl ?? doc.attachmentUrl ?? doc.photoUrl ?? doc.metadata?.imageUrl
+          const documentUrl = doc.documentUrl ?? doc.fileUrl ?? doc.metadata?.documentUrl
           return {
             id: doc.id,
             chatId: conversationId,
@@ -427,7 +429,7 @@ export class ChatService {
             timestamp: ts || new Date(),
             isRead: doc.isRead ?? false,
             readBy: doc.readBy || [],
-            metadata: { ...doc.metadata, imageUrl: doc.imageUrl, documentUrl: doc.documentUrl } || {}
+            metadata: { ...doc.metadata, imageUrl, documentUrl } || {}
           }
         }) as ChatMessage[]
       }
