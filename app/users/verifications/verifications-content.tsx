@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { AppShell } from "@/components/layout/app-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -71,6 +72,15 @@ export const VerificationsPageContent = () => {
     fetchProviderVerification
   } = useDocumentVerification()
   const [loadingDocumentsFor, setLoadingDocumentsFor] = useState<string | null>(null)
+
+  // Bloquear scroll do body quando o modal estiver aberto
+  useEffect(() => {
+    if (showDetails) {
+      const prev = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = prev }
+    }
+  }, [showDetails])
 
   // Funções auxiliares
   const toggleCardExpansion = (verificationId: string) => {
@@ -563,6 +573,7 @@ export const VerificationsPageContent = () => {
                                     )
                                     if (hasUrls) {
                                       setSelectedVerification(verification)
+                                      setModalTab("documents")
                                       setShowDetails(true)
                                       return
                                     }
@@ -571,6 +582,7 @@ export const VerificationsPageContent = () => {
                                       const full = await fetchProviderVerification(verification.providerId)
                                       if (full) {
                                         setSelectedVerification({ ...verification, documents: full.documents })
+                                        setModalTab("documents")
                                         setShowDetails(true)
                                       }
                                     } finally {
@@ -663,9 +675,15 @@ export const VerificationsPageContent = () => {
           </CardContent>
         </Card>
 
-        {showDetails && selectedVerification && (
-          <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden bg-slate-900/60 backdrop-blur-md">
-            <div className="w-full max-w-full sm:max-w-7xl h-[85dvh] sm:h-[90dvh] sm:max-h-[90vh] flex flex-col bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border-0 sm:border border-slate-200/80 touch-pan-y overflow-hidden">
+        {showDetails && selectedVerification && typeof document !== 'undefined' && createPortal(
+          <div 
+            className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md"
+            style={{ overflow: 'hidden', overscrollBehavior: 'contain' }}
+          >
+            <div 
+              className="w-full max-w-full sm:max-w-7xl flex flex-col bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border-0 sm:border border-slate-200/80"
+              style={{ maxHeight: 'min(90dvh, 90vh)', height: 'min(85dvh, 90vh)', overflow: 'hidden' }}
+            >
               {/* Header fixo - sempre visível no topo */}
               <div className="flex-shrink-0 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6 rounded-t-2xl sm:rounded-t-2xl shadow-md">
                 <div className="flex items-center justify-between gap-4">
@@ -690,273 +708,149 @@ export const VerificationsPageContent = () => {
                 </div>
               </div>
               
-              {/* Conteúdo rolável */}
-              <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-4 sm:space-y-6 bg-slate-50/80">
-                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-200/80 min-w-0">
-                  <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
-                    Informações do Prestador
-                  </h3>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                        <User className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Nome</p>
-                        <p className="font-semibold text-gray-900">{selectedVerification.providerName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Mail className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Email</p>
-                        <p className="font-semibold text-gray-900">{selectedVerification.providerEmail}</p>
-                      </div>
-                    </div>
-                    {selectedVerification.providerPhone && (
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                          <Phone className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Telefone</p>
-                          <p className="font-semibold text-gray-900">{selectedVerification.providerPhone}</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Calendar className="h-5 w-5 text-purple-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Enviado</p>
-                        <p className="font-semibold text-gray-900">
-                          {format(selectedVerification.submittedAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-sky-50 to-indigo-50 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-sky-200/80 min-w-0 overflow-hidden">
-                  <h3 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2 text-blue-800">
-                    <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
-                    Credenciais e Documentos Pessoais
-                  </h3>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    {selectedVerification.providerCpf && (
-                      <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-blue-200 min-w-0 overflow-hidden">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                            <FileText className="h-6 w-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">CPF</p>
-                            <p className="text-sm sm:text-lg font-bold text-blue-900 break-all">{selectedVerification.providerCpf}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {selectedVerification.providerRg && (
-                      <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-purple-200 min-w-0 overflow-hidden">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                            <FileText className="h-6 w-6 text-purple-600" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">RG</p>
-                            <p className="text-lg font-bold text-purple-900">{selectedVerification.providerRg}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {selectedVerification.providerBirthDate && (
-                      <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-green-200 min-w-0 overflow-hidden">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                            <Calendar className="h-6 w-6 text-green-600" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">Data de Nascimento</p>
-                            <p className="text-lg font-bold text-green-900">{selectedVerification.providerBirthDate}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {selectedVerification.providerAddress && (
-                      <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-orange-200 md:col-span-2 lg:col-span-3 min-w-0 overflow-hidden">
-                        <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                            <MapPin className="h-6 w-6 text-orange-600" />
-                          </div>
-                          <div>
-                            <p className="text-xs font-medium text-gray-500 uppercase">Endereço</p>
-                            <p className="text-sm sm:text-base font-semibold text-orange-900 break-words">{selectedVerification.providerAddress}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {!selectedVerification.providerCpf && !selectedVerification.providerRg && !selectedVerification.providerBirthDate && !selectedVerification.providerAddress && (
-                      <div className="col-span-full text-center py-4 text-gray-500">
-                        <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                        <p>Nenhuma credencial adicional cadastrada</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-slate-200/80 min-w-0">
-                  <div className="flex flex-col gap-3 sm:gap-6 lg:flex-row lg:items-center lg:justify-between">
-                    <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-                      <span className="text-base sm:text-lg font-medium text-gray-700">Status da Verificação:</span>
-                      {getStatusBadge(selectedVerification.status)}
-                    </div>
-                    {selectedVerification.status === "pending" && (
-                      <div className="flex flex-col gap-2 sm:flex-row sm:gap-3 flex-shrink-0">
-                        <Button
-                          onClick={() => {
-                            handleApprove(selectedVerification.id)
-                            setShowDetails(false)
-                          }}
-                          className="rounded-xl bg-emerald-600 hover:bg-emerald-700 flex items-center gap-2 px-6 py-3 font-medium shadow-lg shadow-emerald-500/25"
-                        >
-                          <CheckCircle className="h-5 w-5" />
-                          Aprovar Prestador
-                        </Button>
-                        <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              className="rounded-xl flex items-center gap-2 px-6 py-3 font-medium"
-                            >
-                              <XCircle className="h-5 w-5" />
-                              Rejeitar Prestador
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent overlayClassName="z-[10000]" className="z-[10001] max-w-[calc(100vw-2rem)] sm:max-w-md rounded-2xl border-slate-200 bg-white shadow-2xl mx-4 sm:mx-0">
-                            <DialogHeader>
-                              <DialogTitle className="flex items-center gap-2 text-slate-900">
-                                <AlertTriangle className="h-5 w-5 text-rose-500" />
-                                Rejeitar Verificação
-                              </DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <p className="text-sm text-slate-600">
-                                Informe o motivo da rejeição para <strong>{selectedVerification.providerName}</strong>:
-                              </p>
-                              <Textarea
-                                placeholder="Ex: Documentos ilegíveis, informações incompletas, etc."
-                                value={rejectionReason}
-                                onChange={(e) => setRejectionReason(e.target.value)}
-                                rows={4}
-                                className="rounded-xl border-slate-200 focus:ring-2 focus:ring-rose-500/20"
-                              />
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  variant="outline"
-                                  onClick={() => {
-                                    setShowRejectDialog(false)
-                                    setRejectionReason("")
-                                  }}
-                                  className="rounded-xl border-slate-200"
-                                >
-                                  Cancelar
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  onClick={() => handleReject(selectedVerification.id)}
-                                  className="rounded-xl"
-                                >
-                                  Confirmar Rejeição
-                                </Button>
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden min-w-0">
-                  <Tabs value={modalTab} onValueChange={setModalTab} className="w-full min-w-0">
-                    <div className="p-3 sm:p-6 pb-0">
-                      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-12 p-1 rounded-xl bg-slate-100">
-                        <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
-                          <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              {/* Tabs + conteúdo - documentos em destaque */}
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-slate-50/80">
+                <Tabs value={modalTab} onValueChange={setModalTab} className="flex-1 flex flex-col min-h-0 min-w-0">
+                  <div className="flex-shrink-0 px-3 sm:px-6 pt-3 pb-2 bg-white border-b border-slate-200/80">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <TabsList className="grid grid-cols-2 sm:grid-cols-5 h-auto p-1 rounded-xl bg-slate-100 flex-1 sm:flex-initial max-w-full">
+                        <TabsTrigger value="documents" className="rounded-lg data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
+                          <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 shrink-0" />
                           Documentos
                         </TabsTrigger>
+                        <TabsTrigger value="info" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
+                          <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 shrink-0" />
+                          Info
+                        </TabsTrigger>
                         <TabsTrigger value="structure" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
-                          <Building className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <Building className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 shrink-0" />
                           Estrutura
                         </TabsTrigger>
                         <TabsTrigger value="acceptance" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
-                          <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 shrink-0" />
                           Aceitação
                         </TabsTrigger>
                         <TabsTrigger value="history" className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-orange-600 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
-                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 shrink-0" />
                           Histórico
                         </TabsTrigger>
                       </TabsList>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {getStatusBadge(selectedVerification.status)}
+                        {selectedVerification.status === "pending" && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => { handleApprove(selectedVerification.id); setShowDetails(false) }}
+                              className="rounded-lg bg-emerald-600 hover:bg-emerald-700 h-8 text-xs sm:h-9 sm:text-sm"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Aprovar
+                            </Button>
+                            <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                              <DialogTrigger asChild>
+                                <Button variant="destructive" size="sm" className="rounded-lg h-8 text-xs sm:h-9 sm:text-sm">
+                                  <XCircle className="h-4 w-4 mr-1" />
+                                  Rejeitar
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent overlayClassName="z-[10000]" className="z-[10001] max-w-[calc(100vw-2rem)] sm:max-w-md rounded-2xl">
+                                <DialogHeader>
+                                  <DialogTitle className="flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 text-rose-500" />
+                                    Rejeitar Verificação
+                                  </DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <p className="text-sm text-slate-600">Informe o motivo da rejeição:</p>
+                                  <Textarea
+                                    placeholder="Ex: Documentos ilegíveis..."
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    rows={4}
+                                    className="rounded-xl"
+                                  />
+                                  <div className="flex justify-end gap-2">
+                                    <Button variant="outline" onClick={() => { setShowRejectDialog(false); setRejectionReason("") }}>Cancelar</Button>
+                                    <Button variant="destructive" onClick={() => handleReject(selectedVerification.id)}>Confirmar</Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </>
+                        )}
+                      </div>
                     </div>
+                  </div>
+                  
+                  <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-6 rounded-b-2xl" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <TabsContent value="documents" className="mt-0 space-y-4 min-w-0">
+                      {Object.entries(selectedVerification.documents || {}).map(([type, documents]) => {
+                        if (!documents || !Array.isArray(documents) || documents.length === 0) return null
+                        return (
+                          <div key={type} className="bg-white rounded-xl p-3 sm:p-6 shadow-sm border border-slate-200/80 min-w-0 overflow-x-hidden">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3 capitalize">{type}</h4>
+                            <DocumentViewer documents={documents as any[]} documentType={type} showActions={false} />
+                          </div>
+                        )
+                      })}
+                      {(!selectedVerification.documents || Object.keys(selectedVerification.documents).length === 0) && (
+                        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                          <FileText className="h-12 w-12 mb-3 text-gray-400" />
+                          <p>Nenhum documento enviado</p>
+                        </div>
+                      )}
+                    </TabsContent>
                     
-                    <div className="p-3 sm:p-6 min-w-0 overflow-x-hidden">
-                      <TabsContent value="documents" className="space-y-4 sm:space-y-6 mt-0 min-w-0">
-                        <h3 className="text-xl font-semibold flex items-center gap-2 text-gray-800">
-                          <FileText className="h-6 w-6 text-orange-600" />
-                          Documentos Enviados
-                        </h3>
-                        {Object.entries(selectedVerification.documents).map(([type, documents]) => {
-                          if (!documents || !Array.isArray(documents) || documents.length === 0) return null
-                          
-                          return (
-                            <div key={type} className="bg-gray-50 rounded-lg p-3 sm:p-6 min-w-0 overflow-x-hidden">
-                              <DocumentViewer
-                                documents={documents as any[]}
-                                documentType={type}
-                                showActions={false}
-                              />
-                            </div>
-                          )
-                        })}
-                      </TabsContent>
-                      
-                      <TabsContent value="structure" className="mt-0">
-                        <UserDocumentsStructure
-                          providerId={selectedVerification.providerId}
-                          providerName={selectedVerification.providerName}
-                          documents={selectedVerification.documents}
-                          submittedAt={selectedVerification.submittedAt}
-                        />
-                      </TabsContent>
-                      
-                      <TabsContent value="acceptance" className="mt-0">
-                        <ServiceAcceptanceDocs
-                          verification={selectedVerification}
-                          onAccept={() => {
-                            handleApprove(selectedVerification.id)
-                            setShowDetails(false)
-                          }}
-                          onReject={() => setShowRejectDialog(true)}
-                        />
-                      </TabsContent>
-                      
-                      <TabsContent value="history" className="mt-0">
-                        <VerificationHistory
-                          verificationId={selectedVerification.id}
-                          providerName={selectedVerification.providerName}
-                        />
-                      </TabsContent>
-                    </div>
-                  </Tabs>
-                </div>
+                    <TabsContent value="info" className="mt-0 space-y-4">
+                      <div className="bg-white rounded-xl p-4 shadow-sm border">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2"><User className="h-4 w-4 text-orange-600" />Informações</h3>
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 text-sm">
+                          <div><span className="text-gray-500">Nome:</span> <span className="font-medium">{selectedVerification.providerName}</span></div>
+                          <div><span className="text-gray-500">Email:</span> <span className="font-medium">{selectedVerification.providerEmail}</span></div>
+                          {selectedVerification.providerPhone && <div><span className="text-gray-500">Telefone:</span> <span className="font-medium">{selectedVerification.providerPhone}</span></div>}
+                          <div><span className="text-gray-500">Enviado:</span> <span className="font-medium">{format(selectedVerification.submittedAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}</span></div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded-xl p-4 shadow-sm border">
+                        <h3 className="font-semibold mb-3 flex items-center gap-2"><Shield className="h-4 w-4 text-blue-600" />Credenciais</h3>
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-3 text-sm">
+                          {selectedVerification.providerCpf && <div><span className="text-gray-500">CPF:</span> <span className="font-medium break-all">{selectedVerification.providerCpf}</span></div>}
+                          {selectedVerification.providerRg && <div><span className="text-gray-500">RG:</span> <span className="font-medium">{selectedVerification.providerRg}</span></div>}
+                          {selectedVerification.providerAddress && <div className="col-span-full"><span className="text-gray-500">Endereço:</span> <span className="font-medium break-words">{selectedVerification.providerAddress}</span></div>}
+                        </div>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="structure" className="mt-0">
+                      <UserDocumentsStructure
+                        providerId={selectedVerification.providerId}
+                        providerName={selectedVerification.providerName}
+                        documents={selectedVerification.documents}
+                        submittedAt={selectedVerification.submittedAt}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="acceptance" className="mt-0">
+                      <ServiceAcceptanceDocs
+                        verification={selectedVerification}
+                        onAccept={() => { handleApprove(selectedVerification.id); setShowDetails(false) }}
+                        onReject={() => setShowRejectDialog(true)}
+                      />
+                    </TabsContent>
+                    
+                    <TabsContent value="history" className="mt-0">
+                      <VerificationHistory
+                        verificationId={selectedVerification.id}
+                        providerName={selectedVerification.providerName}
+                      />
+                    </TabsContent>
+                  </div>
+                </Tabs>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
         </div>
       </div>
