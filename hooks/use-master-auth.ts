@@ -75,6 +75,12 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
   // Sempre exigir login ao acessar /master. Não restauramos sessão; uso de sessionStorage
   // criptografado apenas durante a navegação na mesma aba (evita re-login a cada clique).
   useEffect(() => {
+    let cancelled = false
+    const timeout = window.setTimeout(() => {
+      if (cancelled) return
+      setLoading(false)
+    }, 10000) // segurança: nunca ficar mais de 10s em "Verificando autenticação..."
+
     const checkMasterAuth = async () => {
       try {
         setLoading(true)
@@ -84,6 +90,7 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
           return
         }
         const userDoc = await getDoc(doc(db, 'adminmaster', 'master'))
+        if (cancelled) return
         if (!userDoc.exists()) {
           clientSessionEncryption.clear()
           setLoading(false)
@@ -110,11 +117,15 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
         setMasterUser(null)
         setIsMasterAuthenticated(false)
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     checkMasterAuth()
+    return () => {
+      cancelled = true
+      window.clearTimeout(timeout)
+    }
   }, [])
 
   // Permitir que outras partes da UI solicitem atualização da lista de usuários

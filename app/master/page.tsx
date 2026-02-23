@@ -43,12 +43,20 @@ export default function MasterPage() {
     
     try {
       await masterLogin(email, password)
-      // Limpar campos após login bem-sucedido
       setEmail("")
       setPassword("")
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       console.error('Erro no login:', error)
-      setError("Credenciais inválidas. Apenas administradores master podem acessar esta área.")
+      if (message === 'PERMISSION_DENIED') {
+        setError("Sem permissão no Firestore. Verifique se as regras foram publicadas no projeto correto (firebase deploy --only firestore:rules).")
+      } else if (message === 'MASTER_NOT_FOUND') {
+        setError("Documento master não encontrado. Execute na raiz do projeto: pnpm run setup:master")
+      } else if (message === 'MASTER_INVALID_CONFIG') {
+        setError("Documento master inválido (falta senhaHash). Execute: pnpm run setup:master")
+      } else {
+        setError("Credenciais inválidas. Apenas administradores master podem acessar esta área.")
+      }
     } finally {
       setIsLoading(false)
     }

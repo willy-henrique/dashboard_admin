@@ -1,5 +1,6 @@
 const { initializeApp } = require('firebase/app');
 const { getFirestore, doc, setDoc, collection, addDoc } = require('firebase/firestore');
+const bcrypt = require('bcryptjs');
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -11,10 +12,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Função para hash de senha
-const hashPassword = (password) => {
-  return Buffer.from(password).toString('base64');
-};
+const BCRYPT_ROUNDS = 10;
 
 async function createAdminMasterCollection() {
   try {
@@ -39,12 +37,14 @@ async function createAdminMasterCollection() {
     const db = getFirestore(app);
 
     console.log('📦 Criando coleção "adminmaster"...');
-    
+
+    const senhaHash = await bcrypt.hash('admin123', BCRYPT_ROUNDS);
+
     // 1. Criar documento principal do AdminMaster
     console.log('👑 Criando AdminMaster principal...');
     const adminMasterData = {
       email: 'master@aquiresolve.com',
-      senhaHash: hashPassword('admin123'),
+      senhaHash,
       nome: 'Administrador Master',
       createdAt: new Date(),
       updatedAt: new Date(),

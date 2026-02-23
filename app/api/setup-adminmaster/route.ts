@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { initializeApp } from 'firebase/app'
 import { getFirestore, doc, setDoc, collection, addDoc } from 'firebase/firestore'
+import bcrypt from 'bcryptjs'
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -12,10 +13,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 }
 
-// Função para hash de senha
-const hashPassword = (password: string): string => {
-  return Buffer.from(password).toString('base64')
-}
+const BCRYPT_ROUNDS = 10
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,11 +43,13 @@ export async function POST(request: NextRequest) {
     const db = getFirestore(app)
 
     console.log('👑 Configurando AdminMaster...')
-    
+
+    const senhaHash = await bcrypt.hash('admin123', BCRYPT_ROUNDS)
+
     // Dados do AdminMaster padrão
     const adminMasterData = {
       email: 'master@aquiresolve.com',
-      senhaHash: hashPassword('admin123'), // Senha padrão: admin123
+      senhaHash,
       nome: 'Administrador Master',
       permissoes: {
         dashboard: true,

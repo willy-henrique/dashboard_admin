@@ -11,7 +11,10 @@ import {
   where,
   orderBy
 } from "firebase/firestore"
+import bcrypt from "bcryptjs"
 import { db } from "@/lib/firebase"
+
+const BCRYPT_ROUNDS = 10
 
 export interface AdminMaster {
   id: string
@@ -45,9 +48,29 @@ export interface MasterUser {
 }
 
 export class AdminMasterService {
-  // Função para hash de senha (simplificada para demonstração)
-  private static hashPassword(password: string): string {
-    return Buffer.from(password).toString('base64')
+  // Hash de senha com bcrypt (seguro, one-way)
+  static async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, BCRYPT_ROUNDS)
+  }
+
+  // Comparar senha: bcrypt (novo) ou base64 (legado)
+  private static async comparePassword(password: string, senhaHash: string): Promise<boolean> {
+    if (!senhaHash || typeof senhaHash !== 'string') {
+      return false
+    }
+    if (senhaHash.startsWith('$2')) {
+      return bcrypt.compare(password, senhaHash)
+    }
+    // Legado: senha em base64
+    try {
+      const base64 =
+        typeof btoa !== 'undefined'
+          ? btoa(unescape(encodeURIComponent(password)))
+          : Buffer.from(password, 'utf8').toString('base64')
+      return base64 === senhaHash
+    } catch {
+      return false
+    }
   }
 
   // Verificar credenciais do AdminMaster
@@ -57,22 +80,35 @@ export class AdminMasterService {
       const adminMasterDoc = await getDoc(adminMasterRef)
       
       if (!adminMasterDoc.exists()) {
-        throw new Error('AdminMaster não encontrado')
+        throw new Error('MASTER_NOT_FOUND')
       }
 
       const adminData = adminMasterDoc.data() as AdminMaster
-      const hashedPassword = this.hashPassword(password)
+      if (adminData.email !== email) {
+        throw new Error('Credenciais inválidas')
+      }
 
-      if (adminData.email !== email || adminData.senhaHash !== hashedPassword) {
+      const senhaHash = adminData.senhaHash
+      if (!senhaHash || typeof senhaHash !== 'string') {
+        throw new Error('MASTER_INVALID_CONFIG')
+      }
+
+      const passwordMatch = await this.comparePassword(password, senhaHash)
+      if (!passwordMatch) {
         throw new Error('Credenciais inválidas')
       }
 
       return {
-        id: adminMasterDoc.id,
-        ...adminData
+        ...adminData,
+        id: adminMasterDoc.id
       }
-    } catch (error) {
-      console.error('Erro na autenticação master:', error)
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string }
+      console.error('Erro na autenticação master:', err)
+      const code = err?.code ?? ''
+      if (String(code).includes('permission-denied')) {
+        throw new Error('PERMISSION_DENIED')
+      }
       throw error
     }
   }
@@ -216,7 +252,7 @@ export class AdminMasterService {
   // Atualizar senha do AdminMaster
   static async updateMasterPassword(newPassword: string): Promise<void> {
     try {
-      const hashedPassword = this.hashPassword(newPassword)
+      const hashedPassword = await this.hashPassword(newPassword)
       const adminMasterRef = doc(db, 'adminmaster', 'master')
       await updateDoc(adminMasterRef, { senhaHash: hashedPassword })
     } catch (error) {

@@ -1,16 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // PERMISSÃO TOTAL PARA DESENVOLVIMENTO
+
+    // 🔓 PERMISSÃO TOTAL PARA DESENVOLVIMENTO
     match /{document=**} {
       allow read, write: if true;
     }
-    
-    // Regras específicas para a coleção adminmaster
+
+    // 📁 Regras específicas para a coleção adminmaster
     match /adminmaster/{document} {
       allow read, write: if true;
-      
-      // Subcoleção de usuários
+
+      // 👥 Subcoleção de usuários
       match /usuarios/{usuarioId} {
         allow read, write: if true;
       }
