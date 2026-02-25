@@ -47,7 +47,8 @@ import { cn } from "@/lib/utils"
 
 export const VerificationsPageContent = () => {
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  // Iniciar mostrando apenas quem já está liberado para usar o site
+  const [statusFilter, setStatusFilter] = useState<string>("approved")
   const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("all")
   const [selectedVerification, setSelectedVerification] = useState<any>(null)
   const [showDetails, setShowDetails] = useState(false)
@@ -231,10 +232,10 @@ export const VerificationsPageContent = () => {
                 </div>
                 <div className="space-y-1 min-w-0">
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 truncate">
-                    Verificações de Prestadores
+                    Aprovar Utilização do Site
                   </h1>
                   <p className="text-slate-600 text-sm sm:text-base max-w-xl line-clamp-2">
-                    Gerencie e aprove cadastros de prestadores de serviço
+                    Solicitações de parceiros aguardando liberação para utilizar o site completo.
                   </p>
                 </div>
               </div>
@@ -311,9 +312,9 @@ export const VerificationsPageContent = () => {
               <CardContent className="p-3 sm:p-5 lg:p-6">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-medium text-slate-500">Rejeitados</p>
+                    <p className="text-sm font-medium text-slate-500">Bloqueados</p>
                     <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-rose-600 tabular-nums">{stats.rejected}</p>
-                    <p className="text-xs text-slate-500">{stats.rejected > 0 ? `${stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}% do total` : "Nenhum rejeitado"}</p>
+                    <p className="text-xs text-slate-500">{stats.rejected > 0 ? `${stats.total ? Math.round((stats.rejected / stats.total) * 100) : 0}% do total` : "Nenhum bloqueado"}</p>
                   </div>
                   <div className="rounded-xl sm:rounded-2xl bg-rose-50 p-2 sm:p-3">
                     <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-rose-600" />
@@ -378,7 +379,7 @@ export const VerificationsPageContent = () => {
                   Aprovados ({stats.approved})
                 </TabsTrigger>
                 <TabsTrigger value="rejected" className="rounded-lg data-[state=active]:bg-rose-50 data-[state=active]:text-rose-700 data-[state=active]:shadow-sm font-medium text-xs sm:text-sm py-2 px-2 sm:px-3">
-                  Rejeitados ({stats.rejected})
+                  Bloqueados ({stats.rejected})
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -419,7 +420,7 @@ export const VerificationsPageContent = () => {
                 <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-slate-100">
                   <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-600" />
                 </div>
-                Verificações
+                Solicitações
                 <Badge variant="secondary" className="ml-1 rounded-full px-2 sm:px-2.5 py-0.5 font-medium bg-slate-100 text-slate-600 text-xs sm:text-sm">
                   {filteredVerifications.length}
                 </Badge>

@@ -217,10 +217,10 @@ export default function ClientsPage() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--primary)' }}>
                 <UsersIcon className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
               </div>
-              Gestão de Clientes
+              Pessoas cadastradas
             </h1>
             <p className="mt-2 text-lg" style={{ color: 'var(--muted-foreground)' }}>
-              Gerencie todos os clientes do aplicativo
+              Pesquise e gerencie todas as pessoas cadastradas no sistema
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -335,7 +335,7 @@ export default function ClientsPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
                   <Input
-                    placeholder="Buscar por nome, email, CPF..."
+                    placeholder="Buscar pessoas cadastradas (nome, email, CPF...)"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-20 h-11 text-base"

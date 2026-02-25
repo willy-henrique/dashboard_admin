@@ -75,9 +75,8 @@ const navigation = [
     icon: Users,
     permission: "gestaoUsuarios",
     children: [
-      { name: "Clientes", href: "/users/clients", icon: Users },
+      { name: "Pessoas cadastradas", href: "/users/clients", icon: Users },
       { name: "Prestadores", href: "/users/providers", icon: UserCheck },
-      { name: "Verificações", href: "/users/verifications", icon: Shield },
     ],
   },
   {
@@ -288,37 +287,43 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
       {/* Footer fixo da Sidebar */}
       <div className="border-t border-orange-200/50 p-4 flex-shrink-0 bg-white/30">
-        <div className="flex items-center gap-3 text-slate-800">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20">
-            {user?.photoURL ? (
-              <img 
-                src={user.photoURL} 
-                alt="Avatar" 
-                className="w-10 h-10 rounded-xl object-cover"
-              />
-            ) : (
-              <span className="text-white font-semibold text-sm">
-                {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'A'}
-              </span>
-            )}
+        <div className="flex flex-col gap-3 text-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20">
+              {user?.photoURL ? (
+                <img 
+                  src={user.photoURL} 
+                  alt="Avatar" 
+                  className="w-10 h-10 rounded-xl object-cover"
+                />
+              ) : (
+                <span className="text-white font-semibold text-sm">
+                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'A'}
+                </span>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-800 truncate">
+                {user?.displayName || user?.email?.split('@')[0] || 'Usuário'}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {user?.email || 'admin@aquiresolve.com'}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
+              aria-label="Sair do sistema"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+            </Button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-800 truncate">
-              {user?.displayName || user?.email?.split('@')[0] || 'Usuário'}
-            </p>
-            <p className="text-xs text-slate-500 truncate">
-              {user?.email || 'admin@aquiresolve.com'}
-            </p>
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
+            <span>Sistema Admin • v3.0</span>
+            <span className="hidden sm:inline">AquiResolve</span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
-            aria-label="Sair do sistema"
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-          </Button>
         </div>
       </div>
     </div>

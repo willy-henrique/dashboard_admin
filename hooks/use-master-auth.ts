@@ -1,8 +1,6 @@
 "use client"
 
 import React, { useState, useEffect, createContext, useContext } from "react"
-import { getDoc, doc } from "firebase/firestore"
-import { db } from "@/lib/firebase"
 import { AdminMasterService } from "@/lib/services/admin-master-service"
 import { clientSessionEncryption } from "@/lib/client-session-encryption"
 
@@ -85,32 +83,20 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
       try {
         setLoading(true)
         const payload = await clientSessionEncryption.load()
-        if (!payload?.userId) {
+        if (!payload?.userId || !payload?.email || !payload?.permissoes) {
           setLoading(false)
           return
         }
-        const userDoc = await getDoc(doc(db, 'adminmaster', 'master'))
         if (cancelled) return
-        if (!userDoc.exists()) {
-          clientSessionEncryption.clear()
-          setLoading(false)
-          return
-        }
-        const userData = userDoc.data() as AdminMaster
-        if (userData.email !== payload.email) {
-          clientSessionEncryption.clear()
-          setLoading(false)
-          return
-        }
         const user: MasterUser = {
-          id: userDoc.id,
-          email: userData.email,
-          nome: userData.nome,
-          permissoes: userData.permissoes
+          id: payload.userId,
+          email: payload.email,
+          nome: payload.nome ?? 'Master',
+          permissoes: payload.permissoes
         }
         setMasterUser(user)
         setIsMasterAuthenticated(true)
-        await loadUsuarios(userDoc.id)
+        await loadUsuarios(payload.userId)
       } catch (error) {
         console.error('Erro ao verificar autenticação master:', error)
         clientSessionEncryption.clear()
@@ -148,22 +134,23 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
   const masterLogin = async (email: string, password: string) => {
     try {
       setLoading(true)
-      
-      const adminMaster = await AdminMasterService.authenticateMaster(email, password)
-      
-      if (!adminMaster) {
-        throw new Error('Credenciais inválidas')
+
+      const res = await fetch('/api/auth/master-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        const msg = data?.error ?? 'Credenciais inválidas'
+        throw new Error(msg)
       }
 
-      // Criar usuário master
-      const user: MasterUser = {
-        id: adminMaster.id,
-        email: adminMaster.email,
-        nome: adminMaster.nome,
-        permissoes: adminMaster.permissoes
-      }
+      const { user: adminMaster } = data as { user: MasterUser }
+      if (!adminMaster?.id) throw new Error('Resposta inválida')
 
-      setMasterUser(user)
+      setMasterUser(adminMaster)
       setIsMasterAuthenticated(true)
 
       await clientSessionEncryption.save({

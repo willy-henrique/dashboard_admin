@@ -301,7 +301,7 @@ export function UsersTable({
                                   className="text-red-600"
                                 >
                                   <UserX className="mr-2 h-4 w-4" />
-                                  Bloquear
+                                  Bloquear utilização
                                 </DropdownMenuItem>
                               )
                             ) : (
@@ -311,7 +311,7 @@ export function UsersTable({
                                   className="text-green-600"
                                 >
                                   <UserCheck className="mr-2 h-4 w-4" />
-                                  Desbloquear
+                                  Desbloquear utilização
                                 </DropdownMenuItem>
                               )
                             )}

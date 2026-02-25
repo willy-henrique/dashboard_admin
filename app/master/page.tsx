@@ -54,6 +54,8 @@ export default function MasterPage() {
         setError("Documento master não encontrado. Execute na raiz do projeto: pnpm run setup:master")
       } else if (message === 'MASTER_INVALID_CONFIG') {
         setError("Documento master inválido (falta senhaHash). Execute: pnpm run setup:master")
+      } else if (message.includes('FIREBASE_SERVICE_ACCOUNT') || message.includes('indisponível')) {
+        setError("Login master indisponível. Configure FIREBASE_SERVICE_ACCOUNT no servidor (Vercel).")
       } else {
         setError("Credenciais inválidas. Apenas administradores master podem acessar esta área.")
       }

@@ -63,7 +63,17 @@ export default function DashboardLayout({
         {/* Footer */}
         <footer className="border-t border-border bg-card/50 py-4 px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
-            <p>© 2024 AquiResolve. Todos os direitos reservados.</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-center sm:text-left">
+              <p>© 2026 AquiResolve. Todos os direitos reservados. Versão 3.0</p>
+              <a
+                href="https://engenheirowilly-opal.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                Desenvolvido por Willy Henrique
+              </a>
+            </div>
             <p className="flex items-center gap-1">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               Sistema online
