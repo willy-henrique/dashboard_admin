@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "setup:master": "node scripts/setup-master-login.js",
+    "firebase:read-schema": "node scripts/read-firestore-schema.js",
     "push:github": "powershell -ExecutionPolicy Bypass -File ./scripts/push-to-github.ps1",
     "dev": "next dev",
     "dev:server": "ts-node -P tsconfig.server.json src/server.ts",

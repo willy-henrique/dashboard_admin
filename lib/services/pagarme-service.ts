@@ -1,6 +1,6 @@
 /**
- * SERVI√áO DE INTEGRA√á√ÉO PAGAR.ME
- * API v5 - Documenta√ß√£o: https://docs.pagar.me/
+ * SERVI«O DE INTEGRA«√O PAGAR.ME
+ * API v5 - DocumentaÁ„o: https://docs.pagar.me/
  */
 
 import {
@@ -19,10 +19,10 @@ import {
   PagarmeAnalytics,
 } from '@/types/pagarme'
 
-// Configura√ß√£o da API
+// ConfiguraÁ„o da API
 const PAGARME_API_URL = 'https://api.pagar.me/core/v5'
 
-// Classe de servi√ßo do Pagar.me
+// Classe de serviÁo do Pagar.me
 export class PagarmeService {
   private apiKey: string
   private isProduction: boolean
@@ -31,22 +31,31 @@ export class PagarmeService {
     // Usar API Key do ambiente ou passar manualmente
     this.apiKey = apiKey || process.env.API_KEY_PRIVATE_PAGARME || ''
     this.isProduction = process.env.NODE_ENV === 'production'
-    
-    if (!this.apiKey) {
-      console.warn('‚ö†Ô∏è API_KEY_PRIVATE_PAGARME n√£o configurada')
+
+    if (!this.apiKey && typeof window === 'undefined') {
+      console.warn('API_KEY_PRIVATE_PAGARME n„o configurada')
     }
   }
 
   /**
-   * Faz requisi√ß√£o √† API do Pagar.me
+   * Faz requisiÁ„o ‡ API do Pagar.me
    */
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<PagarmeApiResponse<T>> {
     try {
+      if (!this.apiKey) {
+        return {
+          errors: [{
+            type: 'config_error',
+            message: 'API_KEY_PRIVATE_PAGARME n„o configurada'
+          }]
+        }
+      }
+
       const url = `${PAGARME_API_URL}${endpoint}`
-      
+
       const headers = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${this.apiKey}`,
@@ -65,23 +74,22 @@ export class PagarmeService {
         return {
           errors: data.errors || [{
             type: 'api_error',
-            message: data.message || 'Erro ao processar requisi√ß√£o'
+            message: data.message || 'Erro ao processar requisiÁ„o'
           }]
         }
       }
 
       return { data }
     } catch (error) {
-      console.error('Erro na requisi√ß√£o Pagar.me:', error)
+      console.error('Erro na requisiÁ„o Pagar.me:', error)
       return {
         errors: [{
           type: 'network_error',
-          message: error instanceof Error ? error.message : 'Erro de conex√£o'
+          message: error instanceof Error ? error.message : 'Erro de conex„o'
         }]
       }
     }
   }
-
   // ==========================================
   // CLIENTES
   // ==========================================

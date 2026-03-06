@@ -5,18 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { useEffect, useState } from "react"
-import { 
-  Users, 
-  UserCheck, 
-  UserX, 
-  Shield, 
-  UserCog, 
-  UserPlus, 
-  Activity,
-  AlertCircle,
-  TrendingUp,
-  Clock
-} from "lucide-react"
+import { Users, UserCheck, UserX, Shield, UserCog, Activity, AlertCircle, TrendingUp } from "lucide-react"
 
 interface UserManagementDashboardProps {
   filters?: {
@@ -38,15 +27,15 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
         const data = await FirestoreAnalyticsService.getDashboardMetrics()
         setFirestoreData(data)
       } catch (err) {
-        console.error('Erro ao buscar dados de usuários:', err)
-        setError('Erro ao carregar dados de usuários')
+        console.error('Erro ao buscar dados de usuarios:', err)
+        setError('Erro ao carregar dados de usuarios')
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [])
+  }, [filters?.role, filters?.search, filters?.status])
 
   if (loading) {
     return (
@@ -65,24 +54,6 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
             </Card>
           ))}
         </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-32 w-full" />
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-32 w-full" />
-            </CardContent>
-          </Card>
-        </div>
       </div>
     )
   }
@@ -100,47 +71,48 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
     )
   }
 
-  // Calcular estatísticas baseadas nos dados do Firestore
+  const totalUsers = firestoreData?.users?.totalUsers || 0
+  const activeUsers = firestoreData?.users?.activeUsers || 0
+  const blockedUsers = firestoreData?.users?.blockedUsers || 0
+  const inactiveUsers = Math.max(totalUsers - activeUsers, 0)
+  const roleCounts = firestoreData?.users?.roleCounts || {}
+  const safePercent = (value: number) => (totalUsers > 0 ? ((value / totalUsers) * 100).toFixed(1) : '0.0')
+
   const stats = {
-    total: firestoreData?.users?.totalUsers || 0,
-    ativos: firestoreData?.users?.activeUsers || 0,
-    inativos: (firestoreData?.users?.totalUsers || 0) - (firestoreData?.users?.activeUsers || 0),
-    clientes: Math.floor((firestoreData?.users?.totalUsers || 0) * 0.7), // Simulação: 70% clientes
-    prestadores: Math.floor((firestoreData?.users?.totalUsers || 0) * 0.25), // Simulação: 25% prestadores
-    admins: Math.floor((firestoreData?.users?.totalUsers || 0) * 0.05), // Simulação: 5% admins
-    operadores: 0, // Simulação
-    novosHoje: firestoreData?.users?.newUsersLast7Days || 0, // Usando dados de 7 dias como proxy
-    onlineHoje: firestoreData?.users?.usersWithRecentLogin || 0,
-    bloqueados: 0 // Simulação
+    total: totalUsers,
+    ativos: activeUsers,
+    inativos: inactiveUsers,
+    clientes: roleCounts.client || 0,
+    prestadores: roleCounts.provider || 0,
+    admins: roleCounts.admin || 0,
+    operadores: roleCounts.operator || 0,
+    novosHoje: firestoreData?.users?.newUsersToday || 0,
+    onlineHoje: firestoreData?.users?.onlineUsersToday || 0,
+    bloqueados: blockedUsers,
   }
 
   return (
     <div className="space-y-6">
-      {/* Métricas Principais */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Usuarios</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">
-              +{stats.novosHoje} novos hoje
-            </p>
+            <p className="text-xs text-muted-foreground">+{stats.novosHoje} novos hoje</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuários Ativos</CardTitle>
+            <CardTitle className="text-sm font-medium">Usuarios Ativos</CardTitle>
             <UserCheck className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.ativos}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.onlineHoje} online hoje
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.onlineHoje} online hoje</p>
           </CardContent>
         </Card>
 
@@ -151,9 +123,7 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{stats.clientes}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.clientes / stats.total) * 100).toFixed(1)}% do total
-            </p>
+            <p className="text-xs text-muted-foreground">{safePercent(stats.clientes)}% do total</p>
           </CardContent>
         </Card>
 
@@ -164,71 +134,33 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{stats.prestadores}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.prestadores / stats.total) * 100).toFixed(1)}% do total
-            </p>
+            <p className="text-xs text-muted-foreground">{safePercent(stats.prestadores)}% do total</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Status e Roles */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Activity className="h-5 w-5" />
-              <span>Status dos Usuários</span>
+              <span>Status dos Usuarios</span>
             </CardTitle>
-            <CardDescription>Distribuição por status de atividade</CardDescription>
+            <CardDescription>Distribuicao por status de atividade</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Ativos</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.ativos}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full" 
-                      style={{ width: `${(stats.ativos / stats.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
+                <span className="text-sm font-medium">Ativos</span>
+                <Badge variant="outline">{stats.ativos} ({safePercent(stats.ativos)}%)</Badge>
               </div>
-
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Inativos</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.inativos}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-gray-500 h-2 rounded-full" 
-                      style={{ width: `${(stats.inativos / stats.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
+                <span className="text-sm font-medium">Inativos</span>
+                <Badge variant="outline">{stats.inativos} ({safePercent(stats.inativos)}%)</Badge>
               </div>
-
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Bloqueados</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.bloqueados}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full" 
-                      style={{ width: `${(stats.bloqueados / stats.total) * 100}%` }}
-                    />
-                  </div>
-                </div>
+                <span className="text-sm font-medium">Bloqueados</span>
+                <Badge variant="outline">{stats.bloqueados} ({safePercent(stats.bloqueados)}%)</Badge>
               </div>
             </div>
           </CardContent>
@@ -238,99 +170,42 @@ export function UserManagementDashboard({ filters }: UserManagementDashboardProp
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <UserCog className="h-5 w-5" />
-              <span>Distribuição por Função</span>
+              <span>Distribuicao por Funcao</span>
             </CardTitle>
-            <CardDescription>Usuários por tipo de acesso</CardDescription>
+            <CardDescription>Usuarios por tipo de acesso</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Clientes</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.clientes}</span>
-                  <Badge variant="outline">{((stats.clientes / stats.total) * 100).toFixed(1)}%</Badge>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Prestadores</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.prestadores}</span>
-                  <Badge variant="outline">{((stats.prestadores / stats.total) * 100).toFixed(1)}%</Badge>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Administradores</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.admins}</span>
-                  <Badge variant="outline">{((stats.admins / stats.total) * 100).toFixed(1)}%</Badge>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Operadores</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium">{stats.operadores}</span>
-                  <Badge variant="outline">{((stats.operadores / stats.total) * 100).toFixed(1)}%</Badge>
-                </div>
-              </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between"><span className="text-sm">Clientes</span><Badge variant="outline">{stats.clientes}</Badge></div>
+              <div className="flex items-center justify-between"><span className="text-sm">Prestadores</span><Badge variant="outline">{stats.prestadores}</Badge></div>
+              <div className="flex items-center justify-between"><span className="text-sm">Administradores</span><Badge variant="outline">{stats.admins}</Badge></div>
+              <div className="flex items-center justify-between"><span className="text-sm">Operadores</span><Badge variant="outline">{stats.operadores}</Badge></div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Atividade Recente */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <TrendingUp className="h-5 w-5" />
             <span>Atividade Recente</span>
           </CardTitle>
-          <CardDescription>Resumo das atividades dos usuários</CardDescription>
+          <CardDescription>Resumo das atividades dos usuarios</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600">
-                {stats.novosHoje}
-              </div>
+              <div className="text-3xl font-bold text-green-600">{stats.novosHoje}</div>
               <p className="text-sm font-medium">Novos Hoje</p>
-              <p className="text-xs text-muted-foreground">
-                Usuários cadastrados hoje
-              </p>
             </div>
-            
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">
-                {stats.onlineHoje}
-              </div>
+              <div className="text-3xl font-bold text-blue-600">{stats.onlineHoje}</div>
               <p className="text-sm font-medium">Online Hoje</p>
-              <p className="text-xs text-muted-foreground">
-                Usuários ativos hoje
-              </p>
             </div>
-            
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">
-                {((stats.ativos / stats.total) * 100).toFixed(1)}%
-              </div>
+              <div className="text-3xl font-bold text-purple-600">{safePercent(stats.ativos)}%</div>
               <p className="text-sm font-medium">Taxa de Ativos</p>
-              <p className="text-xs text-muted-foreground">
-                Usuários ativos vs total
-              </p>
             </div>
           </div>
         </CardContent>

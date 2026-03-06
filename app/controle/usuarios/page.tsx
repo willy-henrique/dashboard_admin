@@ -1,67 +1,63 @@
 "use client"
 
 import { AppShell } from "@/components/layout/app-shell"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserManagementDashboard } from "@/components/users/user-management-dashboard"
 import { UsersTable } from "@/components/users/users-table"
 import { useUsers } from "@/hooks/use-users"
 import { useAnalytics } from "@/hooks/use-analytics"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Plus, Users, UserCheck, Shield } from "lucide-react"
+import { isClientUser, isProviderUser } from "@/lib/user-schema"
 
 export default function UsuariosPage() {
-  const { users, stats, loading, error, updateUser, deleteUser, toggleUserStatus, blockUser, unblockUser } = useUsers()
+  const { users, loading, deleteUser, toggleUserStatus, blockUser, unblockUser } = useUsers()
   const { trackPageView, trackUserAction } = useAnalytics()
   const [activeTab, setActiveTab] = useState("dashboard")
 
   useEffect(() => {
-    trackPageView('Gestão de Usuários')
+    trackPageView('Gestao de Usuarios')
   }, [trackPageView])
 
-  const handleUpdate = (userId: string, userData: any) => {
-    trackUserAction('atualizar_usuario', 'usuarios', { userId, userData })
-    updateUser(userId, userData)
-  }
+  const clients = useMemo(() => users.filter((user) => isClientUser(user as unknown as Record<string, unknown>)), [users])
+  const providers = useMemo(() => users.filter((user) => isProviderUser(user as unknown as Record<string, unknown>)), [users])
 
-  const handleDelete = (userId: string) => {
+  const handleDelete = async (userId: string) => {
     trackUserAction('deletar_usuario', 'usuarios', { userId })
-    if (confirm('Tem certeza que deseja deletar este usuário?')) {
-      deleteUser(userId)
+    if (confirm('Tem certeza que deseja deletar este usuario?')) {
+      await deleteUser(userId)
     }
   }
 
-  const handleToggleStatus = (userId: string, currentStatus: string) => {
-    trackUserAction('alterar_status_usuario', 'usuarios', { userId, currentStatus })
-    toggleUserStatus(userId, currentStatus)
+  const handleToggleStatus = async (userId: string, isActive: boolean) => {
+    trackUserAction('alterar_status_usuario', 'usuarios', { userId, isActive })
+    await toggleUserStatus(userId, isActive)
   }
 
-  const handleBlock = (userId: string) => {
+  const handleBlock = async (userId: string) => {
     trackUserAction('bloquear_usuario', 'usuarios', { userId })
-    if (confirm('Tem certeza que deseja bloquear este usuário?')) {
-      blockUser(userId)
+    if (confirm('Tem certeza que deseja bloquear este usuario?')) {
+      await blockUser(userId)
     }
   }
 
-  const handleUnblock = (userId: string) => {
+  const handleUnblock = async (userId: string) => {
     trackUserAction('desbloquear_usuario', 'usuarios', { userId })
-    unblockUser(userId)
+    await unblockUser(userId)
   }
 
   const handleView = (userId: string) => {
     trackUserAction('visualizar_usuario', 'usuarios', { userId })
-    // Implementar visualização detalhada
   }
 
   const handleEdit = (userId: string) => {
     trackUserAction('editar_usuario', 'usuarios', { userId })
-    // Implementar edição
   }
 
   const handleNewUser = () => {
     trackUserAction('novo_usuario', 'usuarios')
-    // Implementar criação de usuário
   }
 
   return (
@@ -69,12 +65,12 @@ export default function UsuariosPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestão de Usuários</h1>
-            <p className="text-gray-600">Gerenciamento completo de usuários do sistema</p>
+            <h1 className="text-2xl font-bold text-gray-900">Gestao de Usuarios</h1>
+            <p className="text-gray-600">Gerenciamento completo de usuarios do sistema</p>
           </div>
           <Button onClick={handleNewUser} className="bg-orange-500 hover:bg-orange-600 text-white">
             <Plus className="h-4 w-4 mr-2" />
-            Novo Usuário
+            Novo Usuario
           </Button>
         </div>
 
@@ -102,15 +98,12 @@ export default function UsuariosPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Clientes</CardTitle>
-                <p className="text-sm text-gray-600">
-                  Gerenciamento de clientes do sistema
-                </p>
+                <p className="text-sm text-gray-600">Gerenciamento de clientes do sistema</p>
               </CardHeader>
             </Card>
             <UsersTable
-              users={users.filter(user => user.role === 'cliente')}
+              users={clients}
               loading={loading}
-              onUpdate={handleUpdate}
               onDelete={handleDelete}
               onToggleStatus={handleToggleStatus}
               onBlock={handleBlock}
@@ -124,15 +117,12 @@ export default function UsuariosPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Prestadores</CardTitle>
-                <p className="text-sm text-gray-600">
-                  Gerenciamento de prestadores de serviço
-                </p>
+                <p className="text-sm text-gray-600">Gerenciamento de prestadores de servico</p>
               </CardHeader>
             </Card>
             <UsersTable
-              users={users.filter(user => user.role === 'prestador')}
+              users={providers}
               loading={loading}
-              onUpdate={handleUpdate}
               onDelete={handleDelete}
               onToggleStatus={handleToggleStatus}
               onBlock={handleBlock}

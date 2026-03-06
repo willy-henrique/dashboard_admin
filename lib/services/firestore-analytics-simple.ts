@@ -1,4 +1,6 @@
 import { getCollection } from '../firestore'
+import { toDateFromUnknown } from '@/lib/date-utils'
+import { getCanonicalUserRole, isUserActive } from '@/lib/user-schema'
 
 export interface OrderData {
   id: string
@@ -37,7 +39,7 @@ export interface ProviderVerificationData {
 }
 
 export class FirestoreAnalyticsService {
-  // Métricas de Pedidos (simplificadas)
+  // Metricas de Pedidos (simplificadas)
   static async getOrdersMetrics() {
     try {
       const orders = await getCollection('orders')
@@ -47,35 +49,13 @@ export class FirestoreAnalyticsService {
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
       const totalOrders = orders.length
-      const activeOrders = orders.filter(order => 
-        !order.cancelledAt && 
-        order.status !== 'completed' && 
-        order.status !== 'cancelled'
-      ).length
-
-      const ordersLast30Days = orders.filter(order => 
-        order.createdAt?.toDate() >= thirtyDaysAgo
-      ).length
-
-      const ordersLast7Days = orders.filter(order => 
-        order.createdAt?.toDate() >= sevenDaysAgo
-      ).length
-
-      const ordersToday = orders.filter(order => 
-        order.createdAt?.toDate() >= today
-      ).length
-
-      const cancelledOrders = orders.filter(order => 
-        order.cancelledAt || order.status === 'cancelled'
-      ).length
-
-      const completedOrders = orders.filter(order => 
-        order.status === 'completed'
-      ).length
-
-      const emergencyOrders = orders.filter(order => 
-        order.isEmergency
-      ).length
+      const activeOrders = orders.filter((order) => !order.cancelledAt && order.status !== 'completed' && order.status !== 'cancelled').length
+      const ordersLast30Days = orders.filter((order) => toDateFromUnknown(order.createdAt, new Date(0)) >= thirtyDaysAgo).length
+      const ordersLast7Days = orders.filter((order) => toDateFromUnknown(order.createdAt, new Date(0)) >= sevenDaysAgo).length
+      const ordersToday = orders.filter((order) => toDateFromUnknown(order.createdAt, new Date(0)) >= today).length
+      const cancelledOrders = orders.filter((order) => order.cancelledAt || order.status === 'cancelled').length
+      const completedOrders = orders.filter((order) => order.status === 'completed').length
+      const emergencyOrders = orders.filter((order) => Boolean(order.isEmergency)).length
 
       return {
         totalOrders,
@@ -85,10 +65,10 @@ export class FirestoreAnalyticsService {
         ordersToday,
         cancelledOrders,
         completedOrders,
-        emergencyOrders
+        emergencyOrders,
       }
     } catch (error) {
-      console.error('Erro ao buscar métricas de pedidos:', error)
+      console.error('Erro ao buscar metricas de pedidos:', error)
       return {
         totalOrders: 0,
         activeOrders: 0,
@@ -97,60 +77,104 @@ export class FirestoreAnalyticsService {
         ordersToday: 0,
         cancelledOrders: 0,
         completedOrders: 0,
-        emergencyOrders: 0
+        emergencyOrders: 0,
       }
     }
   }
 
-  // Métricas de Usuários (simplificadas)
+  // Metricas de Usuarios (somente leitura, baseadas em campos reais)
   static async getUsersMetrics() {
     try {
       const users = await getCollection('users')
       const now = new Date()
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-      const totalUsers = users.length
-      const activeUsers = users.filter(user => user.isActive).length
-      const newUsersLast30Days = users.filter(user => 
-        user.createdAt?.toDate() >= thirtyDaysAgo
-      ).length
-      const newUsersLast7Days = users.filter(user => 
-        user.createdAt?.toDate() >= sevenDaysAgo
-      ).length
-      const usersWithRecentLogin = users.filter(user => 
-        user.lastLoginAt?.toDate() >= thirtyDaysAgo
-      ).length
+      const roleCounts = {
+        client: 0,
+        provider: 0,
+        admin: 0,
+        operator: 0,
+        manager: 0,
+        user: 0,
+        unknown: 0,
+      }
+
+      let activeUsers = 0
+      let blockedUsers = 0
+      let newUsersLast30Days = 0
+      let newUsersLast7Days = 0
+      let newUsersToday = 0
+      let usersWithRecentLogin = 0
+      let onlineUsersToday = 0
+
+      users.forEach((user) => {
+        const role = getCanonicalUserRole(user as Record<string, unknown>)
+        roleCounts[role] = roleCounts[role] + 1
+
+        const isActive = isUserActive(user as Record<string, unknown>)
+        if (isActive) {
+          activeUsers++
+        } else {
+          blockedUsers++
+        }
+
+        const createdAt = toDateFromUnknown(user.createdAt ?? user.created_at, new Date(0))
+        if (createdAt >= thirtyDaysAgo) newUsersLast30Days++
+        if (createdAt >= sevenDaysAgo) newUsersLast7Days++
+        if (createdAt >= today) newUsersToday++
+
+        const lastLogin = toDateFromUnknown(user.lastLoginAt ?? user.lastLogin ?? user.last_login_at, new Date(0))
+        if (lastLogin >= sevenDaysAgo) usersWithRecentLogin++
+        if (lastLogin >= today) onlineUsersToday++
+      })
 
       return {
-        totalUsers,
+        totalUsers: users.length,
         activeUsers,
+        blockedUsers,
+        roleCounts,
         newUsersLast30Days,
         newUsersLast7Days,
-        usersWithRecentLogin
+        newUsersToday,
+        usersWithRecentLogin,
+        onlineUsersToday,
       }
     } catch (error) {
-      console.error('Erro ao buscar métricas de usuários:', error)
+      console.error('Erro ao buscar metricas de usuarios:', error)
       return {
         totalUsers: 0,
         activeUsers: 0,
+        blockedUsers: 0,
+        roleCounts: {
+          client: 0,
+          provider: 0,
+          admin: 0,
+          operator: 0,
+          manager: 0,
+          user: 0,
+          unknown: 0,
+        },
         newUsersLast30Days: 0,
         newUsersLast7Days: 0,
-        usersWithRecentLogin: 0
+        newUsersToday: 0,
+        usersWithRecentLogin: 0,
+        onlineUsersToday: 0,
       }
     }
   }
 
-  // Métricas de Prestadores (simplificadas)
+  // Metricas de Prestadores (simplificadas)
   static async getProvidersMetrics() {
     try {
       const verifications = await getCollection('provider_verifications')
-      
+
       const totalVerifications = verifications.length
-      const pendingVerifications = verifications.filter(v => v.status === 'pending').length
-      const approvedVerifications = verifications.filter(v => v.status === 'approved').length
-      const rejectedVerifications = verifications.filter(v => v.status === 'rejected').length
-      
+      const pendingVerifications = verifications.filter((v) => v.status === 'pending').length
+      const approvedVerifications = verifications.filter((v) => v.status === 'approved').length
+      const rejectedVerifications = verifications.filter((v) => v.status === 'rejected').length
+
       const approvalRate = totalVerifications > 0 ? (approvedVerifications / totalVerifications) * 100 : 0
 
       return {
@@ -158,36 +182,36 @@ export class FirestoreAnalyticsService {
         pendingVerifications,
         approvedVerifications,
         rejectedVerifications,
-        approvalRate
+        approvalRate,
       }
     } catch (error) {
-      console.error('Erro ao buscar métricas de prestadores:', error)
+      console.error('Erro ao buscar metricas de prestadores:', error)
       return {
         totalVerifications: 0,
         pendingVerifications: 0,
         approvedVerifications: 0,
         rejectedVerifications: 0,
-        approvalRate: 0
+        approvalRate: 0,
       }
     }
   }
 
-  // Métricas do Dashboard (consolidadas)
+  // Metricas do Dashboard (consolidadas)
   static async getDashboardMetrics() {
     try {
       const [orders, users, providers] = await Promise.all([
         this.getOrdersMetrics(),
         this.getUsersMetrics(),
-        this.getProvidersMetrics()
+        this.getProvidersMetrics(),
       ])
 
       return {
         orders,
         users,
-        providers
+        providers,
       }
     } catch (error) {
-      console.error('Erro ao buscar métricas do dashboard:', error)
+      console.error('Erro ao buscar metricas do dashboard:', error)
       return {
         orders: {
           totalOrders: 0,
@@ -197,22 +221,34 @@ export class FirestoreAnalyticsService {
           ordersToday: 0,
           cancelledOrders: 0,
           completedOrders: 0,
-          emergencyOrders: 0
+          emergencyOrders: 0,
         },
         users: {
           totalUsers: 0,
           activeUsers: 0,
+          blockedUsers: 0,
+          roleCounts: {
+            client: 0,
+            provider: 0,
+            admin: 0,
+            operator: 0,
+            manager: 0,
+            user: 0,
+            unknown: 0,
+          },
           newUsersLast30Days: 0,
           newUsersLast7Days: 0,
-          usersWithRecentLogin: 0
+          newUsersToday: 0,
+          usersWithRecentLogin: 0,
+          onlineUsersToday: 0,
         },
         providers: {
           totalVerifications: 0,
           pendingVerifications: 0,
           approvedVerifications: 0,
           rejectedVerifications: 0,
-          approvalRate: 0
-        }
+          approvalRate: 0,
+        },
       }
     }
   }

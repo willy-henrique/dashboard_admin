@@ -2,17 +2,32 @@ import { NextRequest, NextResponse } from 'next/server'
 import { pagarmeService } from '@/lib/services/pagarme-service'
 import { PagarmeFirebaseSync } from '@/lib/services/pagarme-firebase-sync'
 
+function emptyOrdersPayload(warning: string) {
+  return {
+    success: true,
+    data: [],
+    paging: { total: 0, page: 1 },
+    source: 'fallback',
+    warning,
+  }
+}
+
 /**
  * GET /api/pagarme/orders
- * Lista todos os pedidos
+ * Lista pedidos com fallback quando a chave privada n„o est· configurada.
  */
 export async function GET(request: NextRequest) {
   try {
+    const hasPrivateKey = Boolean(process.env.API_KEY_PRIVATE_PAGARME?.trim())
+    if (!hasPrivateKey) {
+      return NextResponse.json(emptyOrdersPayload('API_KEY_PRIVATE_PAGARME n„o configurada'))
+    }
+
     const { searchParams } = new URL(request.url)
-    
+
     const query = {
-      page: searchParams.get('page') ? parseInt(searchParams.get('page')!) : undefined,
-      size: searchParams.get('size') ? parseInt(searchParams.get('size')!) : undefined,
+      page: searchParams.get('page') ? parseInt(searchParams.get('page')!, 10) : undefined,
+      size: searchParams.get('size') ? parseInt(searchParams.get('size')!, 10) : undefined,
       code: searchParams.get('code') || undefined,
       status: searchParams.get('status') || undefined,
       customer_id: searchParams.get('customer_id') || undefined,
@@ -24,27 +39,20 @@ export async function GET(request: NextRequest) {
 
     if (response.errors) {
       return NextResponse.json(
-        {
-          success: false,
-          errors: response.errors,
-        },
-        { status: 400 }
+        emptyOrdersPayload(response.errors[0]?.message || 'Erro ao listar pedidos')
       )
     }
 
     return NextResponse.json({
       success: true,
-      data: response.data,
-      paging: response.paging,
+      data: response.data || [],
+      paging: response.paging || { total: response.data?.length || 0, page: query.page || 1 },
+      source: 'pagarme',
     })
   } catch (error) {
     console.error('Erro ao listar pedidos:', error)
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Erro ao listar pedidos',
-      },
-      { status: 500 }
+      emptyOrdersPayload('Erro ao listar pedidos')
     )
   }
 }
@@ -57,12 +65,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Valida√ß√£o b√°sica
     if (!body.customer || !body.items || !body.payments) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados obrigat√≥rios n√£o fornecidos (customer, items, payments)',
+          error: 'Dados obrigatÛrios n„o fornecidos (customer, items, payments)',
         },
         { status: 400 }
       )
@@ -80,13 +87,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Sincronizar com Firebase
     if (response.data) {
       try {
         await PagarmeFirebaseSync.saveOrder(response.data)
         await PagarmeFirebaseSync.logSync('order_created', 1, 'success')
       } catch (syncError) {
-        console.error('‚ö†Ô∏è Erro ao sincronizar com Firebase:', syncError)
+        console.error('Erro ao sincronizar com Firebase:', syncError)
       }
     }
 
@@ -109,4 +115,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
