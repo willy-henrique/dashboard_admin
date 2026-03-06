@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AdminAction } from "@/types/chat"
-import { 
-  Shield, 
-  User, 
+import {
+  Shield,
+  User,
   AlertTriangle,
   Archive,
   Ban,
@@ -22,58 +22,10 @@ export function AdminLogs() {
   const [logs, setLogs] = useState<AdminAction[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Simulação de dados - em produção, viria do Firestore
+  // TODO: Buscar logs reais do Firestore
   useEffect(() => {
-    const mockLogs: AdminAction[] = [
-      {
-        id: "1",
-        chatId: "chat1",
-        adminId: "admin1",
-        adminName: "Administrador",
-        action: "priority_change",
-        details: "Prioridade alterada de 'Média' para 'Alta'",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 min atrás
-        metadata: { oldPriority: "medium", newPriority: "high" }
-      },
-      {
-        id: "2",
-        chatId: "chat2",
-        adminId: "admin2",
-        adminName: "Moderador",
-        action: "block",
-        details: "Conversa bloqueada por uso de linguagem inadequada",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2h atrás
-      },
-      {
-        id: "3",
-        chatId: "chat1",
-        adminId: "admin1",
-        adminName: "Administrador",
-        action: "note_add",
-        details: "Cliente relatou problema com prestador. Investigar.",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3h atrás
-      },
-      {
-        id: "4",
-        chatId: "chat3",
-        adminId: "admin2",
-        adminName: "Moderador",
-        action: "assign",
-        details: "Conversa atribuída para investigação",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5h atrás
-      },
-      {
-        id: "5",
-        chatId: "chat2",
-        adminId: "admin1",
-        adminName: "Administrador",
-        action: "message_delete",
-        details: "Mensagem deletada: 'conteúdo inadequado'",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6h atrás
-      }
-    ]
-    
-    setLogs(mockLogs)
+    // Sem dados mocados - carregará do Firebase quando implementado
+    setLogs([])
     setLoading(false)
   }, [])
 
@@ -155,7 +107,7 @@ export function AdminLogs() {
           Atividades Recentes
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent className="p-0">
         <div className="max-h-[400px] overflow-y-auto">
           {recentLogs.length === 0 ? (
@@ -176,15 +128,15 @@ export function AdminLogs() {
                         </h4>
                       </div>
                     </div>
-                    
+
                     <span className="text-xs text-gray-400">
-                      {formatDistanceToNow(log.timestamp, { 
-                        addSuffix: true, 
-                        locale: ptBR 
+                      {formatDistanceToNow(log.timestamp, {
+                        addSuffix: true,
+                        locale: ptBR
                       })}
                     </span>
                   </div>
-                  
+
                   <p className="text-sm text-gray-700">
                     {log.details}
                   </p>

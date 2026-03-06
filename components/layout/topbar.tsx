@@ -68,17 +68,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Notifications */}
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="relative text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl h-10 w-10"
-            aria-label="Notificações"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 h-2 w-2 bg-orange-500 rounded-full ring-2 ring-white" />
-          </Button>
-
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

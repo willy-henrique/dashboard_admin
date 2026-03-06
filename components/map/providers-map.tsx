@@ -27,39 +27,10 @@ export function ProvidersMap() {
     refreshInterval: 30000 // Atualiza a cada 30 segundos
   })
 
-  // Fallback para dados mock se não houver prestadores - memoizado para evitar re-renders
-  const mockProviders: Provider[] = useMemo(() => [
-    {
-      id: "mock-1",
-      nome: "João Silva",
-      telefone: "(27) 99999-1111",
-      email: "joao.silva@email.com",
-      status: "disponivel" as const,
-      localizacao: { lat: -20.3155, lng: -40.3128 },
-      ultimaAtualizacao: new Date().toISOString(),
-      servicoAtual: null,
-      especialidades: ["Limpeza Residencial"],
-      avaliacao: 4.8,
-      totalServicos: 156
-    },
-    {
-      id: "mock-2", 
-      nome: "Maria Santos",
-      telefone: "(27) 99999-2222",
-      email: "maria.santos@email.com",
-      status: "ocupado" as const,
-      localizacao: { lat: -20.3255, lng: -40.3228 },
-      ultimaAtualizacao: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-      servicoAtual: "Limpeza Residencial - Centro",
-      especialidades: ["Limpeza Residencial"],
-      avaliacao: 4.9,
-      totalServicos: 203
-    }
-  ], [])
-
+  // Usar prestadores reais do Firebase
   const displayProviders = useMemo(() => {
-    return providers.length > 0 ? providers : mockProviders
-  }, [providers, mockProviders])
+    return providers
+  }, [providers])
 
   // Inicializar o mapa
   useEffect(() => {
@@ -117,23 +88,23 @@ export function ProvidersMap() {
         <!-- Grid pattern -->
         <div class="absolute inset-0 opacity-20">
           <div class="grid grid-cols-12 grid-rows-8 h-full">
-            ${Array.from({ length: 96 }, (_, i) => 
-              `<div class="border border-gray-300"></div>`
-            ).join('')}
+            ${Array.from({ length: 96 }, (_, i) =>
+      `<div class="border border-gray-300"></div>`
+    ).join('')}
           </div>
         </div>
         
         <!-- Mock markers for providers -->
         ${displayProviders.map((provider, index) => {
-          const colors = {
-            disponivel: '#10b981',
-            ocupado: '#f59e0b', 
-            online: '#3b82f6',
-            offline: '#6b7280'
-          }
-          const color = colors[provider.status] || '#6b7280'
-          
-          return `
+      const colors = {
+        disponivel: '#10b981',
+        ocupado: '#f59e0b',
+        online: '#3b82f6',
+        offline: '#6b7280'
+      }
+      const color = colors[provider.status] || '#6b7280'
+
+      return `
             <div 
               class="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
               style="
@@ -146,7 +117,7 @@ export function ProvidersMap() {
               onclick="alert('${provider.nome}\\nStatus: ${provider.status}\\nTelefone: ${provider.telefone}')"
             ></div>
           `
-        }).join('')}
+    }).join('')}
         
         <!-- Map info -->
         <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
@@ -158,7 +129,7 @@ export function ProvidersMap() {
         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
           <div class="flex items-center gap-2 text-xs text-gray-600">
             <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span>Online</span>
+            <span>Ativo</span>
           </div>
         </div>
       </div>
@@ -180,7 +151,7 @@ export function ProvidersMap() {
 
       // Adicionar novos marcadores
       const newMarkers: any[] = []
-      
+
       displayProviders.forEach(provider => {
         const marker = new window.google.maps.Marker({
           position: provider.localizacao,
@@ -293,12 +264,12 @@ export function ProvidersMap() {
 
           {/* Mapa */}
           <div className="relative">
-            <div 
-              ref={mapRef} 
+            <div
+              ref={mapRef}
               className="w-full h-64 sm:h-80 md:h-96 rounded-lg border"
               style={{ minHeight: '300px' }}
             />
-            
+
             {/* Loading overlay */}
             {(!mapLoaded || loading) && (
               <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -358,7 +329,7 @@ export function ProvidersMap() {
                 <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
                 <span className="text-sm truncate">{selectedProvider.telefone}</span>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <div className={`w-3 h-3 rounded-full ${statusConfig[selectedProvider.status].color} flex-shrink-0`}></div>
                 <Badge className={`${statusConfig[selectedProvider.status].textColor} text-xs`}>

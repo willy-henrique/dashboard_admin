@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { 
-  MessageCircle, 
-  Send, 
-  Phone, 
-  Mail, 
-  Clock, 
-  User, 
+import {
+  MessageCircle,
+  Send,
+  Phone,
+  Mail,
+  Clock,
+  User,
   Bot,
   AlertCircle,
   CheckCircle,
@@ -38,63 +38,8 @@ interface SupportChatProps {
   clientPhone?: string
 }
 
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    sender: 'user',
-    content: 'Olá, gostaria de saber o status do meu pedido ORD-001',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    orderId: 'ORD-001',
-    isRead: true
-  },
-  {
-    id: '2',
-    sender: 'support',
-    content: 'Olá! Vou verificar o status do seu pedido para você. Um momento, por favor.',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000 + 30000),
-    isRead: true
-  },
-  {
-    id: '3',
-    sender: 'support',
-    content: 'Seu pedido ORD-001 está atualmente em andamento. O prestador João Silva foi atribuído e está a caminho do local. O tempo estimado de chegada é de 30 minutos.',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000 + 60000),
-    orderId: 'ORD-001',
-    isRead: true
-  },
-  {
-    id: '4',
-    sender: 'user',
-    content: 'Perfeito! Obrigado pela informação. Posso acompanhar em tempo real?',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000),
-    isRead: true
-  },
-  {
-    id: '5',
-    sender: 'support',
-    content: 'Sim! Você pode acompanhar o progresso do seu pedido através do painel do cliente. Também enviaremos notificações por email e SMS conforme o status for atualizado.',
-    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000 + 30000),
-    isRead: true
-  },
-  {
-    id: '6',
-    sender: 'user',
-    content: 'Excelente! Muito obrigado pelo atendimento.',
-    timestamp: new Date(Date.now() - 30 * 60 * 1000),
-    isRead: true
-  },
-  {
-    id: '7',
-    sender: 'system',
-    content: 'Pedido ORD-001 foi concluído com sucesso! O prestador finalizou o serviço e aguarda sua avaliação.',
-    timestamp: new Date(Date.now() - 15 * 60 * 1000),
-    orderId: 'ORD-001',
-    isRead: false
-  }
-]
-
 export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: SupportChatProps) {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -237,9 +182,8 @@ export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: S
                     className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`flex space-x-2 max-w-xs lg:max-w-md ${
-                        message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                      }`}
+                      className={`flex space-x-2 max-w-xs lg:max-w-md ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                        }`}
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarFallback className={senderInfo.color}>
@@ -247,13 +191,12 @@ export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: S
                         </AvatarFallback>
                       </Avatar>
                       <div
-                        className={`rounded-lg px-3 py-2 ${
-                          message.sender === 'user'
+                        className={`rounded-lg px-3 py-2 ${message.sender === 'user'
                             ? 'bg-blue-500 text-white'
                             : message.sender === 'support'
-                            ? 'bg-gray-100 text-gray-900'
-                            : 'bg-yellow-100 text-yellow-900'
-                        }`}
+                              ? 'bg-gray-100 text-gray-900'
+                              : 'bg-yellow-100 text-yellow-900'
+                          }`}
                       >
                         <div className="flex items-center space-x-2 mb-1">
                           <span className="text-xs font-medium">{senderInfo.name}</span>
@@ -275,7 +218,7 @@ export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: S
                   </div>
                 )
               })}
-              
+
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="flex space-x-2">
@@ -298,7 +241,7 @@ export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: S
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
@@ -316,7 +259,7 @@ export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: S
               placeholder="Digite sua mensagem..."
               className="flex-1"
             />
-            <Button 
+            <Button
               onClick={handleSendMessage}
               disabled={!newMessage.trim()}
               className="bg-orange-500 hover:bg-orange-600 text-white"

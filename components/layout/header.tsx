@@ -101,14 +101,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                 {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
 
-              {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative p-1.5 sm:p-2">
-                <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-                <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 h-3 w-3 sm:h-4 sm:w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  1
-                </span>
-              </Button>
-
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

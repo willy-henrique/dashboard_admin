@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LegacyChatConversation } from "@/lib/services/chat-service"
-import { 
-  MessageSquare, 
-  Users, 
+import {
+  MessageSquare,
+  Users,
   AlertTriangle,
   Clock,
   Activity,
@@ -47,8 +47,8 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
     setSelectedConversation(conversation)
   }
 
-  const urgentConversations = 3 // Dados mock - substituir por dados reais
-  const noResponseConversations = 5 // Dados mock - substituir por dados reais
+  const urgentConversations = 0 // TODO: carregar do Firebase
+  const noResponseConversations = 0 // TODO: carregar do Firebase
 
   return (
     <div className="space-y-6">
@@ -137,7 +137,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="conversations">Conversas</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="analytics">Análises</TabsTrigger>
         </TabsList>
 
         {/* Visão Geral */}
@@ -151,12 +151,12 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                     <Users className="h-5 w-5" />
                     Conversas Ativas
                   </span>
-                  <Badge variant="secondary">12</Badge>
+                  <Badge variant="secondary">0</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="max-h-96 overflow-y-auto">
-                  <ConversationsList 
+                  <ConversationsList
                     onSelectConversation={handleSelectConversation}
                     selectedConversationId={selectedConversation?.id}
                     initialProtocolo={initialProtocolo}
@@ -179,19 +179,19 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">2.3m</div>
+                    <div className="text-2xl font-bold text-blue-600">--</div>
                     <p className="text-sm text-muted-foreground">Tempo Médio de Resposta</p>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">94%</div>
+                    <div className="text-2xl font-bold text-green-600">--</div>
                     <p className="text-sm text-muted-foreground">Taxa de Satisfação</p>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">18</div>
+                    <div className="text-2xl font-bold text-purple-600">0</div>
                     <p className="text-sm text-muted-foreground">Conversas Hoje</p>
                   </div>
                   <div className="text-center p-4 bg-orange-50 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">4.8</div>
+                    <div className="text-2xl font-bold text-orange-600">--</div>
                     <p className="text-sm text-muted-foreground">Avaliação Média</p>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
               </CardHeader>
               <CardContent className="p-0">
                 <div className="h-[600px] overflow-y-auto">
-                  <ConversationsList 
+                  <ConversationsList
                     onSelectConversation={handleSelectConversation}
                     selectedConversationId={selectedConversation?.id}
                     initialProtocolo={initialProtocolo}
@@ -293,15 +293,15 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Hoje</span>
-                    <span className="font-semibold">18</span>
+                    <span className="font-semibold">0</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Esta Semana</span>
-                    <span className="font-semibold">127</span>
+                    <span className="font-semibold">0</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Este Mês</span>
-                    <span className="font-semibold">542</span>
+                    <span className="font-semibold">0</span>
                   </div>
                 </div>
               </CardContent>
@@ -318,15 +318,15 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Média</span>
-                    <span className="font-semibold text-green-600">2.3m</span>
+                    <span className="font-semibold text-green-600">--</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Mais Rápido</span>
-                    <span className="font-semibold text-blue-600">0.8m</span>
+                    <span className="font-semibold text-blue-600">--</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Mais Lento</span>
-                    <span className="font-semibold text-orange-600">15.2m</span>
+                    <span className="font-semibold text-orange-600">--</span>
                   </div>
                 </div>
               </CardContent>
@@ -343,15 +343,15 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Avaliação Média</span>
-                    <span className="font-semibold text-yellow-600">4.8/5</span>
+                    <span className="font-semibold text-yellow-600">--</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Positivas</span>
-                    <span className="font-semibold text-green-600">94%</span>
+                    <span className="font-semibold text-green-600">--</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Neutras</span>
-                    <span className="font-semibold text-gray-600">5%</span>
+                    <span className="font-semibold text-gray-600">--</span>
                   </div>
                 </div>
               </CardContent>

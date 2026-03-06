@@ -1,13 +1,14 @@
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  onSnapshot, 
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
   doc,
   updateDoc,
   addDoc,
-  serverTimestamp 
+  getDocs,
+  serverTimestamp
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -62,8 +63,8 @@ export class FirebaseOrdersService {
   // Buscar todos os pedidos
   static async getOrders(): Promise<FirebaseOrder[]> {
     if (!db) {
-      console.warn('Firebase não inicializado, retornando dados mock')
-      return this.getMockOrders()
+      console.warn('Firebase não inicializado')
+      return []
     }
 
     try {
@@ -71,7 +72,7 @@ export class FirebaseOrdersService {
         collection(db, this.collectionName),
         orderBy('dataCriacao', 'desc')
       )
-      
+
       const snapshot = await getDocs(q)
       return snapshot.docs.map(doc => ({
         id: doc.id,
@@ -79,14 +80,14 @@ export class FirebaseOrdersService {
       })) as FirebaseOrder[]
     } catch (error) {
       console.error('Erro ao buscar pedidos:', error)
-      return this.getMockOrders()
+      return []
     }
   }
 
-  // Buscar pedidos por status
   static async getOrdersByStatus(status: FirebaseOrder['status']): Promise<FirebaseOrder[]> {
     if (!db) {
-      return this.getMockOrders().filter(o => o.status === status)
+      console.warn('Firebase não inicializado')
+      return []
     }
 
     try {
@@ -95,7 +96,7 @@ export class FirebaseOrdersService {
         where('status', '==', status),
         orderBy('dataCriacao', 'desc')
       )
-      
+
       const snapshot = await getDocs(q)
       return snapshot.docs.map(doc => ({
         id: doc.id,
@@ -103,7 +104,7 @@ export class FirebaseOrdersService {
       })) as FirebaseOrder[]
     } catch (error) {
       console.error('Erro ao buscar pedidos por status:', error)
-      return this.getMockOrders().filter(o => o.status === status)
+      return []
     }
   }
 
@@ -111,12 +112,12 @@ export class FirebaseOrdersService {
   static async createOrder(orderData: Omit<FirebaseOrder, 'id' | 'numero' | 'dataCriacao' | 'createdAt' | 'updatedAt'>): Promise<string> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return 'mock-id'
+      return ''
     }
 
     try {
       const numero = `ORD-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`
-      
+
       const docRef = await addDoc(collection(db, this.collectionName), {
         ...orderData,
         numero,
@@ -124,7 +125,7 @@ export class FirebaseOrdersService {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       })
-      
+
       return docRef.id
     } catch (error) {
       console.error('Erro ao criar pedido:', error)
@@ -134,7 +135,7 @@ export class FirebaseOrdersService {
 
   // Atualizar status do pedido
   static async updateOrderStatus(
-    orderId: string, 
+    orderId: string,
     status: FirebaseOrder['status'],
     prestador?: FirebaseOrder['prestador']
   ): Promise<void> {
@@ -149,7 +150,7 @@ export class FirebaseOrdersService {
         status,
         updatedAt: serverTimestamp()
       }
-      
+
       if (prestador) {
         updateData.prestador = prestador
       }
@@ -166,10 +167,9 @@ export class FirebaseOrdersService {
     callback: (orders: FirebaseOrder[]) => void
   ): () => void {
     if (!db) {
-      console.warn('Firebase não inicializado, usando dados mock')
-      const mockOrders = this.getMockOrders()
-      callback(mockOrders)
-      return () => {}
+      console.warn('Firebase não inicializado')
+      callback([])
+      return () => { }
     }
 
     try {
@@ -187,122 +187,9 @@ export class FirebaseOrdersService {
       })
     } catch (error) {
       console.error('Erro ao escutar pedidos:', error)
-      const mockOrders = this.getMockOrders()
-      callback(mockOrders)
-      return () => {}
+      callback([])
+      return () => { }
     }
   }
-
-  // Dados mock para desenvolvimento
-  private static getMockOrders(): FirebaseOrder[] {
-    return [
-      {
-        id: "1",
-        numero: "ORD-2025-001",
-        cliente: {
-          id: "1",
-          nome: "João Silva",
-          telefone: "(27) 99999-1111",
-          email: "joao@email.com"
-        },
-        servico: {
-          id: "1",
-          nome: "Limpeza Residencial",
-          descricao: "Limpeza completa da casa",
-          categoria: "Limpeza"
-        },
-        valor: 150.0,
-        status: "pendente",
-        dataCriacao: new Date(),
-        dataAgendamento: "2025-01-16",
-        endereco: {
-          rua: "Rua das Flores",
-          numero: "123",
-          bairro: "Centro",
-          cidade: "Vitória",
-          cep: "29000-000",
-          coordenadas: { lat: -20.3155, lng: -40.3128 }
-        },
-        observacoes: "Limpeza completa da casa",
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
-      {
-        id: "2",
-        numero: "ORD-2025-002",
-        cliente: {
-          id: "2",
-          nome: "Maria Santos",
-          telefone: "(27) 99999-2222",
-          email: "maria@email.com"
-        },
-        servico: {
-          id: "2",
-          nome: "Limpeza Comercial",
-          descricao: "Limpeza do escritório",
-          categoria: "Limpeza"
-        },
-        valor: 300.0,
-        status: "em_andamento",
-        dataCriacao: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        dataAgendamento: "2025-01-15",
-        endereco: {
-          rua: "Av. Comercial",
-          numero: "456",
-          bairro: "Jardim da Penha",
-          cidade: "Vitória",
-          cep: "29060-000",
-          coordenadas: { lat: -20.3255, lng: -40.3228 }
-        },
-        prestador: {
-          id: "2",
-          nome: "Maria Santos",
-          telefone: "(27) 99999-2222"
-        },
-        observacoes: "Limpeza do escritório",
-        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-        updatedAt: new Date()
-      },
-      {
-        id: "3",
-        numero: "ORD-2025-003",
-        cliente: {
-          id: "3",
-          nome: "Pedro Costa",
-          telefone: "(27) 99999-3333",
-          email: "pedro@email.com"
-        },
-        servico: {
-          id: "3",
-          nome: "Limpeza Pós-Obra",
-          descricao: "Limpeza após reforma",
-          categoria: "Limpeza"
-        },
-        valor: 500.0,
-        status: "concluido",
-        dataCriacao: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        dataAgendamento: "2025-01-14",
-        endereco: {
-          rua: "Rua da Construção",
-          numero: "789",
-          bairro: "Santa Luíza",
-          cidade: "Vitória",
-          cep: "29045-000",
-          coordenadas: { lat: -20.3055, lng: -40.3028 }
-        },
-        prestador: {
-          id: "3",
-          nome: "Carlos Lima",
-          telefone: "(27) 99999-3333"
-        },
-        observacoes: "Limpeza após reforma",
-        avaliacao: {
-          nota: 5,
-          comentario: "Excelente serviço!"
-        },
-        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        updatedAt: new Date()
-      }
-    ]
-  }
 }
+

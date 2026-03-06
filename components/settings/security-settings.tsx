@@ -10,48 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Shield, Key, Clock, Database, AlertTriangle, Download } from "lucide-react"
 
-const auditLogs = [
-  {
-    id: "1",
-    action: "Login",
-    user: "admin@appservico.com",
-    timestamp: "2024-03-11 14:30:25",
-    ip: "192.168.1.100",
-    status: "success",
-  },
-  {
-    id: "2",
-    action: "User Block",
-    user: "admin@appservico.com",
-    timestamp: "2024-03-11 13:45:12",
-    ip: "192.168.1.100",
-    status: "success",
-  },
-  {
-    id: "3",
-    action: "Failed Login",
-    user: "unknown@email.com",
-    timestamp: "2024-03-11 12:15:33",
-    ip: "203.0.113.45",
-    status: "failed",
-  },
-  {
-    id: "4",
-    action: "Settings Update",
-    user: "admin@appservico.com",
-    timestamp: "2024-03-11 11:20:18",
-    ip: "192.168.1.100",
-    status: "success",
-  },
-  {
-    id: "5",
-    action: "Report Export",
-    user: "admin@appservico.com",
-    timestamp: "2024-03-11 10:05:42",
-    ip: "192.168.1.100",
-    status: "success",
-  },
-]
+// TODO: carregar logs de auditoria do Firebase
+const auditLogs: { id: string; action: string; user: string; timestamp: string; ip: string; status: string }[] = []
 
 export function SecuritySettings() {
   const [passwordPolicy, setPasswordPolicy] = useState({

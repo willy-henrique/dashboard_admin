@@ -12,40 +12,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 })
 
-const mockServices = [
-  {
-    id: 1,
-    title: "Serviço #1234",
-    lat: -23.5505,
-    lng: -46.6333,
-    status: "em_andamento",
-    profissional: "João Silva",
-  },
-  {
-    id: 2,
-    title: "Serviço #1235",
-    lat: -23.5605,
-    lng: -46.6433,
-    status: "aguardando",
-    profissional: "Maria Santos",
-  },
-  {
-    id: 3,
-    title: "Serviço #1236",
-    lat: -23.5405,
-    lng: -46.6233,
-    status: "concluido",
-    profissional: "Carlos Lima",
-  },
-  {
-    id: 4,
-    title: "Serviço #1237",
-    lat: -23.5705,
-    lng: -46.6533,
-    status: "em_andamento",
-    profissional: "Ana Costa",
-  },
-]
+const services: { id: number; title: string; lat: number; lng: number; status: string; profissional: string }[] = []
 
 const statusColors = {
   agendado: "#6b7280",
@@ -72,36 +39,7 @@ export function DashboardMap() {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
 
-    // Adicionar marcadores
-    mockServices.forEach((service) => {
-      const marker = L.marker([service.lat, service.lng])
-        .addTo(map)
-        .bindPopup(`
-          <div class="p-2">
-            <h3 class="font-bold text-sm">${service.title}</h3>
-            <p class="text-xs text-gray-600">Profissional: ${service.profissional}</p>
-            <p class="text-xs text-gray-600">Status: ${service.status}</p>
-          </div>
-        `)
-
-      // Personalizar ícone baseado no status
-      const statusColor = statusColors[service.status as keyof typeof statusColors]
-      const customIcon = L.divIcon({
-        className: "custom-marker",
-        html: `<div style="
-          width: 12px;
-          height: 12px;
-          background-color: ${statusColor};
-          border: 2px solid white;
-          border-radius: 50%;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        "></div>`,
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
-      })
-
-      marker.setIcon(customIcon)
-    })
+    // TODO: Carregar marcadores de serviços do Firebase quando disponíveis
 
     mapInstanceRef.current = map
 
@@ -116,7 +54,7 @@ export function DashboardMap() {
   return (
     <div className="space-y-4">
       <div ref={mapRef} className="h-64 w-full rounded-lg border" />
-      
+
       {/* Legenda */}
       <div className="flex flex-wrap gap-4 text-xs">
         <div className="flex items-center space-x-2">

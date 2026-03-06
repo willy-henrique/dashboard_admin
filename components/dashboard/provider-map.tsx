@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { 
-  MapPin, 
-  Navigation, 
-  Clock, 
-  Wifi, 
-  Battery, 
-  User, 
+import {
+  MapPin,
+  Navigation,
+  Clock,
+  Wifi,
+  Battery,
+  User,
   Phone,
   Mail,
   Star,
@@ -43,89 +43,11 @@ interface ProviderLocation {
   }
 }
 
-// Dados simulados de prestadores
-const mockProviders: ProviderLocation[] = [
-  {
-    id: '1',
-    name: 'João Silva',
-    email: 'joao.silva@email.com',
-    phone: '(11) 99999-1111',
-    latitude: -23.5505,
-    longitude: -46.6333,
-    status: 'available',
-    lastUpdate: new Date(),
-    batteryLevel: 85,
-    signalStrength: 4,
-    rating: 4.8,
-    vehicle: {
-      model: 'Honda CG 160',
-      plate: 'ABC-1234',
-      color: 'Vermelho'
-    }
-  },
-  {
-    id: '2',
-    name: 'Maria Santos',
-    email: 'maria.santos@email.com',
-    phone: '(11) 99999-2222',
-    latitude: -23.5489,
-    longitude: -46.6388,
-    status: 'busy',
-    lastUpdate: new Date(),
-    batteryLevel: 92,
-    signalStrength: 5,
-    currentService: {
-      id: 'service-1',
-      title: 'Limpeza Residencial',
-      clientName: 'Ana Costa',
-      estimatedTime: 45
-    },
-    rating: 4.9,
-    vehicle: {
-      model: 'Yamaha YBR 125',
-      plate: 'DEF-5678',
-      color: 'Azul'
-    }
-  },
-  {
-    id: '3',
-    name: 'Pedro Oliveira',
-    email: 'pedro.oliveira@email.com',
-    phone: '(11) 99999-3333',
-    latitude: -23.5520,
-    longitude: -46.6310,
-    status: 'online',
-    lastUpdate: new Date(),
-    batteryLevel: 67,
-    signalStrength: 3,
-    rating: 4.7,
-    vehicle: {
-      model: 'Suzuki Intruder 125',
-      plate: 'GHI-9012',
-      color: 'Preto'
-    }
-  }
-]
-
+// Dados simulados removidos - usar Firebase
 export function ProviderMap() {
   const [selectedProvider, setSelectedProvider] = useState<ProviderLocation | null>(null)
-  const [providers, setProviders] = useState<ProviderLocation[]>(mockProviders)
+  const [providers, setProviders] = useState<ProviderLocation[]>([])
   const mapRef = useRef<HTMLDivElement>(null)
-
-  // Simular atualizações em tempo real
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProviders(prev => prev.map(provider => ({
-        ...provider,
-        lastUpdate: new Date(),
-        batteryLevel: Math.max(0, provider.batteryLevel - Math.random() * 2),
-        latitude: provider.latitude + (Math.random() - 0.5) * 0.001,
-        longitude: provider.longitude + (Math.random() - 0.5) * 0.001
-      })))
-    }, 30000) // Atualiza a cada 30 segundos
-
-    return () => clearInterval(interval)
-  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -150,7 +72,7 @@ export function ProviderMap() {
   return (
     <div className="relative h-full">
       {/* Mapa Simulado */}
-      <div 
+      <div
         ref={mapRef}
         className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden"
         style={{ backgroundColor: 'var(--muted)' }}
@@ -176,14 +98,14 @@ export function ProviderMap() {
             onClick={() => setSelectedProvider(provider)}
           >
             <div className="relative">
-              <div 
+              <div
                 className="w-6 h-6 rounded-full border-2 border-white shadow-lg flex items-center justify-center"
                 style={{ backgroundColor: getStatusColor(provider.status) }}
               >
                 <User className="w-3 h-3 text-white" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center">
-                <div 
+                <div
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: getStatusColor(provider.status) }}
                 ></div>
@@ -198,7 +120,7 @@ export function ProviderMap() {
           <div className="space-y-1">
             {['available', 'busy', 'online', 'offline'].map((status) => (
               <div key={status} className="flex items-center space-x-2">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: getStatusColor(status) }}
                 ></div>
@@ -226,8 +148,8 @@ export function ProviderMap() {
                 ×
               </Button>
             </div>
-            <Badge 
-              style={{ 
+            <Badge
+              style={{
                 backgroundColor: getStatusColor(selectedProvider.status),
                 color: 'white'
               }}
@@ -235,7 +157,7 @@ export function ProviderMap() {
               {getStatusText(selectedProvider.status)}
             </Badge>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             {/* Informações de contato */}
             <div className="space-y-2">

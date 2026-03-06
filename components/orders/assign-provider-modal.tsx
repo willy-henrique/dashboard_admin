@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Star, MapPin, UserPlus } from "lucide-react"
+import { Search, Star, MapPin, UserPlus, Loader2 } from "lucide-react"
+import { FirebaseProvidersService } from "@/lib/services/firebase-providers"
 
 interface Order {
   id: string
@@ -43,56 +44,40 @@ interface AssignProviderModalProps {
   onProviderAssigned: (orderId: string, providerId: string, providerName: string) => void
 }
 
-const mockProviders: Provider[] = [
-  {
-    id: "1",
-    name: "João Silva",
-    rating: 4.9,
-    totalOrders: 45,
-    serviceCategories: ["Limpeza", "Manutenção"],
-    location: "São Paulo, SP",
-    isAvailable: true,
-  },
-  {
-    id: "2",
-    name: "Maria Santos",
-    rating: 4.8,
-    totalOrders: 38,
-    serviceCategories: ["Jardinagem", "Limpeza"],
-    location: "São Paulo, SP",
-    isAvailable: true,
-  },
-  {
-    id: "3",
-    name: "Carlos Lima",
-    rating: 4.7,
-    totalOrders: 32,
-    serviceCategories: ["Pintura", "Manutenção"],
-    location: "São Paulo, SP",
-    isAvailable: false,
-  },
-  {
-    id: "4",
-    name: "Ana Costa",
-    rating: 4.6,
-    totalOrders: 25,
-    serviceCategories: ["Limpeza"],
-    location: "Rio de Janeiro, RJ",
-    isAvailable: true,
-  },
-]
-
 export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned }: AssignProviderModalProps) {
   const [searchTerm, setSearchTerm] = useState("")
+  const [providers, setProviders] = useState<Provider[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!isOpen) return
+    async function fetchProviders() {
+      try {
+        setLoading(true)
+        const fbProviders = await FirebaseProvidersService.getActiveProviders()
+        setProviders(fbProviders.map(fp => ({
+          id: fp.id,
+          name: fp.nome,
+          rating: fp.avaliacao || 0,
+          totalOrders: fp.totalServicos || 0,
+          serviceCategories: fp.especialidades || [],
+          location: '',
+          isAvailable: fp.status === 'disponivel',
+        })))
+      } catch (err) {
+        console.error('Erro ao buscar prestadores:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProviders()
+  }, [isOpen])
 
   if (!order) return null
 
-  const filteredProviders = mockProviders.filter((provider) => {
+  const filteredProviders = providers.filter((provider) => {
     const matchesSearch = provider.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = provider.serviceCategories.some((cat) =>
-      cat.toLowerCase().includes(order.serviceCategory.toLowerCase()),
-    )
-    return matchesSearch && matchesCategory && provider.isAvailable
+    return matchesSearch && provider.isAvailable
   })
 
   const handleAssignProvider = (provider: Provider) => {
@@ -141,70 +126,80 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
             </div>
           </div>
 
+          {/* Loading */}
+          {loading && (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+              <span className="ml-2 text-gray-500">Carregando prestadores...</span>
+            </div>
+          )}
+
           {/* Providers Table */}
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Prestador</TableHead>
-                  <TableHead>Avaliação</TableHead>
-                  <TableHead>Pedidos</TableHead>
-                  <TableHead>Categorias</TableHead>
-                  <TableHead>Localização</TableHead>
-                  <TableHead className="text-right">Ação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProviders.length === 0 ? (
+          {!loading && (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      Nenhum prestador disponível encontrado
-                    </TableCell>
+                    <TableHead>Prestador</TableHead>
+                    <TableHead>Avaliação</TableHead>
+                    <TableHead>Pedidos</TableHead>
+                    <TableHead>Categorias</TableHead>
+                    <TableHead>Localização</TableHead>
+                    <TableHead className="text-right">Ação</TableHead>
                   </TableRow>
-                ) : (
-                  filteredProviders.map((provider) => (
-                    <TableRow key={provider.id}>
-                      <TableCell>
-                        <div className="font-medium">{provider.name}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span>{provider.rating}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{provider.totalOrders}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {provider.serviceCategories.map((category) => (
-                            <Badge key={category} variant="outline" className="text-xs">
-                              {category}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-gray-400" />
-                          <span className="text-sm">{provider.location}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          onClick={() => handleAssignProvider(provider)}
-                          className="flex items-center gap-2"
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          Atribuir
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {filteredProviders.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                        Nenhum prestador disponível encontrado
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  ) : (
+                    filteredProviders.map((provider) => (
+                      <TableRow key={provider.id}>
+                        <TableCell>
+                          <div className="font-medium">{provider.name}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                            <span>{provider.rating}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{provider.totalOrders}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {provider.serviceCategories.map((category) => (
+                              <Badge key={category} variant="outline" className="text-xs">
+                                {category}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3 text-gray-400" />
+                            <span className="text-sm">{provider.location || '—'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            onClick={() => handleAssignProvider(provider)}
+                            className="flex items-center gap-2"
+                          >
+                            <UserPlus className="h-4 w-4" />
+                            Atribuir
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

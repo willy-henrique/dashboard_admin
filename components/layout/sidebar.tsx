@@ -50,7 +50,7 @@ import {
 
 const navigation = [
   {
-    name: "Dashboard",
+    name: "Painel",
     href: "/dashboard",
     icon: LayoutDashboard,
     permission: "dashboard",
@@ -94,7 +94,7 @@ const navigation = [
     icon: DollarSign,
     permission: "financeiro",
     children: [
-      { name: "Dashboard", href: "/dashboard/financeiro", icon: BarChart3 },
+      { name: "Painel Financeiro", href: "/dashboard/financeiro", icon: BarChart3 },
       { name: "Faturamento", href: "/dashboard/financeiro/faturamento", icon: FileText },
     ],
   },
@@ -103,8 +103,8 @@ const navigation = [
     icon: BarChart3,
     permission: "relatorios",
     children: [
-      { name: "Relatórios e Analytics", href: "/reports", icon: BarChart3 },
-      { name: "Dashboard Analytics", href: "/reports/analytics", icon: TrendingUp },
+      { name: "Relatórios e Análises", href: "/reports", icon: BarChart3 },
+      { name: "Painel de Análises", href: "/reports/analytics", icon: TrendingUp },
       // Página específica de performance não existe; usamos aba via query param
       { name: "Performance", href: "/reports/analytics?tab=performance", icon: TrendingUp },
     ],
@@ -142,10 +142,10 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   // Expandir automaticamente os menus que contêm a página atual
   useEffect(() => {
     const shouldExpand: string[] = []
-    
+
     navigation.forEach(item => {
       if (item.children) {
-        const hasActiveChild = item.children.some(child => 
+        const hasActiveChild = item.children.some(child =>
           pathname === child.href || pathname.startsWith(child.href + '/')
         )
         if (hasActiveChild) {
@@ -153,7 +153,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         }
       }
     })
-    
+
     setExpandedItems(shouldExpand)
   }, [pathname])
 
@@ -202,7 +202,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           <X className="h-4 w-4" />
         </Button>
       </div>
-      
+
       {/* Área rolável para navegação */}
       <ScrollArea className="flex-1 px-3 py-4 overflow-hidden">
         <nav className="space-y-1.5 pb-4" role="navigation" aria-label="Navegação principal">
@@ -237,7 +237,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
                     )}
                   </Button>
                   {expandedItems.includes(item.name) && (
-                    <div 
+                    <div
                       className="ml-4 mt-1.5 space-y-1 border-l-2 border-orange-200 pl-3"
                       id={`submenu-${item.name}`}
                       role="region"
@@ -291,9 +291,9 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20">
               {user?.photoURL ? (
-                <img 
-                  src={user.photoURL} 
-                  alt="Avatar" 
+                <img
+                  src={user.photoURL}
+                  alt="Avatar"
                   className="w-10 h-10 rounded-xl object-cover"
                 />
               ) : (
