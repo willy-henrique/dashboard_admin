@@ -14,13 +14,13 @@ function emptyOrdersPayload(warning: string) {
 
 /**
  * GET /api/pagarme/orders
- * Lista pedidos com fallback quando a chave privada n„o est· configurada.
+ * Lista pedidos com fallback quando a chave privada n√£o est√° configurada.
  */
 export async function GET(request: NextRequest) {
   try {
     const hasPrivateKey = Boolean(process.env.API_KEY_PRIVATE_PAGARME?.trim())
     if (!hasPrivateKey) {
-      return NextResponse.json(emptyOrdersPayload('API_KEY_PRIVATE_PAGARME n„o configurada'))
+      return NextResponse.json(emptyOrdersPayload('API_KEY_PRIVATE_PAGARME n√£o configurada'))
     }
 
     const { searchParams } = new URL(request.url)
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados obrigatÛrios n„o fornecidos (customer, items, payments)',
+          error: 'Dados obrigat√≥rios n√£o fornecidos (customer, items, payments)',
         },
         { status: 400 }
       )

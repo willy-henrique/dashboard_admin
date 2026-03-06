@@ -1,6 +1,6 @@
 /**
- * SERVI�O DE INTEGRA��O PAGAR.ME
- * API v5 - Documenta��o: https://docs.pagar.me/
+ * SERVIÇO DE INTEGRAÇÃO PAGAR.ME
+ * API v5 - Documentação: https://docs.pagar.me/
  */
 
 import {
@@ -19,10 +19,10 @@ import {
   PagarmeAnalytics,
 } from '@/types/pagarme'
 
-// Configura��o da API
+// Configuração da API
 const PAGARME_API_URL = 'https://api.pagar.me/core/v5'
 
-// Classe de servi�o do Pagar.me
+// Classe de serviço do Pagar.me
 export class PagarmeService {
   private apiKey: string
   private isProduction: boolean
@@ -33,12 +33,12 @@ export class PagarmeService {
     this.isProduction = process.env.NODE_ENV === 'production'
 
     if (!this.apiKey && typeof window === 'undefined') {
-      console.warn('API_KEY_PRIVATE_PAGARME n�o configurada')
+      console.warn('API_KEY_PRIVATE_PAGARME não configurada')
     }
   }
 
   /**
-   * Faz requisi��o � API do Pagar.me
+   * Faz requisição à API do Pagar.me
    */
   private async request<T>(
     endpoint: string,
@@ -49,7 +49,7 @@ export class PagarmeService {
         return {
           errors: [{
             type: 'config_error',
-            message: 'API_KEY_PRIVATE_PAGARME n�o configurada'
+            message: 'API_KEY_PRIVATE_PAGARME não configurada'
           }]
         }
       }
@@ -74,18 +74,18 @@ export class PagarmeService {
         return {
           errors: data.errors || [{
             type: 'api_error',
-            message: data.message || 'Erro ao processar requisi��o'
+            message: data.message || 'Erro ao processar requisição'
           }]
         }
       }
 
       return { data }
     } catch (error) {
-      console.error('Erro na requisi��o Pagar.me:', error)
+      console.error('Erro na requisição Pagar.me:', error)
       return {
         errors: [{
           type: 'network_error',
-          message: error instanceof Error ? error.message : 'Erro de conex�o'
+          message: error instanceof Error ? error.message : 'Erro de conexão'
         }]
       }
     }
@@ -139,7 +139,7 @@ export class PagarmeService {
   }
 
   // ==========================================
-  // PEDIDOS / TRANSAÇÕES
+  // PEDIDOS / TRANSAÃ‡Ã•ES
   // ==========================================
 
   /**
@@ -185,11 +185,11 @@ export class PagarmeService {
   }
 
   // ==========================================
-  // COBRANÇAS
+  // COBRANÃ‡AS
   // ==========================================
 
   /**
-   * Lista todas as cobranças
+   * Lista todas as cobranÃ§as
    */
   async listCharges(query?: PagarmeListQuery): Promise<PagarmeApiResponse<PagarmeCharge[]>> {
     const params = new URLSearchParams()
@@ -204,14 +204,14 @@ export class PagarmeService {
   }
 
   /**
-   * Busca uma cobrança por ID
+   * Busca uma cobranÃ§a por ID
    */
   async getCharge(chargeId: string): Promise<PagarmeApiResponse<PagarmeCharge>> {
     return this.request<PagarmeCharge>(`/charges/${chargeId}`)
   }
 
   /**
-   * Captura uma cobrança autorizada
+   * Captura uma cobranÃ§a autorizada
    */
   async captureCharge(chargeId: string, amount?: number): Promise<PagarmeApiResponse<PagarmeCharge>> {
     return this.request<PagarmeCharge>(`/charges/${chargeId}/capture`, {
@@ -221,7 +221,7 @@ export class PagarmeService {
   }
 
   /**
-   * Reembolsa uma cobrança
+   * Reembolsa uma cobranÃ§a
    */
   async refundCharge(chargeId: string, amount?: number): Promise<PagarmeApiResponse<PagarmeCharge>> {
     return this.request<PagarmeCharge>(`/charges/${chargeId}/refund`, {
@@ -231,7 +231,7 @@ export class PagarmeService {
   }
 
   /**
-   * Cancela uma cobrança
+   * Cancela uma cobranÃ§a
    */
   async cancelCharge(chargeId: string): Promise<PagarmeApiResponse<PagarmeCharge>> {
     return this.request<PagarmeCharge>(`/charges/${chargeId}`, {
@@ -301,25 +301,25 @@ export class PagarmeService {
   }
 
   // ==========================================
-  // CARTÕES
+  // CARTÃ•ES
   // ==========================================
 
   /**
-   * Lista cartões de um cliente
+   * Lista cartÃµes de um cliente
    */
   async listCards(customerId: string): Promise<PagarmeApiResponse<PagarmeCard[]>> {
     return this.request<PagarmeCard[]>(`/customers/${customerId}/cards`)
   }
 
   /**
-   * Busca um cartão por ID
+   * Busca um cartÃ£o por ID
    */
   async getCard(customerId: string, cardId: string): Promise<PagarmeApiResponse<PagarmeCard>> {
     return this.request<PagarmeCard>(`/customers/${customerId}/cards/${cardId}`)
   }
 
   /**
-   * Remove um cartão
+   * Remove um cartÃ£o
    */
   async deleteCard(customerId: string, cardId: string): Promise<PagarmeApiResponse<PagarmeCard>> {
     return this.request<PagarmeCard>(`/customers/${customerId}/cards/${cardId}`, {
@@ -380,7 +380,7 @@ export class PagarmeService {
   }
 
   // ==========================================
-  // SALDO E TRANSFERÊNCIAS
+  // SALDO E TRANSFERÃŠNCIAS
   // ==========================================
 
   /**
@@ -391,7 +391,7 @@ export class PagarmeService {
   }
 
   /**
-   * Lista transferências
+   * Lista transferÃªncias
    */
   async listTransfers(query?: PagarmeListQuery): Promise<PagarmeApiResponse<PagarmeTransfer[]>> {
     const params = new URLSearchParams()
@@ -403,7 +403,7 @@ export class PagarmeService {
   }
 
   // ==========================================
-  // ANALYTICS E RELATÓRIOS
+  // ANALYTICS E RELATÃ“RIOS
   // ==========================================
 
   /**
@@ -414,7 +414,7 @@ export class PagarmeService {
     endDate: string
   ): Promise<PagarmeAnalytics> {
     try {
-      // Buscar pedidos do período
+      // Buscar pedidos do perÃ­odo
       const ordersResponse = await this.listOrders({
         created_since: startDate,
         created_until: endDate,
@@ -431,7 +431,7 @@ export class PagarmeService {
 
       const subscriptions = subscriptionsResponse.data || []
 
-      // Buscar clientes únicos
+      // Buscar clientes Ãºnicos
       const uniqueCustomers = new Set(orders.map(o => o.customer.id))
 
       // Calcular totais
@@ -439,7 +439,7 @@ export class PagarmeService {
         .filter(o => o.status === 'paid')
         .reduce((sum, o) => sum + o.amount, 0)
 
-      // Contar por método de pagamento
+      // Contar por mÃ©todo de pagamento
       const paymentMethods = {
         credit_card: 0,
         debit_card: 0,
@@ -539,6 +539,6 @@ export class PagarmeService {
   }
 }
 
-// Instância singleton do serviço
+// InstÃ¢ncia singleton do serviÃ§o
 export const pagarmeService = new PagarmeService()
 

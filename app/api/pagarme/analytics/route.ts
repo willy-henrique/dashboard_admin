@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         paymentMethods: analytics.payment_methods,
         recentCharges: [],
         source: 'fallback',
-        warning: 'API_KEY_PRIVATE_PAGARME n„o configurada',
+        warning: 'API_KEY_PRIVATE_PAGARME n√£o configurada',
       })
     }
 

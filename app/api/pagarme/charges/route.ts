@@ -13,13 +13,13 @@ function emptyChargesPayload(warning: string) {
 
 /**
  * GET /api/pagarme/charges
- * Lista cobranÁas com fallback quando a chave privada n„o est· configurada.
+ * Lista cobran√ßas com fallback quando a chave privada n√£o est√° configurada.
  */
 export async function GET(request: NextRequest) {
   try {
     const hasPrivateKey = Boolean(process.env.API_KEY_PRIVATE_PAGARME?.trim())
     if (!hasPrivateKey) {
-      return NextResponse.json(emptyChargesPayload('API_KEY_PRIVATE_PAGARME n„o configurada'))
+      return NextResponse.json(emptyChargesPayload('API_KEY_PRIVATE_PAGARME n√£o configurada'))
     }
 
     const { searchParams } = new URL(request.url)
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     if (response.errors) {
       return NextResponse.json(
-        emptyChargesPayload(response.errors[0]?.message || 'Erro ao listar cobranÁas')
+        emptyChargesPayload(response.errors[0]?.message || 'Erro ao listar cobran√ßas')
       )
     }
 
@@ -48,9 +48,9 @@ export async function GET(request: NextRequest) {
       source: 'pagarme',
     })
   } catch (error) {
-    console.error('Erro ao listar cobranÁas:', error)
+    console.error('Erro ao listar cobran√ßas:', error)
     return NextResponse.json(
-      emptyChargesPayload('Erro ao listar cobranÁas')
+      emptyChargesPayload('Erro ao listar cobran√ßas')
     )
   }
 }
