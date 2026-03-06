@@ -120,6 +120,14 @@ export async function GET() {
         providerLookup.set(providerDataProviderUid, providerDoc.id)
       }
 
+      const providerVerificationCode =
+        readString(providerData.providerVerificationCode) ||
+        readString(providerData.verificationCode) ||
+        readString(providerData.verification_code)
+      if (providerVerificationCode) {
+        providerLookup.set(providerVerificationCode, providerDoc.id)
+      }
+
       if (provider.uid) {
         providerLookup.set(provider.uid, providerDoc.id)
       }

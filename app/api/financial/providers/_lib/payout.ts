@@ -190,6 +190,7 @@ const getOrderPaidCents = (order: UnknownRecord, totalCommissionCents: number): 
 export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
   const prestador = getNestedRecord(orderData.prestador)
   const provider = getNestedRecord(orderData.provider)
+  const providerVerification = getNestedRecord(orderData.providerVerification)
 
   return (
     readString(orderData.provider) ||
@@ -206,6 +207,12 @@ export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
     readString(orderData.assignedProviderUid) ||
     readString(orderData.assigned_provider_id) ||
     readString(orderData.assigned_provider_uid) ||
+    readString(orderData.providerVerificationCode) ||
+    readString(orderData.provider_verification_code) ||
+    readString(orderData.verificationCode) ||
+    readString(orderData.verification_code) ||
+    readString(providerVerification.code) ||
+    readString(providerVerification.verificationCode) ||
     readString(prestador.id) ||
     readString(prestador.uid) ||
     readString(prestador.userId) ||
@@ -214,6 +221,10 @@ export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
     readString(prestador.providerUid) ||
     readString(prestador.provider_id) ||
     readString(prestador.provider_uid) ||
+    readString(prestador.verificationCode) ||
+    readString(prestador.verification_code) ||
+    readString(prestador.providerVerificationCode) ||
+    readString(prestador.provider_verification_code) ||
     readString(provider.id) ||
     readString(provider.uid) ||
     readString(provider.userId) ||
@@ -221,7 +232,11 @@ export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
     readString(provider.providerId) ||
     readString(provider.providerUid) ||
     readString(provider.provider_id) ||
-    readString(provider.provider_uid)
+    readString(provider.provider_uid) ||
+    readString(provider.verificationCode) ||
+    readString(provider.verification_code) ||
+    readString(provider.providerVerificationCode) ||
+    readString(provider.provider_verification_code)
   )
 }
 

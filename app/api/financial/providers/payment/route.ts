@@ -152,6 +152,14 @@ export async function POST(request: NextRequest) {
         acceptedProviderIds.add(providerDataProviderUid)
       }
 
+      const providerVerificationCode =
+        readString(providerData.providerVerificationCode) ||
+        readString(providerData.verificationCode) ||
+        readString(providerData.verification_code)
+      if (providerVerificationCode) {
+        acceptedProviderIds.add(providerVerificationCode)
+      }
+
       if (providerUid) {
         acceptedProviderIds.add(providerUid)
       }
