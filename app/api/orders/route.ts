@@ -1,87 +1,93 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getCollection } from '@/lib/firestore'
+import { toDateFromUnknown, toIsoStringFromUnknown } from '@/lib/date-utils'
 
-// Mock data para demonstração
-const orders = [
-  {
-    id: "1",
-    numero: "ORD-2025-001",
-    cliente: "João Silva",
-    servico: "Limpeza Residencial",
-    valor: 150.0,
-    status: "pendente",
-    dataCriacao: "2025-01-15",
-    dataAgendamento: "2025-01-16",
-    endereco: "Rua das Flores, 123",
-    observacoes: "Limpeza completa da casa"
-  },
-  {
-    id: "2",
-    numero: "ORD-2025-002",
-    cliente: "Maria Santos",
-    servico: "Limpeza Comercial",
-    valor: 300.0,
-    status: "em_andamento",
-    dataCriacao: "2025-01-14",
-    dataAgendamento: "2025-01-15",
-    endereco: "Av. Comercial, 456",
-    observacoes: "Limpeza do escritório"
-  },
-  {
-    id: "3",
-    numero: "ORD-2025-003",
-    cliente: "Pedro Costa",
-    servico: "Limpeza Pós-Obra",
-    valor: 500.0,
-    status: "concluida",
-    dataCriacao: "2025-01-13",
-    dataAgendamento: "2025-01-14",
-    endereco: "Rua da Construção, 789",
-    observacoes: "Limpeza após reforma"
-  },
-]
+type OrderRecord = Record<string, unknown> & {
+  id: string
+  status?: string
+}
+
+const readString = (value: unknown): string => (typeof value === 'string' ? value.trim() : '')
+
+const readNumber = (value: unknown): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  return 0
+}
+
+const getOrderDate = (order: OrderRecord): Date =>
+  toDateFromUnknown(order.createdAt ?? order.created_at ?? order.updatedAt, new Date(0))
+
+const getOrderAmount = (order: OrderRecord): number =>
+  readNumber(
+    order.amount ??
+      order.totalAmount ??
+      order.total ??
+      order.valor ??
+      order.price ??
+      order.servicePrice
+  )
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
-    const cliente = searchParams.get('cliente')
+    const cliente = searchParams.get('cliente')?.trim().toLowerCase()
     const dataInicio = searchParams.get('dataInicio')
     const dataFim = searchParams.get('dataFim')
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1)
+    const limit = Math.max(parseInt(searchParams.get('limit') || '10', 10), 1)
 
-    let filteredOrders = [...orders]
+    let orders = (await getCollection('orders')) as OrderRecord[]
 
-    // Filtros
+    orders = orders.sort((a, b) => getOrderDate(b).getTime() - getOrderDate(a).getTime())
+
     if (status) {
-      filteredOrders = filteredOrders.filter(o => o.status === status)
+      orders = orders.filter((order) => readString(order.status) === status)
     }
 
     if (cliente) {
-      filteredOrders = filteredOrders.filter(o => 
-        o.cliente.toLowerCase().includes(cliente.toLowerCase())
-      )
+      orders = orders.filter((order) => {
+        const values = [
+          order.clientName,
+          order.customerName,
+          order.clientEmail,
+          order.customerEmail,
+          order.protocol,
+          order.serviceName,
+          order.serviceType,
+          order.address,
+        ]
+
+        return values.some((value) => readString(value).toLowerCase().includes(cliente))
+      })
     }
 
     if (dataInicio) {
-      filteredOrders = filteredOrders.filter(o => o.dataCriacao >= dataInicio)
+      const start = new Date(`${dataInicio}T00:00:00`)
+      orders = orders.filter((order) => getOrderDate(order) >= start)
     }
 
     if (dataFim) {
-      filteredOrders = filteredOrders.filter(o => o.dataCriacao <= dataFim)
+      const end = new Date(`${dataFim}T23:59:59.999`)
+      orders = orders.filter((order) => getOrderDate(order) <= end)
     }
 
-    // Paginação
     const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
-
-    // Estatísticas
-    const totalValor = filteredOrders.reduce((sum, o) => sum + o.valor, 0)
-    const statusCounts = filteredOrders.reduce((acc, o) => {
-      acc[o.status] = (acc[o.status] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+    const paginatedOrders = orders.slice(startIndex, startIndex + limit)
+    const totalValor = orders.reduce((sum, order) => sum + getOrderAmount(order), 0)
+    const statusCounts = orders.reduce<Record<string, number>>((accumulator, order) => {
+      const currentStatus = readString(order.status) || 'sem_status'
+      accumulator[currentStatus] = (accumulator[currentStatus] || 0) + 1
+      return accumulator
+    }, {})
 
     return NextResponse.json({
       success: true,
@@ -89,15 +95,21 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: filteredOrders.length,
-        totalPages: Math.ceil(filteredOrders.length / limit)
+        total: orders.length,
+        totalPages: Math.ceil(orders.length / limit),
       },
       summary: {
         totalValor,
-        statusCounts
-      }
+        statusCounts,
+      },
+      warning:
+        orders.length === 0
+          ? 'Nenhum pedido real encontrado na colecao orders para os filtros informados.'
+          : undefined,
+      generatedAt: toIsoStringFromUnknown(new Date()),
     })
   } catch (error) {
+    console.error('Erro ao listar pedidos:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }
@@ -105,38 +117,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    
-    // Validação básica
-    if (!body.cliente || !body.servico || !body.valor || !body.endereco) {
-      return NextResponse.json(
-        { success: false, error: 'Dados obrigatórios não fornecidos' },
-        { status: 400 }
-      )
-    }
-
-    const newOrder = {
-      id: (orders.length + 1).toString(),
-      numero: `ORD-2025-${String(orders.length + 1).padStart(3, '0')}`,
-      dataCriacao: new Date().toISOString().split('T')[0],
-      status: 'pendente',
-      ...body
-    }
-
-    // Em um cenário real, salvaria no banco de dados
-    orders.push(newOrder)
-
-    return NextResponse.json({
-      success: true,
-      data: newOrder,
-      message: 'Pedido criado com sucesso'
-    }, { status: 201 })
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Erro interno do servidor' },
-      { status: 500 }
-    )
-  }
+export async function POST() {
+  return NextResponse.json(
+    {
+      success: false,
+      error: 'Criacao de pedidos por esta rota nao esta habilitada sem um contrato real de persistencia.',
+    },
+    { status: 501 }
+  )
 }

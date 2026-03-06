@@ -1,38 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { addDocument, getCollection } from '@/lib/firestore'
+import { toDateFromUnknown } from '@/lib/date-utils'
 
-// Mock data para demonstração
-const transactions = [
-  {
-    id: "1",
-    data: "2025-01-15",
-    descricao: "Pagamento de serviço #699411371",
-    tipo: "receita",
-    valor: 350.0,
-    conta: "Conta Corrente Principal",
-    categoria: "servicos",
-    status: "confirmada"
-  },
-  {
-    id: "2",
-    data: "2025-01-15",
-    descricao: "Combustível - Veículo ABC-1234",
-    tipo: "despesa",
-    valor: 120.0,
-    conta: "Conta Corrente Principal",
-    categoria: "combustivel",
-    status: "confirmada"
-  },
-  {
-    id: "3",
-    data: "2025-01-14",
-    descricao: "Pagamento de fornecedor",
-    tipo: "despesa",
-    valor: 850.0,
-    conta: "Conta Corrente Principal",
-    categoria: "fornecedores",
-    status: "pendente"
-  },
-]
+type TransactionRecord = Record<string, unknown> & {
+  id: string
+  tipo?: string
+  status?: string
+}
+
+const readString = (value: unknown): string => (typeof value === 'string' ? value.trim() : '')
+
+const readNumber = (value: unknown): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+  }
+
+  return 0
+}
+
+const getTransactionDate = (transaction: TransactionRecord) =>
+  toDateFromUnknown(transaction.data ?? transaction.createdAt, new Date(0))
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,45 +34,48 @@ export async function GET(request: NextRequest) {
     const conta = searchParams.get('conta')
     const dataInicio = searchParams.get('dataInicio')
     const dataFim = searchParams.get('dataFim')
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1)
+    const limit = Math.max(parseInt(searchParams.get('limit') || '10', 10), 1)
 
-    let filteredTransactions = [...transactions]
+    let transactions = (await getCollection('transactions')) as TransactionRecord[]
 
-    // Filtros
+    transactions = transactions.sort((a, b) => getTransactionDate(b).getTime() - getTransactionDate(a).getTime())
+
     if (tipo) {
-      filteredTransactions = filteredTransactions.filter(t => t.tipo === tipo)
+      transactions = transactions.filter((transaction) => readString(transaction.tipo) === tipo)
     }
 
     if (status) {
-      filteredTransactions = filteredTransactions.filter(t => t.status === status)
+      transactions = transactions.filter((transaction) => readString(transaction.status) === status)
     }
 
     if (conta) {
-      filteredTransactions = filteredTransactions.filter(t => t.conta === conta)
+      transactions = transactions.filter((transaction) => {
+        const contaNome =
+          readString((transaction.conta as Record<string, unknown> | undefined)?.nome) ||
+          readString(transaction.conta)
+        return contaNome === conta
+      })
     }
 
     if (dataInicio) {
-      filteredTransactions = filteredTransactions.filter(t => t.data >= dataInicio)
+      const start = new Date(`${dataInicio}T00:00:00`)
+      transactions = transactions.filter((transaction) => getTransactionDate(transaction) >= start)
     }
 
     if (dataFim) {
-      filteredTransactions = filteredTransactions.filter(t => t.data <= dataFim)
+      const end = new Date(`${dataFim}T23:59:59.999`)
+      transactions = transactions.filter((transaction) => getTransactionDate(transaction) <= end)
     }
 
-    // Paginação
     const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex)
-
-    // Estatísticas
-    const totalReceitas = filteredTransactions
-      .filter(t => t.tipo === 'receita')
-      .reduce((sum, t) => sum + t.valor, 0)
-
-    const totalDespesas = filteredTransactions
-      .filter(t => t.tipo === 'despesa')
-      .reduce((sum, t) => sum + t.valor, 0)
+    const paginatedTransactions = transactions.slice(startIndex, startIndex + limit)
+    const totalReceitas = transactions
+      .filter((transaction) => readString(transaction.tipo) === 'receita')
+      .reduce((sum, transaction) => sum + readNumber(transaction.valor), 0)
+    const totalDespesas = transactions
+      .filter((transaction) => readString(transaction.tipo) === 'despesa')
+      .reduce((sum, transaction) => sum + readNumber(transaction.valor), 0)
 
     return NextResponse.json({
       success: true,
@@ -88,16 +83,21 @@ export async function GET(request: NextRequest) {
       pagination: {
         page,
         limit,
-        total: filteredTransactions.length,
-        totalPages: Math.ceil(filteredTransactions.length / limit)
+        total: transactions.length,
+        totalPages: Math.ceil(transactions.length / limit),
       },
       summary: {
         totalReceitas,
         totalDespesas,
-        saldo: totalReceitas - totalDespesas
-      }
+        saldo: totalReceitas - totalDespesas,
+      },
+      warning:
+        transactions.length === 0
+          ? 'Nenhuma transacao real encontrada na colecao transactions.'
+          : undefined,
     })
   } catch (error) {
+    console.error('Erro ao listar transacoes:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }
@@ -108,31 +108,35 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    // Validação básica
-    if (!body.descricao || !body.tipo || !body.valor || !body.conta) {
+
+    if (!body.descricao || !body.tipo || body.valor === undefined || !body.conta) {
       return NextResponse.json(
-        { success: false, error: 'Dados obrigatórios não fornecidos' },
+        { success: false, error: 'Dados obrigatorios nao fornecidos' },
         { status: 400 }
       )
     }
 
-    const newTransaction = {
-      id: (transactions.length + 1).toString(),
-      data: body.data || new Date().toISOString().split('T')[0],
+    const transactionId = await addDocument('transactions', {
       ...body,
-      status: body.status || 'pendente'
-    }
+      data: body.data || new Date().toISOString().split('T')[0],
+      status: body.status || 'pendente',
+    })
 
-    // Em um cenário real, salvaria no banco de dados
-    transactions.push(newTransaction)
-
-    return NextResponse.json({
-      success: true,
-      data: newTransaction,
-      message: 'Transação criada com sucesso'
-    }, { status: 201 })
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: transactionId,
+          ...body,
+          data: body.data || new Date().toISOString().split('T')[0],
+          status: body.status || 'pendente',
+        },
+        message: 'Transacao criada com sucesso',
+      },
+      { status: 201 }
+    )
   } catch (error) {
+    console.error('Erro ao criar transacao:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }

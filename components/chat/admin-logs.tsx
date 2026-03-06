@@ -1,104 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { Shield } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AdminAction } from "@/types/chat"
-import {
-  Shield,
-  User,
-  AlertTriangle,
-  Archive,
-  Ban,
-  Star,
-  Edit,
-  Trash2,
-  MessageSquare
-} from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { shouldUseFirebaseDevMocks } from "@/lib/services/firebase-dev-fallback"
-import { getMockAdminLogs } from "@/lib/mocks/ui-data"
 
 export function AdminLogs() {
-  const [logs, setLogs] = useState<AdminAction[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    setLogs(shouldUseFirebaseDevMocks() ? getMockAdminLogs() : [])
-    setLoading(false)
-  }, [])
-
-  const getActionIcon = (action: AdminAction['action']) => {
-    switch (action) {
-      case 'block':
-        return <Ban className="h-4 w-4 text-red-500" />
-      case 'unblock':
-        return <Ban className="h-4 w-4 text-green-500" />
-      case 'archive':
-        return <Archive className="h-4 w-4 text-blue-500" />
-      case 'unarchive':
-        return <Archive className="h-4 w-4 text-green-500" />
-      case 'assign':
-        return <User className="h-4 w-4 text-purple-500" />
-      case 'unassign':
-        return <User className="h-4 w-4 text-gray-500" />
-      case 'priority_change':
-        return <Star className="h-4 w-4 text-orange-500" />
-      case 'note_add':
-        return <Edit className="h-4 w-4 text-blue-500" />
-      case 'message_delete':
-        return <Trash2 className="h-4 w-4 text-red-500" />
-      default:
-        return <Shield className="h-4 w-4 text-gray-500" />
-    }
-  }
-
-  const getActionColor = (action: AdminAction['action']) => {
-    switch (action) {
-      case 'block':
-      case 'message_delete':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'unblock':
-      case 'unarchive':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'archive':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      case 'assign':
-        return 'bg-purple-100 text-purple-800 border-purple-200'
-      case 'priority_change':
-        return 'bg-orange-100 text-orange-800 border-orange-200'
-      case 'note_add':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
-
-  // Mostrar apenas os 10 logs mais recentes
-  const recentLogs = logs.slice(0, 10)
-
-  if (loading) {
-    return (
-      <Card className="bg-white">
-        <CardHeader>
-          <CardTitle className="text-gray-900">Carregando logs...</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="p-4 border rounded-lg animate-pulse">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-16"></div>
-              </div>
-              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card className="bg-white">
       <CardHeader>
@@ -107,43 +12,9 @@ export function AdminLogs() {
           Atividades Recentes
         </CardTitle>
       </CardHeader>
-
-      <CardContent className="p-0">
-        <div className="max-h-[400px] overflow-y-auto">
-          {recentLogs.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              <Shield className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p>Nenhuma atividade recente</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {recentLogs.map((log) => (
-                <div key={log.id} className="p-3 border-l-4 border-l-orange-200 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between mb-1">
-                    <div className="flex items-center space-x-2">
-                      {getActionIcon(log.action)}
-                      <div>
-                        <h4 className="font-medium text-gray-900 text-sm">
-                          {log.adminName}
-                        </h4>
-                      </div>
-                    </div>
-
-                    <span className="text-xs text-gray-400">
-                      {formatDistanceToNow(log.timestamp, {
-                        addSuffix: true,
-                        locale: ptBR
-                      })}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-700">
-                    {log.details}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
+      <CardContent>
+        <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+          Nenhum log real de auditoria foi encontrado para este painel.
         </div>
       </CardContent>
     </Card>

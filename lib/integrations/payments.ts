@@ -169,14 +169,12 @@ export class GenericPaymentIntegration extends PaymentIntegration {
     });
   }
 
+  private unsupportedOperation(operation: string): never {
+    throw new Error(`Integracao de pagamentos nao configurada para operacao real: ${operation}`);
+  }
+
   async testConnection(): Promise<boolean> {
-    try {
-      const response = await this.client.get('/health');
-      return response.status === 200;
-    } catch (error) {
-      logger.error('Generic payment connection test failed:', error);
-      return false;
-    }
+    return false;
   }
 
   async createPixCharge(charge: PaymentCharge): Promise<{
@@ -185,24 +183,11 @@ export class GenericPaymentIntegration extends PaymentIntegration {
     qrCode: string;
     expiresAt: Date;
   }> {
-    // Mock PIX charge
-    const pixCode = `PIX${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
-    const qrCode = `data:image/png;base64,${Buffer.from('mock-qr-code').toString('base64')}`;
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
-
-    logger.info('Mock PIX charge created', {
+    logger.warn('Tentativa de criar cobranca PIX sem integracao real configurada', {
       chargeId: charge.id,
-      pixCode,
       amount: charge.amount,
-      expiresAt,
     });
-
-    return {
-      id: charge.id,
-      pixCode,
-      qrCode,
-      expiresAt,
-    };
+    this.unsupportedOperation('createPixCharge');
   }
 
   async createBoletoCharge(charge: PaymentCharge): Promise<{
@@ -211,24 +196,11 @@ export class GenericPaymentIntegration extends PaymentIntegration {
     boletoUrl: string;
     dueDate: Date;
   }> {
-    // Mock boleto charge
-    const boletoCode = `34191.79001 01043.510047 91020.150008 4 84410026000`;
-    const boletoUrl = `https://sandbox.payments.com/boleto/${charge.id}`;
-    const dueDate = charge.dueDate;
-
-    logger.info('Mock boleto charge created', {
+    logger.warn('Tentativa de criar boleto sem integracao real configurada', {
       chargeId: charge.id,
-      boletoCode,
       amount: charge.amount,
-      dueDate,
     });
-
-    return {
-      id: charge.id,
-      boletoCode,
-      boletoUrl,
-      dueDate,
-    };
+    this.unsupportedOperation('createBoletoCharge');
   }
 
   async processCardPayment(charge: PaymentCharge): Promise<{
@@ -236,68 +208,36 @@ export class GenericPaymentIntegration extends PaymentIntegration {
     status: string;
     transactionId: string;
   }> {
-    // Mock card payment
-    const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
-    const status = Math.random() > 0.1 ? 'approved' : 'failed'; // 90% sucesso
-
-    logger.info('Mock card payment processed', {
+    logger.warn('Tentativa de processar cartao sem integracao real configurada', {
       chargeId: charge.id,
-      transactionId,
-      status,
       amount: charge.amount,
     });
-
-    return {
-      id: charge.id,
-      status,
-      transactionId,
-    };
+    this.unsupportedOperation('processCardPayment');
   }
 
   async getChargeStatus(chargeId: string): Promise<string> {
-    // Mock status
-    const statuses = ['pending', 'paid', 'overdue', 'cancelled'];
-    return statuses[Math.floor(Math.random() * statuses.length)];
+    logger.warn('Tentativa de consultar status sem integracao real configurada', { chargeId });
+    this.unsupportedOperation('getChargeStatus');
   }
 
   async cancelCharge(chargeId: string): Promise<{
     id: string;
     status: string;
   }> {
-    logger.info('Mock charge cancelled', { chargeId });
-    return {
-      id: chargeId,
-      status: 'cancelled',
-    };
+    logger.warn('Tentativa de cancelar cobranca sem integracao real configurada', { chargeId });
+    this.unsupportedOperation('cancelCharge');
   }
 
   async getReconciliation(startDate: Date, endDate: Date): Promise<PaymentReconciliation[]> {
-    // Mock reconciliation data
-    const reconciliations: PaymentReconciliation[] = [];
-    const days = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    for (let i = 0; i < Math.min(days, 10); i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
-      
-      if (Math.random() > 0.5) {
-        reconciliations.push({
-          chargeId: `charge_${Date.now()}_${i}`,
-          paymentId: `payment_${Date.now()}_${i}`,
-          amount: Math.random() * 1000,
-          paidAt: date,
-          method: Math.random() > 0.5 ? 'pix' : 'boleto',
-          status: 'paid',
-        });
-      }
-    }
-
-    return reconciliations;
+    logger.warn('Tentativa de conciliacao sem integracao real configurada', {
+      startDate,
+      endDate,
+    });
+    return [];
   }
 
-  async validateWebhook(payload: any, signature: string): Promise<boolean> {
-    // Mock validation
-    return signature === 'valid_signature';
+  async validateWebhook(_payload: any, _signature: string): Promise<boolean> {
+    return false;
   }
 
   async processWebhook(payload: PaymentWebhookPayload): Promise<void> {

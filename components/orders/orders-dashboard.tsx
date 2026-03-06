@@ -1,23 +1,17 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
-import { useEffect, useState } from "react"
-import { 
-  ShoppingCart, 
-  Clock, 
-  Activity, 
-  CheckCircle, 
-  XCircle,
-  DollarSign,
-  Star,
-  AlertTriangle,
+import { useEffect, useMemo, useState } from "react"
+import {
+  CheckCircle,
+  Clock,
+  ShoppingCart,
   TrendingUp,
-  Calendar,
-  Users
+  XCircle,
 } from "lucide-react"
+import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface OrdersDashboardProps {
   filters?: {
@@ -28,7 +22,18 @@ interface OrdersDashboardProps {
   }
 }
 
-export function OrdersDashboard({ filters }: OrdersDashboardProps) {
+interface RealStats {
+  total: number
+  active: number
+  completed: number
+  cancelled: number
+  urgent: number
+  today: number
+  last7Days: number
+  last30Days: number
+}
+
+export function OrdersDashboard(_props: OrdersDashboardProps) {
   const [firestoreData, setFirestoreData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +42,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
     const fetchData = async () => {
       try {
         setLoading(true)
+        setError(null)
         const data = await FirestoreAnalyticsService.getDashboardMetrics()
         setFirestoreData(data)
       } catch (err) {
@@ -50,19 +56,44 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
     fetchData()
   }, [])
 
+  const stats = useMemo<RealStats>(() => {
+    const ordersData = firestoreData?.orders || {}
+
+    return {
+      total: ordersData.totalOrders || 0,
+      active: ordersData.activeOrders || 0,
+      completed: ordersData.completedOrders || 0,
+      cancelled: ordersData.cancelledOrders || 0,
+      urgent: ordersData.emergencyOrders || 0,
+      today: ordersData.ordersToday || 0,
+      last7Days: ordersData.ordersLast7Days || 0,
+      last30Days: ordersData.ordersLast30Days || 0,
+    }
+  }, [firestoreData])
+
+  const completionRate = stats.total > 0 ? (stats.completed / stats.total) * 100 : 0
+  const cancellationRate = stats.total > 0 ? (stats.cancelled / stats.total) * 100 : 0
+
+  const statusRows = [
+    { label: "Em aberto", value: stats.active, color: "bg-yellow-500" },
+    { label: "Concluidos", value: stats.completed, color: "bg-green-500" },
+    { label: "Cancelados", value: stats.cancelled, color: "bg-red-500" },
+    { label: "Urgentes", value: stats.urgent, color: "bg-orange-500" },
+  ]
+
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-4 w-4" />
               </CardHeader>
               <CardContent>
                 <Skeleton className="h-8 w-16 mb-2" />
-                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-3 w-32" />
               </CardContent>
             </Card>
           ))}
@@ -73,7 +104,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
               <Skeleton className="h-6 w-32" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-40 w-full" />
             </CardContent>
           </Card>
           <Card>
@@ -81,7 +112,7 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
               <Skeleton className="h-6 w-32" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-32 w-full" />
+              <Skeleton className="h-40 w-full" />
             </CardContent>
           </Card>
         </div>
@@ -95,340 +126,150 @@ export function OrdersDashboard({ filters }: OrdersDashboardProps) {
         <CardContent className="p-6">
           <div className="text-center text-red-600">
             <XCircle className="h-8 w-8 mx-auto mb-2" />
-            <p>Erro ao carregar dados: {error}</p>
+            <p>Erro ao carregar dados reais de pedidos</p>
+            <p className="text-sm text-red-500 mt-1">{error}</p>
           </div>
         </CardContent>
       </Card>
     )
   }
 
-  // Dados reais do Firestore
-  const ordersData = firestoreData?.orders || {}
-  const stats = {
-    total: ordersData.totalOrders || 0,
-    pending: ordersData.activeOrders || 0, // Usando activeOrders como pending
-    assigned: 0, // Será calculado baseado nos pedidos
-    inProgress: 0, // Será calculado baseado nos pedidos
-    completed: ordersData.completedOrders || 0,
-    cancelled: ordersData.cancelledOrders || 0,
-    urgentCount: ordersData.emergencyOrders || 0,
-    todayOrders: ordersData.ordersToday || 0,
-    thisWeekOrders: ordersData.ordersLast7Days || 0,
-    thisMonthOrders: ordersData.ordersLast30Days || 0,
-    totalValue: 0, // Será implementado quando houver dados de valor
-    averageRating: 4.5 // Valor padrão até implementar avaliações reais
-  }
-
   return (
     <div className="space-y-6">
-      {/* Métricas Principais - Design Profissional */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-white">
+        <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">Total de Pedidos</CardTitle>
-            <div className="p-3 bg-orange-100 rounded-xl shadow-sm">
-              <ShoppingCart className="h-5 w-5 text-orange-600" />
-            </div>
+            <ShoppingCart className="h-5 w-5 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-gray-900 mb-2">{stats.total}</div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-green-600 flex items-center">
-                <TrendingUp className="h-3 w-3 mr-1" />
-                +{stats.todayOrders} hoje
-              </p>
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                +15% vs mês anterior
-              </div>
-            </div>
+            <p className="text-sm text-gray-600">Historico completo da colecao orders</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-yellow-500 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-yellow-50 to-white">
+        <Card className="border-l-4 border-l-yellow-500 bg-gradient-to-br from-yellow-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Pendentes</CardTitle>
-            <div className="p-3 bg-yellow-100 rounded-xl shadow-sm">
-              <Clock className="h-5 w-5 text-yellow-600" />
-            </div>
+            <CardTitle className="text-sm font-medium text-gray-600">Pedidos em Aberto</CardTitle>
+            <Clock className="h-5 w-5 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-yellow-600 mb-2">{stats.pending}</div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-red-600 flex items-center">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {stats.urgentCount} urgentes
-              </p>
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                Aguardando
-              </div>
-            </div>
+            <div className="text-4xl font-bold text-yellow-600 mb-2">{stats.active}</div>
+            <p className="text-sm text-gray-600">Pedidos ativos e nao cancelados</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-orange-500 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-orange-50 to-white">
+        <Card className="border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Ativos</CardTitle>
-            <div className="p-3 bg-orange-100 rounded-xl shadow-sm">
-              <Activity className="h-5 w-5 text-orange-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-orange-600 mb-2">{stats.assigned + stats.inProgress}</div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-600">
-                {stats.assigned} atribuídos • {stats.inProgress} em andamento
-              </p>
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                Ativo
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-green-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Concluídos</CardTitle>
-            <div className="p-3 bg-green-100 rounded-xl shadow-sm">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-            </div>
+            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Concluidos</CardTitle>
+            <CheckCircle className="h-5 w-5 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-4xl font-bold text-green-600 mb-2">{stats.completed}</div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-yellow-600 flex items-center">
-                <Star className="h-3 w-3 mr-1" />
-                {stats.averageRating.toFixed(1)} média
-              </p>
-              <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                Concluído
-              </div>
-            </div>
+            <p className="text-sm text-gray-600">Registros com status concluido</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-red-500 bg-gradient-to-br from-red-50 to-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Cancelados</CardTitle>
+            <XCircle className="h-5 w-5 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-red-600 mb-2">{stats.cancelled}</div>
+            <p className="text-sm text-gray-600">Cancelados no historico atual</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Valor Total e Estatísticas - Design Profissional */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-green-800">
-              <DollarSign className="h-5 w-5" />
-              <span>Valor Total</span>
-            </CardTitle>
-            <CardDescription className="text-green-600">Valor total dos pedidos</CardDescription>
+            <CardTitle>Distribuicao Atual</CardTitle>
+            <CardDescription>Status calculados a partir dos pedidos reais</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-green-700 mb-4">
-              R$ {stats.totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-green-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Calendar className="h-4 w-4 text-green-600" />
+          <CardContent className="space-y-4">
+            {statusRows.map((row) => {
+              const width = stats.total > 0 ? (row.value / stats.total) * 100 : 0
+
+              return (
+                <div key={row.label} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700">{row.label}</span>
+                    <span className="text-sm text-gray-500">{row.value}</span>
                   </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Este mês:</span>
-                    <p className="text-xs text-gray-500">R$ {Math.round(stats.totalValue * 0.8).toLocaleString('pt-BR')}</p>
-                  </div>
-                </div>
-                <span className="font-bold text-green-600">{stats.thisMonthOrders} pedidos</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-green-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Esta semana:</span>
-                    <p className="text-xs text-gray-500">R$ {Math.round(stats.totalValue * 0.2).toLocaleString('pt-BR')}</p>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div className={`${row.color} h-2 rounded-full`} style={{ width: `${width}%` }} />
                   </div>
                 </div>
-                <span className="font-bold text-green-600">{stats.thisWeekOrders} pedidos</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-green-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Clock className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Hoje:</span>
-                    <p className="text-xs text-gray-500">R$ {Math.round(stats.totalValue * 0.05).toLocaleString('pt-BR')}</p>
-                  </div>
-                </div>
-                <span className="font-bold text-green-600">{stats.todayOrders} pedidos</span>
-              </div>
-            </div>
+              )
+            })}
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-gray-800">
-              <TrendingUp className="h-5 w-5" />
-              <span>Status dos Pedidos</span>
-            </CardTitle>
-            <CardDescription className="text-gray-600">Distribuição por status</CardDescription>
+            <CardTitle>Janela Recente</CardTitle>
+            <CardDescription>Volumes observados nas datas reais de criacao</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Pendentes</span>
-                    <p className="text-xs text-gray-500">{stats.urgentCount} urgentes</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-700">{stats.pending}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-yellow-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ width: `${stats.total > 0 ? (stats.pending / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Hoje</p>
+                <p className="text-xs text-gray-500">Pedidos criados hoje</p>
               </div>
-
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-orange-500 rounded-full shadow-sm"></div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Atribuídos</span>
-                    <p className="text-xs text-gray-500">Aguardando início</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-700">{stats.assigned}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-orange-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ width: `${stats.total > 0 ? (stats.assigned / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
+              <Badge variant="outline">{stats.today}</Badge>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Ultimos 7 dias</p>
+                <p className="text-xs text-gray-500">Pedidos criados na semana</p>
               </div>
-
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-purple-500 rounded-full shadow-sm"></div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Em Andamento</span>
-                    <p className="text-xs text-gray-500">Executando serviço</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-700">{stats.inProgress}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-purple-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ width: `${stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
+              <Badge variant="outline">{stats.last7Days}</Badge>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Ultimos 30 dias</p>
+                <p className="text-xs text-gray-500">Pedidos criados no mes</p>
               </div>
-
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Concluídos</span>
-                    <p className="text-xs text-gray-500">{stats.averageRating.toFixed(1)} ⭐ média</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-700">{stats.completed}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
+              <Badge variant="outline">{stats.last30Days}</Badge>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Pedidos urgentes</p>
+                <p className="text-xs text-gray-500">Marcados como emergencia</p>
               </div>
-
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-700">Cancelados</span>
-                    <p className="text-xs text-gray-500">Não executados</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <span className="text-lg font-bold text-gray-700">{stats.cancelled}</span>
-                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-red-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ width: `${stats.total > 0 ? (stats.cancelled / stats.total) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
+              <Badge variant="outline">{stats.urgent}</Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Resumo de Performance - Design Profissional */}
       <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2 text-orange-800">
-            <Star className="h-5 w-5" />
-            <span>Resumo de Performance</span>
+            <TrendingUp className="h-5 w-5" />
+            <span>Indicadores Reais</span>
           </CardTitle>
-          <CardDescription className="text-orange-600">Métricas de qualidade e satisfação</CardDescription>
+          <CardDescription className="text-orange-700">
+            Taxas calculadas apenas com os dados disponiveis no Firestore
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="text-center p-6 bg-white rounded-lg border border-orange-200 shadow-sm">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <Star className="h-8 w-8 text-yellow-600" />
-              </div>
-              <div className="text-4xl font-bold text-yellow-600 mb-2">
-                {stats.averageRating.toFixed(1)}
-              </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Avaliação Média</p>
-              <p className="text-xs text-gray-500">
-                Baseado em {stats.completed} pedidos concluídos
-              </p>
-              <div className="mt-3 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                +0.2 vs mês anterior
-              </div>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-lg border border-orange-200 shadow-sm">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <AlertTriangle className="h-8 w-8 text-red-600" />
-              </div>
-              <div className="text-4xl font-bold text-red-600 mb-2">
-                {stats.urgentCount}
-              </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Pedidos Urgentes</p>
-              <p className="text-xs text-gray-500">
-                Requerem atenção imediata
-              </p>
-              <div className="mt-3 text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">
-                Alta prioridade
-              </div>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-lg border border-orange-200 shadow-sm">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="text-4xl font-bold text-green-600 mb-2">
-                {stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0}%
-              </div>
-              <p className="text-sm font-medium text-gray-700 mb-1">Taxa de Conclusão</p>
-              <p className="text-xs text-gray-500">
-                Pedidos concluídos vs total
-              </p>
-              <div className="mt-3 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                Excelente
-              </div>
-            </div>
+        <CardContent className="grid gap-6 md:grid-cols-3">
+          <div className="rounded-lg border border-orange-200 bg-white p-6 text-center">
+            <div className="text-4xl font-bold text-green-600 mb-2">{completionRate.toFixed(1)}%</div>
+            <p className="text-sm font-medium text-gray-700">Taxa de Conclusao</p>
+            <p className="text-xs text-gray-500">Pedidos concluidos sobre o total</p>
+          </div>
+          <div className="rounded-lg border border-orange-200 bg-white p-6 text-center">
+            <div className="text-4xl font-bold text-red-600 mb-2">{cancellationRate.toFixed(1)}%</div>
+            <p className="text-sm font-medium text-gray-700">Taxa de Cancelamento</p>
+            <p className="text-xs text-gray-500">Pedidos cancelados sobre o total</p>
+          </div>
+          <div className="rounded-lg border border-orange-200 bg-white p-6 text-center">
+            <div className="text-4xl font-bold text-orange-600 mb-2">{stats.last30Days}</div>
+            <p className="text-sm font-medium text-gray-700">Pedidos nos Ultimos 30 Dias</p>
+            <p className="text-xs text-gray-500">Volume recente sem extrapolacao artificial</p>
           </div>
         </CardContent>
       </Card>

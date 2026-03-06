@@ -1,18 +1,16 @@
 import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  doc,
-  updateDoc,
   addDoc,
+  collection,
+  doc,
   getDocs,
-  serverTimestamp
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+  where,
 } from 'firebase/firestore'
 import { db } from '../firebase'
-import { getMockFirebaseOrders } from './firebase-dev-mock-data'
-import { createMockId, shouldUseFirebaseDevMocks } from './firebase-dev-fallback'
 
 export interface FirebaseOrder {
   id: string
@@ -62,41 +60,30 @@ export interface FirebaseOrder {
 export class FirebaseOrdersService {
   private static collectionName = 'orders'
 
-  private static getFallbackOrders(): FirebaseOrder[] {
-    if (!shouldUseFirebaseDevMocks()) {
-      return []
-    }
-    return getMockFirebaseOrders()
-  }
-
-  // Buscar todos os pedidos
   static async getOrders(): Promise<FirebaseOrder[]> {
     if (!db) {
-      console.warn('Firebase não inicializado')
-      return this.getFallbackOrders()
+      console.warn('Firebase nao inicializado')
+      return []
     }
 
     try {
-      const q = query(
-        collection(db, this.collectionName),
-        orderBy('dataCriacao', 'desc')
-      )
-
+      const q = query(collection(db, this.collectionName), orderBy('dataCriacao', 'desc'))
       const snapshot = await getDocs(q)
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+
+      return snapshot.docs.map((currentDoc) => ({
+        id: currentDoc.id,
+        ...currentDoc.data(),
       })) as FirebaseOrder[]
     } catch (error) {
       console.error('Erro ao buscar pedidos:', error)
-      return this.getFallbackOrders()
+      return []
     }
   }
 
   static async getOrdersByStatus(status: FirebaseOrder['status']): Promise<FirebaseOrder[]> {
     if (!db) {
-      console.warn('Firebase não inicializado')
-      return this.getFallbackOrders().filter((order) => order.status === status)
+      console.warn('Firebase nao inicializado')
+      return []
     }
 
     try {
@@ -105,23 +92,23 @@ export class FirebaseOrdersService {
         where('status', '==', status),
         orderBy('dataCriacao', 'desc')
       )
-
       const snapshot = await getDocs(q)
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
+
+      return snapshot.docs.map((currentDoc) => ({
+        id: currentDoc.id,
+        ...currentDoc.data(),
       })) as FirebaseOrder[]
     } catch (error) {
       console.error('Erro ao buscar pedidos por status:', error)
-      return this.getFallbackOrders().filter((order) => order.status === status)
+      return []
     }
   }
 
-  // Criar novo pedido
-  static async createOrder(orderData: Omit<FirebaseOrder, 'id' | 'numero' | 'dataCriacao' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  static async createOrder(
+    orderData: Omit<FirebaseOrder, 'id' | 'numero' | 'dataCriacao' | 'createdAt' | 'updatedAt'>
+  ): Promise<string> {
     if (!db) {
-      console.warn('Firebase não inicializado')
-      return shouldUseFirebaseDevMocks() ? createMockId('order') : ''
+      throw new Error('Firebase nao inicializado')
     }
 
     try {
@@ -132,35 +119,30 @@ export class FirebaseOrdersService {
         numero,
         dataCriacao: serverTimestamp(),
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       })
 
       return docRef.id
     } catch (error) {
       console.error('Erro ao criar pedido:', error)
-      if (shouldUseFirebaseDevMocks()) {
-        return createMockId('order')
-      }
       throw error
     }
   }
 
-  // Atualizar status do pedido
   static async updateOrderStatus(
     orderId: string,
     status: FirebaseOrder['status'],
     prestador?: FirebaseOrder['prestador']
   ): Promise<void> {
     if (!db) {
-      console.warn('Firebase não inicializado')
-      return
+      throw new Error('Firebase nao inicializado')
     }
 
     try {
       const orderRef = doc(db, this.collectionName, orderId)
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       }
 
       if (prestador) {
@@ -170,40 +152,32 @@ export class FirebaseOrdersService {
       await updateDoc(orderRef, updateData)
     } catch (error) {
       console.error('Erro ao atualizar status do pedido:', error)
-      if (shouldUseFirebaseDevMocks()) {
-        return
-      }
       throw error
     }
   }
 
-  // Escutar mudanças em tempo real
-  static listenToOrders(
-    callback: (orders: FirebaseOrder[]) => void
-  ): () => void {
+  static listenToOrders(callback: (orders: FirebaseOrder[]) => void): () => void {
     if (!db) {
-      console.warn('Firebase não inicializado')
-      callback(this.getFallbackOrders())
-      return () => { }
+      console.warn('Firebase nao inicializado')
+      callback([])
+      return () => {}
     }
 
     try {
-      const q = query(
-        collection(db, this.collectionName),
-        orderBy('dataCriacao', 'desc')
-      )
+      const q = query(collection(db, this.collectionName), orderBy('dataCriacao', 'desc'))
 
       return onSnapshot(q, (snapshot) => {
-        const orders = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
+        const orders = snapshot.docs.map((currentDoc) => ({
+          id: currentDoc.id,
+          ...currentDoc.data(),
         })) as FirebaseOrder[]
+
         callback(orders)
       })
     } catch (error) {
       console.error('Erro ao escutar pedidos:', error)
-      callback(this.getFallbackOrders())
-      return () => { }
+      callback([])
+      return () => {}
     }
   }
 }

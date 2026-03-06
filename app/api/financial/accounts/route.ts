@@ -1,38 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { addDocument, getCollection } from '@/lib/firestore'
 
-// Mock data para demonstração
-const accounts = [
-  {
-    id: "1",
-    nome: "Conta Corrente Principal",
-    banco: "Banco do Brasil",
-    agencia: "1234-5",
-    conta: "12345-6",
-    tipo: "corrente",
-    saldo: 15750.5,
-    status: "ativa",
-  },
-  {
-    id: "2",
-    nome: "Conta Poupança",
-    banco: "Caixa Econômica",
-    agencia: "0987-6",
-    conta: "98765-4",
-    tipo: "poupanca",
-    saldo: 8200.0,
-    status: "ativa",
-  },
-  {
-    id: "3",
-    nome: "Conta Investimento",
-    banco: "Itaú",
-    agencia: "5678-9",
-    conta: "56789-0",
-    tipo: "investimento",
-    saldo: 25000.0,
-    status: "ativa",
-  },
-]
+type AccountRecord = Record<string, unknown> & {
+  id: string
+  tipo?: string
+  status?: string
+}
+
+const readString = (value: unknown): string => (typeof value === 'string' ? value.trim() : '')
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,22 +15,27 @@ export async function GET(request: NextRequest) {
     const tipo = searchParams.get('tipo')
     const status = searchParams.get('status')
 
-    let filteredAccounts = accounts
+    let accounts = (await getCollection('accounts')) as AccountRecord[]
 
     if (tipo) {
-      filteredAccounts = filteredAccounts.filter(account => account.tipo === tipo)
+      accounts = accounts.filter((account) => readString(account.tipo) === tipo)
     }
 
     if (status) {
-      filteredAccounts = filteredAccounts.filter(account => account.status === status)
+      accounts = accounts.filter((account) => readString(account.status) === status)
     }
 
     return NextResponse.json({
       success: true,
-      data: filteredAccounts,
-      total: filteredAccounts.length
+      data: accounts,
+      total: accounts.length,
+      warning:
+        accounts.length === 0
+          ? 'Nenhuma conta real encontrada na colecao accounts.'
+          : undefined,
     })
   } catch (error) {
+    console.error('Erro ao buscar contas:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }
@@ -66,31 +46,35 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    // Validação básica
+
     if (!body.nome || !body.banco || !body.agencia || !body.conta) {
       return NextResponse.json(
-        { success: false, error: 'Dados obrigatórios não fornecidos' },
+        { success: false, error: 'Dados obrigatorios nao fornecidos' },
         { status: 400 }
       )
     }
 
-    const newAccount = {
-      id: (accounts.length + 1).toString(),
+    const accountId = await addDocument('accounts', {
       ...body,
-      saldo: body.saldo || 0,
-      status: body.status || 'ativa'
-    }
+      saldo: typeof body.saldo === 'number' ? body.saldo : 0,
+      status: body.status || 'ativa',
+    })
 
-    // Em um cenário real, salvaria no banco de dados
-    accounts.push(newAccount)
-
-    return NextResponse.json({
-      success: true,
-      data: newAccount,
-      message: 'Conta criada com sucesso'
-    }, { status: 201 })
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          id: accountId,
+          ...body,
+          saldo: typeof body.saldo === 'number' ? body.saldo : 0,
+          status: body.status || 'ativa',
+        },
+        message: 'Conta criada com sucesso',
+      },
+      { status: 201 }
+    )
   } catch (error) {
+    console.error('Erro ao criar conta:', error)
     return NextResponse.json(
       { success: false, error: 'Erro interno do servidor' },
       { status: 500 }

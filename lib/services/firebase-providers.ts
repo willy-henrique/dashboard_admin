@@ -1,15 +1,13 @@
 import {
   collection,
-  onSnapshot,
   doc,
-  updateDoc,
-  serverTimestamp,
   getDocs,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 import { isProviderActiveStatus } from '@/lib/providers/status'
-import { getMockFirebaseProviders } from './firebase-dev-mock-data'
-import { shouldUseFirebaseDevMocks } from './firebase-dev-fallback'
 
 type ProviderStatus = 'disponivel' | 'ocupado' | 'online' | 'offline'
 
@@ -42,20 +40,22 @@ function numberOrZero(value: unknown): number {
 }
 
 function arrayOfString(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((v): v is string => typeof v === 'string') : []
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }
 
 function normalizeProvider(raw: Record<string, unknown>, id: string): FirebaseProvider {
   const statusRaw = stringOrEmpty(raw.status ?? raw.situacao ?? raw.state).toLowerCase()
   const status: ProviderStatus =
-    statusRaw === 'disponivel' || statusRaw === 'ocupado' || statusRaw === 'online' || statusRaw === 'offline'
+    statusRaw === 'disponivel' ||
+    statusRaw === 'ocupado' ||
+    statusRaw === 'online' ||
+    statusRaw === 'offline'
       ? statusRaw
       : 'offline'
 
   const loc = raw.localizacao as Record<string, unknown> | undefined
   const latitude = numberOrZero(loc?.lat ?? raw.latitude ?? raw.lat)
   const longitude = numberOrZero(loc?.lng ?? raw.longitude ?? raw.lng)
-
   const ativoValue = raw.ativo ?? raw.isActive ?? raw.active
   const ativo = typeof ativoValue === 'boolean' ? ativoValue : status !== 'offline'
 
@@ -84,23 +84,11 @@ function normalizeProvider(raw: Record<string, unknown>, id: string): FirebasePr
 export class FirebaseProvidersService {
   private static collectionName = 'providers'
 
-  private static getFallbackProviders(activeOnly: boolean = false): FirebaseProvider[] {
-    if (!shouldUseFirebaseDevMocks()) {
-      return []
-    }
-
-    const providers = getMockFirebaseProviders()
-    if (!activeOnly) {
-      return providers
-    }
-
-    return providers.filter((provider) => isProviderActiveStatus(provider.status))
-  }
-
   private static sortByLastUpdate(providers: FirebaseProvider[]) {
     return providers.sort((a, b) => {
       const aDate = a.ultimaAtualizacao?.toDate?.() ?? a.ultimaAtualizacao ?? new Date(0)
       const bDate = b.ultimaAtualizacao?.toDate?.() ?? b.ultimaAtualizacao ?? new Date(0)
+
       return new Date(bDate).getTime() - new Date(aDate).getTime()
     })
   }
@@ -108,41 +96,46 @@ export class FirebaseProvidersService {
   static async getProviders(): Promise<FirebaseProvider[]> {
     if (!db) {
       console.warn('Firebase nao inicializado')
-      return this.getFallbackProviders()
+      return []
     }
 
     try {
       const snapshot = await getDocs(collection(db, this.collectionName))
-      const mapped = snapshot.docs.map((d) => normalizeProvider(d.data() as Record<string, unknown>, d.id))
-      const providers = mapped.filter((p) => p.ativo === true)
-      return this.sortByLastUpdate(providers)
+      const mapped = snapshot.docs.map((currentDoc) =>
+        normalizeProvider(currentDoc.data() as Record<string, unknown>, currentDoc.id)
+      )
+
+      return this.sortByLastUpdate(mapped.filter((provider) => provider.ativo === true))
     } catch (error) {
       console.error('Erro ao buscar prestadores:', error)
-      return this.getFallbackProviders()
+      return []
     }
   }
 
   static async getActiveProviders(): Promise<FirebaseProvider[]> {
     if (!db) {
       console.warn('Firebase nao inicializado')
-      return this.getFallbackProviders(true)
+      return []
     }
 
     try {
       const snapshot = await getDocs(collection(db, this.collectionName))
-      const mapped = snapshot.docs.map((d) => normalizeProvider(d.data() as Record<string, unknown>, d.id))
-      const providers = mapped.filter((p) => p.ativo === true && isProviderActiveStatus(p.status))
-      return this.sortByLastUpdate(providers)
+      const mapped = snapshot.docs.map((currentDoc) =>
+        normalizeProvider(currentDoc.data() as Record<string, unknown>, currentDoc.id)
+      )
+
+      return this.sortByLastUpdate(
+        mapped.filter((provider) => provider.ativo === true && isProviderActiveStatus(provider.status))
+      )
     } catch (error) {
       console.error('Erro ao buscar prestadores ativos:', error)
-      return this.getFallbackProviders(true)
+      return []
     }
   }
 
   static async updateProviderLocation(providerId: string, lat: number, lng: number): Promise<void> {
     if (!db) {
-      console.warn('Firebase nao inicializado')
-      return
+      throw new Error('Firebase nao inicializado')
     }
 
     try {
@@ -154,18 +147,22 @@ export class FirebaseProvidersService {
       })
     } catch (error) {
       console.error('Erro ao atualizar localizacao:', error)
+      throw error
     }
   }
 
-  static async updateProviderStatus(providerId: string, status: FirebaseProvider['status'], servicoAtual?: string): Promise<void> {
+  static async updateProviderStatus(
+    providerId: string,
+    status: FirebaseProvider['status'],
+    servicoAtual?: string
+  ): Promise<void> {
     if (!db) {
-      console.warn('Firebase nao inicializado')
-      return
+      throw new Error('Firebase nao inicializado')
     }
 
     try {
       const providerRef = doc(db, this.collectionName, providerId)
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status,
         ultimaAtualizacao: serverTimestamp(),
       }
@@ -177,13 +174,14 @@ export class FirebaseProvidersService {
       await updateDoc(providerRef, updateData)
     } catch (error) {
       console.error('Erro ao atualizar status:', error)
+      throw error
     }
   }
 
   static listenToActiveProviders(callback: (providers: FirebaseProvider[]) => void): () => void {
     if (!db) {
       console.warn('Firebase nao inicializado')
-      callback(this.getFallbackProviders(true))
+      callback([])
       return () => {}
     }
 
@@ -191,13 +189,19 @@ export class FirebaseProvidersService {
       const colRef = collection(db, this.collectionName)
 
       return onSnapshot(colRef, (snapshot) => {
-        const mapped = snapshot.docs.map((d) => normalizeProvider(d.data() as Record<string, unknown>, d.id))
-        const providers = this.sortByLastUpdate(mapped.filter((p) => p.ativo === true && isProviderActiveStatus(p.status)))
-        callback(providers)
+        const mapped = snapshot.docs.map((currentDoc) =>
+          normalizeProvider(currentDoc.data() as Record<string, unknown>, currentDoc.id)
+        )
+
+        callback(
+          this.sortByLastUpdate(
+            mapped.filter((provider) => provider.ativo === true && isProviderActiveStatus(provider.status))
+          )
+        )
       })
     } catch (error) {
       console.error('Erro ao escutar prestadores:', error)
-      callback(this.getFallbackProviders(true))
+      callback([])
       return () => {}
     }
   }
