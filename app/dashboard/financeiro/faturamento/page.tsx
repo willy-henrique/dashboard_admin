@@ -225,7 +225,7 @@ export default function FaturamentoPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pagamentos a Prestadores</h1>
-          <p className="text-gray-600 dark:text-gray-400">appservico.com > financeiro > pagamentos a prestadores</p>
+          <p className="text-gray-600 dark:text-gray-400">appservico.com &gt; financeiro &gt; pagamentos a prestadores</p>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -242,7 +242,7 @@ export default function FaturamentoPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pagamentos a Prestadores</h1>
-          <p className="text-gray-600 dark:text-gray-400">appservico.com > financeiro > pagamentos a prestadores</p>
+          <p className="text-gray-600 dark:text-gray-400">appservico.com &gt; financeiro &gt; pagamentos a prestadores</p>
         </div>
         <Card>
           <CardContent className="p-6">
@@ -267,7 +267,7 @@ export default function FaturamentoPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pagamentos a Prestadores</h1>
-        <p className="text-gray-600 dark:text-gray-400">appservico.com > financeiro > pagamentos a prestadores</p>
+        <p className="text-gray-600 dark:text-gray-400">appservico.com &gt; financeiro &gt; pagamentos a prestadores</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
