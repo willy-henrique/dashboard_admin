@@ -1,24 +1,31 @@
-"use client"
+﻿"use client"
+
+import { useMemo, useState } from "react"
+import {
+  Search,
+  RefreshCw,
+  Wallet,
+  Users,
+  DollarSign,
+  Loader2,
+  CreditCard,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { 
-  Search, 
-  RefreshCw, 
-  Wallet, 
-  Users, 
-  DollarSign, 
-  Loader2,
-  CreditCard,
-  CheckCircle2,
-  AlertCircle
-} from "lucide-react"
-import { useMemo, useState } from "react"
-import { useProvidersBilling } from "@/hooks/use-providers-billing"
-import { 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -30,68 +37,81 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useProvidersBilling, type ProviderBilling } from "@/hooks/use-providers-billing"
 
 export default function FaturamentoPage() {
   const [search, setSearch] = useState("")
-  const [filterEarnings, setFilterEarnings] = useState<string>("all") // all, with-earnings, without-earnings
+  const [filterEarnings, setFilterEarnings] = useState<string>("all")
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
-  const [selectedProvider, setSelectedProvider] = useState<any>(null)
+  const [selectedProvider, setSelectedProvider] = useState<ProviderBilling | null>(null)
   const [paymentAmount, setPaymentAmount] = useState("")
   const [paymentDescription, setPaymentDescription] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("pix")
   const [processingPayment, setProcessingPayment] = useState(false)
   const [amountError, setAmountError] = useState<string | null>(null)
-  
+
   const { toast } = useToast()
-  const { providers, loading, error, refetch, totalEarnings } = useProvidersBilling({ 
+  const { providers, loading, error, refetch, totalEarnings } = useProvidersBilling({
     autoRefresh: true,
-    refreshInterval: 30000 // Atualizar a cada 30 segundos
+    refreshInterval: 30000,
   })
 
-  // Nome exibido do prestador (fallback inteligente)
-  const getProviderDisplayName = (p: any) => {
-    if (!p) return ""
-    const name = String(p.nome || "").trim()
-    // Se vier "Sem nome" (ou variações), considerar como ausente e usar fallback
-    const isPlaceholder =
-      name.length === 0 ||
-      ["sem nome", "sem-nome", "—", "-", "na"].includes(name.toLowerCase())
-    if (!isPlaceholder) return name
-    return p.email || p.phone || `ID: ${String(p.uid || p.id || "").slice(0, 8)}...`
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value)
+
+  const formatPixKeyType = (rawType?: string): string => {
+    const normalized = String(rawType || "").trim().toLowerCase()
+    if (!normalized) return "PIX"
+
+    if (["telefone", "phone", "mobile", "cel"].includes(normalized)) return "CELULAR"
+    if (["cpf", "cnpj", "email", "aleatoria", "random"].includes(normalized)) {
+      return normalized.toUpperCase()
+    }
+
+    return normalized.toUpperCase()
   }
 
-  // Filtrar prestadores
+  const getProviderDisplayName = (provider: ProviderBilling | null): string => {
+    if (!provider) return ""
+
+    const name = String(provider.nome || "").trim()
+    const isPlaceholder =
+      name.length === 0 || ["sem nome", "sem-nome", "-", "na"].includes(name.toLowerCase())
+
+    if (!isPlaceholder) return name
+    return provider.email || provider.phone || `ID: ${(provider.uid || provider.id).slice(0, 8)}...`
+  }
+
   const filteredProviders = useMemo(() => {
     let filtered = providers
 
-    // Filtro de busca
     if (search) {
       const searchLower = search.toLowerCase()
-      filtered = filtered.filter(p => 
-        p.nome?.toLowerCase().includes(searchLower) ||
-        p.email?.toLowerCase().includes(searchLower) ||
-        p.phone?.includes(search) ||
-        p.uid?.toLowerCase().includes(searchLower)
+      filtered = filtered.filter((provider) =>
+        provider.nome?.toLowerCase().includes(searchLower) ||
+        provider.email?.toLowerCase().includes(searchLower) ||
+        provider.phone?.includes(search) ||
+        provider.uid?.toLowerCase().includes(searchLower)
       )
     }
 
-    // Filtro por ganhos
     if (filterEarnings === "with-earnings") {
-      filtered = filtered.filter(p => p.totalEarnings > 0)
+      filtered = filtered.filter((provider) => provider.totalEarnings > 0)
     } else if (filterEarnings === "without-earnings") {
-      filtered = filtered.filter(p => p.totalEarnings === 0)
+      filtered = filtered.filter((provider) => provider.totalEarnings <= 0)
     }
 
-    // Ordenar por totalEarnings (maior primeiro)
-    return filtered.sort((a, b) => b.totalEarnings - a.totalEarnings)
+    return [...filtered].sort((a, b) => b.totalEarnings - a.totalEarnings)
   }, [providers, search, filterEarnings])
 
-  // Estatísticas
   const stats = useMemo(() => {
-    const withEarnings = providers.filter(p => p.totalEarnings > 0).length
-    const totalJobs = providers.reduce((sum, p) => sum + (p.totalJobs || 0), 0)
-    
-      return {
+    const withEarnings = providers.filter((provider) => provider.totalEarnings > 0).length
+    const totalJobs = providers.reduce((sum, provider) => sum + (provider.totalJobs || 0), 0)
+
+    return {
       totalProviders: providers.length,
       withEarnings,
       totalEarnings,
@@ -100,68 +120,51 @@ export default function FaturamentoPage() {
     }
   }, [providers, totalEarnings])
 
-  // Formatar moeda
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value)
-  }
-
-  // Abrir dialog de pagamento
-  const handleOpenPaymentDialog = (provider: any) => {
+  const handleOpenPaymentDialog = (provider: ProviderBilling) => {
     setSelectedProvider(provider)
     setPaymentAmount(provider.totalEarnings.toFixed(2))
-    setPaymentDescription(`Pagamento de ganhos acumulados para ${provider.nome}`)
+    setPaymentDescription(`Pagamento de saldo pendente para ${getProviderDisplayName(provider)}`)
     setPaymentMethod("pix")
     setPaymentDialogOpen(true)
     setAmountError(null)
   }
 
-  // Atualiza valor a pagar com bloqueio automático e validação
   const handleAmountChange = (value: string) => {
-    // Aceitar vírgula como separador decimal
     const normalized = value.replace(",", ".")
     const available = Number(selectedProvider?.totalEarnings || 0)
     let parsed = Number(normalized)
 
     if (Number.isNaN(parsed)) {
       setPaymentAmount(value)
-      setAmountError("Informe um valor numérico válido")
+      setAmountError("Informe um valor numerico valido")
       return
     }
 
-    // Bloquear automaticamente acima do disponível
     if (parsed > available) {
       parsed = available
     }
+    if (parsed < 0) {
+      parsed = 0
+    }
 
-    // Bloqueio mínimo positivo (permitir 0 ao limpar)
-    if (parsed < 0) parsed = 0
+    setPaymentAmount(parsed === 0 ? "" : parsed.toFixed(2))
 
-    const finalValue = parsed === 0 ? "" : parsed.toFixed(2)
-    setPaymentAmount(finalValue)
-
-    // Mensagem de validação
     if (parsed === 0) {
       setAmountError("Valor deve ser maior que 0")
-    } else if (parsed > available) {
-      setAmountError("Valor maior que o disponível")
     } else {
       setAmountError(null)
     }
   }
 
-  // Processar pagamento
   const handleProcessPayment = async () => {
     if (!selectedProvider) return
 
     const amount = parseFloat((paymentAmount || "0").replace(",", "."))
-    
-    if (isNaN(amount) || amount <= 0) {
+
+    if (Number.isNaN(amount) || amount <= 0) {
       toast({
         title: "Erro",
-        description: "Valor inválido",
+        description: "Valor invalido",
         variant: "destructive",
       })
       return
@@ -170,7 +173,7 @@ export default function FaturamentoPage() {
     if (amount > selectedProvider.totalEarnings) {
       toast({
         title: "Erro",
-        description: `Valor excede o total disponível de ${formatCurrency(selectedProvider.totalEarnings)}`,
+        description: `Valor excede o total disponivel de ${formatCurrency(selectedProvider.totalEarnings)}`,
         variant: "destructive",
       })
       return
@@ -179,11 +182,9 @@ export default function FaturamentoPage() {
     setProcessingPayment(true)
 
     try {
-      const response = await fetch('/api/financial/providers/payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await fetch("/api/financial/providers/payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           providerId: selectedProvider.id,
           amount,
@@ -195,25 +196,23 @@ export default function FaturamentoPage() {
       const data = await response.json()
 
       if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Erro ao processar pagamento')
+        throw new Error(data.error || "Erro ao processar pagamento")
       }
 
       toast({
         title: "Pagamento processado",
-        description: `Pagamento de ${formatCurrency(amount)} realizado com sucesso para ${selectedProvider.nome}`,
+        description: `Pagamento de ${formatCurrency(amount)} realizado para ${getProviderDisplayName(selectedProvider)}`,
       })
 
-      // Fechar dialog e atualizar dados
       setPaymentDialogOpen(false)
       setSelectedProvider(null)
       setPaymentAmount("")
       setPaymentDescription("")
-      refetch()
-    } catch (error) {
-      console.error('Erro ao processar pagamento:', error)
+      await refetch()
+    } catch (err) {
       toast({
         title: "Erro ao processar pagamento",
-        description: error instanceof Error ? error.message : "Erro desconhecido",
+        description: err instanceof Error ? err.message : "Erro desconhecido",
         variant: "destructive",
       })
     } finally {
@@ -225,8 +224,8 @@ export default function FaturamentoPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faturamento</h1>
-          <p className="text-gray-600 dark:text-gray-400">appservico.com › financeiro › faturamento</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pagamentos a Prestadores</h1>
+          <p className="text-gray-600 dark:text-gray-400">appservico.com > financeiro > pagamentos a prestadores</p>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
@@ -242,8 +241,8 @@ export default function FaturamentoPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faturamento</h1>
-          <p className="text-gray-600 dark:text-gray-400">appservico.com › financeiro › faturamento</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pagamentos a Prestadores</h1>
+          <p className="text-gray-600 dark:text-gray-400">appservico.com > financeiro > pagamentos a prestadores</p>
         </div>
         <Card>
           <CardContent className="p-6">
@@ -254,7 +253,7 @@ export default function FaturamentoPage() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">{error}</p>
               </div>
             </div>
-            <Button onClick={refetch} className="mt-4" variant="outline">
+            <Button onClick={() => void refetch()} className="mt-4" variant="outline">
               <RefreshCw className="h-4 w-4 mr-2" />
               Tentar novamente
             </Button>
@@ -267,20 +266,17 @@ export default function FaturamentoPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Faturamento</h1>
-        <p className="text-gray-600 dark:text-gray-400">appservico.com › financeiro › faturamento</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pagamentos a Prestadores</h1>
+        <p className="text-gray-600 dark:text-gray-400">appservico.com > financeiro > pagamentos a prestadores</p>
       </div>
 
-      {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Prestadores</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {stats.totalProviders}
-                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalProviders}</p>
               </div>
               <Users className="h-8 w-8 text-blue-600" />
             </div>
@@ -292,15 +288,11 @@ export default function FaturamentoPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total a Pagar</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {formatCurrency(stats.totalEarnings)}
-                </p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalEarnings)}</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              {stats.withEarnings} prestador(es) com saldo pendente
-            </p>
+            <p className="text-xs text-gray-500 mt-2">{stats.withEarnings} prestador(es) com saldo pendente</p>
           </CardContent>
         </Card>
 
@@ -308,10 +300,8 @@ export default function FaturamentoPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Média por Prestador</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {formatCurrency(stats.averageEarnings)}
-                </p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Media por Prestador</p>
+                <p className="text-2xl font-bold text-purple-600">{formatCurrency(stats.averageEarnings)}</p>
               </div>
               <Wallet className="h-8 w-8 text-purple-600" />
             </div>
@@ -322,10 +312,8 @@ export default function FaturamentoPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total de Serviços</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {stats.totalJobs}
-                </p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pedidos Elegiveis</p>
+                <p className="text-2xl font-bold text-orange-600">{stats.totalJobs}</p>
               </div>
               <CreditCard className="h-8 w-8 text-orange-600" />
             </div>
@@ -333,21 +321,20 @@ export default function FaturamentoPage() {
         </Card>
       </div>
 
-      {/* Barra de Ações e Filtros */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input 
-              placeholder="Buscar prestador..." 
-              className="pl-10 w-64" 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
+            <Input
+              placeholder="Buscar prestador..."
+              className="pl-10 w-64"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
             />
           </div>
           <Select value={filterEarnings} onValueChange={setFilterEarnings}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrar por ganhos" />
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Filtrar por saldo" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os prestadores</SelectItem>
@@ -355,30 +342,29 @@ export default function FaturamentoPage() {
               <SelectItem value="without-earnings">Sem saldo pendente</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" onClick={refetch} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" onClick={() => void refetch()} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
         </div>
       </div>
 
-      {/* Tabela de Prestadores */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
+            <Table>
+              <TableHeader>
+                <TableRow>
                   <TableHead>Prestador</TableHead>
                   <TableHead>Contato</TableHead>
                   <TableHead>Chave PIX</TableHead>
-                  <TableHead className="text-right">Total de Serviços</TableHead>
-                  <TableHead className="text-right">Ganhos Acumulados</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+                  <TableHead className="text-right">Pedidos Elegiveis</TableHead>
+                  <TableHead className="text-right">Saldo Pendente</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Acoes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredProviders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-gray-500">
@@ -390,70 +376,65 @@ export default function FaturamentoPage() {
                     <TableRow key={provider.id}>
                       <TableCell>
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">
-                            {provider.nome || 'Sem nome'}
-                          </p>
+                          <p className="font-medium text-gray-900 dark:text-white">{getProviderDisplayName(provider)}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            ID: {provider.uid.substring(0, 8)}...
+                            ID: {(provider.uid || provider.id).slice(0, 8)}...
                           </p>
                         </div>
                       </TableCell>
+
                       <TableCell>
                         <div className="space-y-1">
-                          {provider.phone && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {provider.phone}
-                            </p>
-                          )}
-                          {provider.email && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {provider.email}
-                            </p>
-                          )}
+                          {provider.phone ? (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{provider.phone}</p>
+                          ) : null}
+                          {provider.email ? (
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{provider.email}</p>
+                          ) : null}
                         </div>
-                  </TableCell>
-                  <TableCell>
+                      </TableCell>
+
+                      <TableCell>
                         {provider.pixKey ? (
                           <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {provider.pixKey}
-                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">{provider.pixKey}</p>
                             <Badge variant="outline" className="text-xs">
-                              {provider.pixKeyType?.toUpperCase() || 'PIX'}
+                              {formatPixKeyType(provider.pixKeyType)}
                             </Badge>
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-400">Não cadastrada</span>
+                          <span className="text-sm text-gray-400">Nao cadastrada</span>
                         )}
                       </TableCell>
+
                       <TableCell className="text-right">
-                        <span className="font-medium">{provider.totalJobs || 0}</span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                        <span className={`font-bold text-lg ${
-                          provider.totalEarnings > 0 
-                            ? 'text-green-600 dark:text-green-400' 
-                            : 'text-gray-400'
-                        }`}>
+                        <span className="font-medium">{provider.totalJobs || provider.eligibleOrdersCount || 0}</span>
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <span
+                          className={`font-bold text-lg ${
+                            provider.totalEarnings > 0 ? "text-green-600 dark:text-green-400" : "text-gray-400"
+                          }`}
+                        >
                           {formatCurrency(provider.totalEarnings)}
                         </span>
                       </TableCell>
+
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <Badge 
-                            variant={provider.isActive ? "default" : "secondary"}
-                            className="w-fit"
-                          >
+                          <Badge variant={provider.isActive ? "default" : "secondary"} className="w-fit">
                             {provider.isActive ? "Ativo" : "Inativo"}
                           </Badge>
-                          {provider.isVerified && (
+                          {provider.isVerified ? (
                             <Badge variant="outline" className="w-fit text-green-600 border-green-600">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
                               Verificado
                             </Badge>
-                          )}
-                    </div>
-                  </TableCell>
+                          ) : null}
+                        </div>
+                      </TableCell>
+
                       <TableCell className="text-right">
                         <Button
                           size="sm"
@@ -462,21 +443,20 @@ export default function FaturamentoPage() {
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
                           <CreditCard className="h-4 w-4 mr-2" />
-                          Pagar
+                          {`Pagar ${formatCurrency(provider.totalEarnings)}`}
                         </Button>
-                  </TableCell>
-                </TableRow>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
 
-      {/* Dialog de Confirmação de Pagamento */}
       <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white dark:bg-white border-slate-200 rounded-2xl shadow-xl text-slate-900">
+        <DialogContent className="w-[95vw] sm:max-w-[560px] max-h-[85vh] overflow-y-auto z-[100] bg-white border-slate-200 rounded-2xl shadow-xl text-slate-900">
           <DialogHeader className="pb-4 border-b border-slate-200">
             <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
@@ -488,23 +468,19 @@ export default function FaturamentoPage() {
               Processar pagamento para <span className="font-semibold text-slate-900">{getProviderDisplayName(selectedProvider)}</span>
             </DialogDescription>
           </DialogHeader>
-          
-          {selectedProvider && (
+
+          {selectedProvider ? (
             <div className="space-y-6 py-6">
-              {/* Valor Disponível - Destaque */}
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-slate-900">Valor Disponível</Label>
+                <Label className="text-sm font-semibold text-slate-900">Valor Disponivel</Label>
                 <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
                   <div className="flex items-center justify-between">
-                    <p className="text-3xl font-bold text-slate-900">
-                      {formatCurrency(selectedProvider.totalEarnings)}
-                    </p>
+                    <p className="text-3xl font-bold text-slate-900">{formatCurrency(selectedProvider.totalEarnings)}</p>
                     <Wallet className="h-8 w-8 text-orange-500" />
                   </div>
                 </div>
               </div>
 
-              {/* Valor a Pagar */}
               <div className="space-y-2">
                 <Label htmlFor="amount" className="text-sm font-semibold text-slate-900">
                   Valor a Pagar <span className="text-red-500">*</span>
@@ -516,73 +492,72 @@ export default function FaturamentoPage() {
                   min="0.01"
                   max={selectedProvider.totalEarnings}
                   value={paymentAmount}
-                  onChange={(e) => handleAmountChange(e.target.value)}
+                  onChange={(event) => handleAmountChange(event.target.value)}
                   placeholder="0.00"
-                  className="text-lg font-medium h-12 text-slate-900 placeholder:text-slate-400 bg-white border-slate-300 focus-visible:ring-[3px] focus-visible:ring-orange-500/30 focus-visible:border-orange-500"
+                  className="text-lg font-medium h-12 text-slate-900 placeholder:text-slate-400 bg-white border-slate-300"
                 />
                 <p className="text-xs text-slate-600">
-                  Máximo disponível: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
+                  Maximo disponivel: <span className="font-semibold">{formatCurrency(selectedProvider.totalEarnings)}</span>
                 </p>
-                {amountError && (
-                  <p className="text-xs text-red-600">{amountError}</p>
-                )}
+                {amountError ? <p className="text-xs text-red-600">{amountError}</p> : null}
               </div>
 
-              {/* Método de Pagamento + Chave PIX (lado a lado em telas maiores) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="method" className="text-sm font-semibold text-slate-900">
-                    Método de Pagamento
+                    Metodo de Pagamento
                   </Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger id="method" className="h-12 text-slate-900 bg-white border-slate-300 focus-visible:ring-[3px] focus-visible:ring-orange-500/30 focus-visible:border-orange-500">
+                    <SelectTrigger id="method" className="h-12 text-slate-900 bg-white border-slate-300">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-white text-slate-900 border-slate-200">
-                      <SelectItem value="pix">💳 PIX</SelectItem>
-                      <SelectItem value="ted">🏦 TED</SelectItem>
-                      <SelectItem value="doc">📄 DOC</SelectItem>
-                      <SelectItem value="transfer">💸 Transferência Bancária</SelectItem>
+                      <SelectItem value="pix">PIX</SelectItem>
+                      <SelectItem value="ted">TED</SelectItem>
+                      <SelectItem value="doc">DOC</SelectItem>
+                      <SelectItem value="transfer">Transferencia Bancaria</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {paymentMethod === "pix" && (
+                {paymentMethod === "pix" ? (
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-slate-900">Chave PIX</Label>
-                    <div className="p-3 h-12 flex items-center rounded-lg border border-slate-200 bg-slate-50 focus-within:border-orange-500">
-                      {selectedProvider?.pixKey ? (
-                        <div className="truncate w-full text-sm font-medium text-slate-900" title={selectedProvider.pixKey}>
-                          {selectedProvider.pixKey}
-                        </div>
+                    <div className="p-3 min-h-12 flex flex-col justify-center rounded-lg border border-slate-200 bg-slate-50">
+                      {selectedProvider.pixKey ? (
+                        <>
+                          <div className="truncate w-full text-sm font-medium text-slate-900" title={selectedProvider.pixKey}>
+                            {selectedProvider.pixKey}
+                          </div>
+                          <div className="text-[11px] text-slate-500">
+                            Tipo: {formatPixKeyType(selectedProvider.pixKeyType)}
+                          </div>
+                        </>
                       ) : (
                         <div className="w-full text-sm text-slate-500">Prestador sem chave PIX</div>
                       )}
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
 
-              {/* Descrição */}
               <div className="space-y-2">
                 <Label htmlFor="description" className="text-sm font-semibold text-slate-900">
-                  Descrição <span className="text-slate-500 text-xs font-normal">(opcional)</span>
+                  Descricao <span className="text-slate-500 text-xs font-normal">(opcional)</span>
                 </Label>
                 <Textarea
                   id="description"
                   value={paymentDescription}
-                  onChange={(e) => setPaymentDescription(e.target.value)}
-                  placeholder="Descrição do pagamento..."
+                  onChange={(event) => setPaymentDescription(event.target.value)}
+                  placeholder="Descricao do pagamento..."
                   rows={3}
-                  className="resize-none text-slate-900 placeholder:text-slate-400 bg-white border-slate-300 focus-visible:ring-[3px] focus-visible:ring-orange-500/30 focus-visible:border-orange-500"
+                  className="resize-none text-slate-900 placeholder:text-slate-400 bg-white border-slate-300"
                 />
               </div>
-
-              {/* Informações PIX (removido duplicado - agora fica ao lado do método) */}
             </div>
-          )}
+          ) : null}
 
-          <DialogFooter className="pt-4 border-t border-slate-200 gap-3 sticky bottom-0 bg-white dark:bg-white">
+          <DialogFooter className="pt-4 border-t border-slate-200 gap-3 sticky bottom-0 bg-white">
             <Button
               variant="outline"
               onClick={() => setPaymentDialogOpen(false)}
@@ -592,8 +567,13 @@ export default function FaturamentoPage() {
               Cancelar
             </Button>
             <Button
-              onClick={handleProcessPayment}
-              disabled={processingPayment || !paymentAmount || !!amountError || parseFloat((paymentAmount || '0').replace(',', '.')) <= 0}
+              onClick={() => void handleProcessPayment()}
+              disabled={
+                processingPayment ||
+                !paymentAmount ||
+                !!amountError ||
+                parseFloat((paymentAmount || "0").replace(",", ".")) <= 0
+              }
               className="bg-green-600 hover:bg-green-700 text-white shadow-lg flex-1 sm:flex-none min-w-[180px]"
             >
               {processingPayment ? (
@@ -614,3 +594,4 @@ export default function FaturamentoPage() {
     </div>
   )
 }
+

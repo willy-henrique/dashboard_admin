@@ -1,5 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+﻿import { NextResponse } from 'next/server'
 import { adminApp } from '@/lib/firebase-admin'
+import {
+  buildOrderPayoutSnapshot,
+  centsToAmount,
+  readString,
+  toIsoDate,
+} from './_lib/payout'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,18 +18,65 @@ interface ProviderBilling {
   pixKey?: string
   pixKeyType?: string
   totalEarnings: number
+  totalEarningsCents: number
   totalJobs?: number
+  eligibleOrdersCount: number
+  pendingOrdersCount: number
   isActive?: boolean
   isVerified?: boolean
   verificationStatus?: string
-  updatedAt?: any
+  updatedAt?: string
 }
+
+const getNestedRecord = (value: unknown): Record<string, unknown> => {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return {}
+  }
+  return value as Record<string, unknown>
+}
+
+const resolveProviderName = (providerId: string, data: Record<string, unknown>): string =>
+  readString(data.nome) ||
+  readString(data.name) ||
+  readString(data.fullName) ||
+  `Prestador ${providerId.slice(0, 8)}`
+
+const resolvePixKey = (data: Record<string, unknown>): string => {
+  return readString(data.pixKey)
+}
+
+const resolvePixKeyType = (data: Record<string, unknown>): string => {
+  return readString(data.pixKeyType)
+}
+
+const createProviderEntry = (
+  providerId: string,
+  data: Record<string, unknown>,
+  fallback?: { nome?: string; phone?: string; email?: string }
+): ProviderBilling => ({
+  id: providerId,
+  uid: readString(data.uid) || providerId,
+  nome: resolveProviderName(providerId, data) || fallback?.nome || 'Sem nome',
+  phone: readString(data.phone) || readString(data.telefone) || fallback?.phone || '',
+  email: readString(data.email) || fallback?.email || '',
+  pixKey: resolvePixKey(data),
+  pixKeyType: resolvePixKeyType(data),
+  totalEarnings: 0,
+  totalEarningsCents: 0,
+  totalJobs: 0,
+  eligibleOrdersCount: 0,
+  pendingOrdersCount: 0,
+  isActive: data.isActive !== false,
+  isVerified: data.isVerified === true,
+  verificationStatus: readString(data.verificationStatus) || 'pending',
+  updatedAt: toIsoDate(data.updatedAt),
+})
 
 /**
  * GET /api/financial/providers
- * Busca todos os prestadores com dados financeiros (totalEarnings)
+ * Calcula saldo de pagamento dos prestadores a partir de orders.
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (!adminApp) {
       return NextResponse.json(
@@ -37,65 +90,68 @@ export async function GET(request: NextRequest) {
     }
 
     const db = adminApp.firestore()
-    const providersRef = db.collection('providers')
-    
-    // Buscar todos os providers (filtrar isActive no código)
-    const snapshot = await providersRef.get()
 
-    const providers: ProviderBilling[] = []
+    const [providersSnapshot, paidOrdersSnapshot] = await Promise.all([
+      db.collection('providers').get(),
+      db.collection('orders').where('paymentStatus', '==', 'paid').get(),
+    ])
 
-    snapshot.forEach((doc) => {
-      const data = doc.data()
-      
-      // Filtrar apenas providers ativos (ou que não tenham o campo, assumindo como ativo)
-      const isActive = data.isActive !== false // Se não existir, assume true
-      
-      // Extrair totalEarnings do campo services.totalEarnings
-      const services = data.services || {}
-      // Garantir que lemos o valor corretamente, mesmo que seja 0 ou um valor pequeno
-      let totalEarnings = 0
-      if (services.totalEarnings !== undefined && services.totalEarnings !== null) {
-        totalEarnings = typeof services.totalEarnings === 'number' 
-          ? services.totalEarnings 
-          : parseFloat(services.totalEarnings) || 0
-      }
-      
-      let totalJobs = 0
-      if (services.totalJobs !== undefined && services.totalJobs !== null) {
-        totalJobs = typeof services.totalJobs === 'number' 
-          ? services.totalJobs 
-          : parseInt(services.totalJobs) || 0
+    const providerMap = new Map<string, ProviderBilling>()
+
+    providersSnapshot.forEach((providerDoc) => {
+      const providerData = providerDoc.data() as Record<string, unknown>
+      providerMap.set(providerDoc.id, createProviderEntry(providerDoc.id, providerData))
+    })
+
+    paidOrdersSnapshot.forEach((orderDoc) => {
+      const orderData = orderDoc.data() as Record<string, unknown>
+      const payout = buildOrderPayoutSnapshot(orderDoc.id, orderData)
+      if (!payout.eligible) {
+        return
       }
 
-      // Incluir apenas providers ativos
-      if (isActive) {
-        providers.push({
-          id: doc.id,
-          uid: data.uid || doc.id,
-          nome: data.nome || data.name || 'Sem nome',
-          phone: data.phone || '',
-          email: data.email || '',
-          pixKey: data.pixKey || '',
-          pixKeyType: data.pixKeyType || '',
-          totalEarnings,
-          totalJobs,
-          isActive: true,
-          isVerified: data.isVerified ?? false,
-          verificationStatus: data.verificationStatus || 'pending',
-          updatedAt: data.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-        })
+      let providerEntry = providerMap.get(payout.providerId)
+      if (!providerEntry) {
+        const prestador = getNestedRecord(orderData.prestador)
+        providerEntry = createProviderEntry(
+          payout.providerId,
+          {},
+          {
+            nome: readString(orderData.providerName) || readString(prestador.nome) || 'Sem nome',
+            phone: readString(prestador.telefone),
+            email: readString(orderData.providerEmail),
+          }
+        )
+        providerMap.set(payout.providerId, providerEntry)
+      }
+
+      providerEntry.totalJobs = (providerEntry.totalJobs ?? 0) + 1
+      providerEntry.eligibleOrdersCount += 1
+
+      if (payout.remainingCents > 0) {
+        providerEntry.pendingOrdersCount += 1
+        providerEntry.totalEarningsCents += payout.remainingCents
       }
     })
 
-    // Ordenar por totalEarnings (maior primeiro)
-    providers.sort((a, b) => b.totalEarnings - a.totalEarnings)
+    const providers = Array.from(providerMap.values())
+      .filter((provider) => provider.isActive !== false || provider.eligibleOrdersCount > 0)
+      .map((provider) => ({
+        ...provider,
+        totalEarnings: centsToAmount(provider.totalEarningsCents),
+      }))
+      .sort((a, b) => b.totalEarningsCents - a.totalEarningsCents)
 
-    const totalEarnings = providers.reduce((sum, p) => sum + p.totalEarnings, 0)
+    const totalEarningsCents = providers.reduce(
+      (sum, provider) => sum + provider.totalEarningsCents,
+      0
+    )
 
     return NextResponse.json({
       success: true,
       providers,
-      totalEarnings,
+      totalEarnings: centsToAmount(totalEarningsCents),
+      totalEarningsCents,
       count: providers.length,
     })
   } catch (error) {

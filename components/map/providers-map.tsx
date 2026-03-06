@@ -38,24 +38,35 @@ export function ProvidersMap() {
     if (!mapRef.current || mapLoaded) return
 
     const initMap = () => {
-      // Verificar se o Google Maps está disponível
-      if (typeof window !== 'undefined' && window.google && window.google.maps) {
-        const map = new window.google.maps.Map(mapRef.current!, {
-          center: { lat: -20.3155, lng: -40.3128 }, // Vitória, ES
-          zoom: 12,
-          styles: [
-            {
-              featureType: "poi",
-              elementType: "labels",
-              stylers: [{ visibility: "off" }]
-            }
-          ]
-        })
-
-        setMapInstance(map)
+      const mapsBlocked = typeof window !== "undefined" && (window as any).__googleMapsBlocked
+      if (mapsBlocked) {
+        createMockMap()
         setMapLoaded(true)
+        return
+      }
+
+      if (typeof window !== 'undefined' && window.google && window.google.maps) {
+        try {
+          const map = new window.google.maps.Map(mapRef.current!, {
+            center: { lat: -20.3155, lng: -40.3128 },
+            zoom: 12,
+            styles: [
+              {
+                featureType: "poi",
+                elementType: "labels",
+                stylers: [{ visibility: "off" }]
+              }
+            ]
+          })
+
+          setMapInstance(map)
+          setMapLoaded(true)
+        } catch (mapsError) {
+          console.error("Erro ao inicializar Google Maps. Usando mapa mock.", mapsError)
+          createMockMap()
+          setMapLoaded(true)
+        }
       } else {
-        // Fallback: criar mapa mock mais realista
         createMockMap()
         setMapLoaded(true)
       }
@@ -67,7 +78,8 @@ export function ProvidersMap() {
     } else {
       // Aguardar um pouco para o Google Maps carregar
       const timer = setTimeout(() => {
-        if (typeof window !== 'undefined' && window.google && window.google.maps) {
+        const mapsBlocked = typeof window !== "undefined" && (window as any).__googleMapsBlocked
+        if (!mapsBlocked && typeof window !== 'undefined' && window.google && window.google.maps) {
           initMap()
         } else {
           createMockMap()
@@ -141,7 +153,8 @@ export function ProvidersMap() {
   useEffect(() => {
     if (!mapLoaded || !displayProviders.length) return
 
-    if (mapInstance && window.google && window.google.maps) {
+    const mapsBlocked = typeof window !== "undefined" && (window as any).__googleMapsBlocked
+    if (!mapsBlocked && mapInstance && window.google && window.google.maps) {
       // Google Maps está disponível
       // Limpar marcadores existentes usando referência atual
       markers.forEach(marker => {
@@ -371,3 +384,4 @@ export function ProvidersMap() {
     </div>
   )
 }
+
