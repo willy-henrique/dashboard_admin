@@ -32,6 +32,10 @@ interface ProviderModalProps {
 export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps) {
   if (!provider) return null
 
+  const createdAtLabel = Number.isNaN(new Date(provider.createdAt).getTime())
+    ? "N/A"
+    : new Date(provider.createdAt).toLocaleDateString("pt-BR")
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -164,7 +168,7 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
                     <div>
                       <p className="text-sm font-medium">Cadastrado em</p>
                       <p className="text-sm text-gray-600">
-                        {new Date(provider.createdAt).toLocaleDateString("pt-BR")}
+                        {createdAtLabel}
                       </p>
                     </div>
                   </div>

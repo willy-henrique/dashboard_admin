@@ -1,33 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LegacyChatConversation } from "@/lib/services/chat-service"
-import {
-  MessageSquare,
-  Users,
-  AlertTriangle,
-  Clock,
-  Activity,
-  TrendingUp,
-  Filter,
-  Search,
-  Settings,
-  Archive,
-  MoreHorizontal,
-  Phone,
-  Video,
-  UserCheck,
-  MessageCircle,
-  BarChart3
-} from "lucide-react"
+import { AlertTriangle, Clock, MessageCircle, Users } from "lucide-react"
 import { useChatStats } from "@/hooks/use-chat"
 import { ChatStatsCards } from "./chat-stats-cards"
 import { ConversationsList } from "./conversations-list"
 import { ChatMessages } from "./chat-messages"
+import { AdminActionsPanel } from "./admin-actions-panel"
 
 interface ChatDashboardProps {
   initialProtocolo?: string | null
@@ -37,330 +19,157 @@ interface ChatDashboardProps {
 
 export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrderId }: ChatDashboardProps) {
   const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
-  const [activeTab, setActiveTab] = useState("conversations")
+  const [refreshKey, setRefreshKey] = useState(0)
   const { stats } = useChatStats()
 
-  const handleSelectConversation = (conversation: LegacyChatConversation) => {
+  const handleSelectConversation = useCallback((conversation: LegacyChatConversation) => {
     setSelectedConversation(conversation)
-  }
+  }, [])
+
+  const handleConversationsLoaded = useCallback(
+    (conversations: LegacyChatConversation[]) => {
+      if (conversations.length === 0) {
+        setSelectedConversation(null)
+        return
+      }
+
+      if (selectedConversation) {
+        const updatedConversation = conversations.find((conversation) => conversation.id === selectedConversation.id)
+        if (updatedConversation) {
+          setSelectedConversation(updatedConversation)
+          return
+        }
+      }
+
+      const targetConversation =
+        conversations.find(
+          (conversation) =>
+            conversation.orderProtocol === initialProtocolo ||
+            conversation.orderId === initialServicoId ||
+            conversation.orderId === initialOrderId
+        ) || conversations[0]
+
+      setSelectedConversation(targetConversation)
+    },
+    [initialOrderId, initialProtocolo, initialServicoId, selectedConversation]
+  )
 
   const urgentConversations = stats?.conversationsByPriority.urgent ?? 0
-  const noResponseConversations = stats?.unreadMessages ?? 0
+  const unreadMessages = stats?.unreadMessages ?? 0
   const activeConversations = stats?.activeConversations ?? 0
-  const totalConversations = stats?.totalConversations ?? 0
-  const averageResponseMinutes = stats?.averageResponseTime ?? 0
 
   return (
     <div className="space-y-6">
-      {/* Header Profissional */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Central de Atendimento</h1>
-          <p className="text-muted-foreground">
-            Monitoramento e gestão de conversas em tempo real
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Configurações
-          </Button>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Relatórios
-          </Button>
-          <Button className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Nova Conversa
-          </Button>
-        </div>
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">Monitoramento de Chat</h1>
+        <p className="text-muted-foreground">Acompanhe as conversas reais de pedidos, suporte e atendimentos monitorados.</p>
       </div>
 
-      {/* Alertas de Urgência */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-red-200 bg-red-50/50 hover:shadow-md transition-shadow">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-red-200 bg-red-50/60">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-red-900">Conversas Urgentes</h3>
-                  <p className="text-sm text-red-700">Requerem atenção imediata</p>
-                </div>
+              <div>
+                <p className="text-sm font-medium text-red-900">Prioridade urgente</p>
+                <p className="text-xs text-red-700">Conversas com tratamento imediato</p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-red-600">{urgentConversations}</div>
-                <Badge variant="destructive" className="text-xs">Alta Prioridade</Badge>
+                <AlertTriangle className="ml-auto h-5 w-5 text-red-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200 bg-orange-50/50 hover:shadow-md transition-shadow">
+        <Card className="border-orange-200 bg-orange-50/60">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-orange-900">Sem Resposta</h3>
-                  <p className="text-sm text-orange-700">Aguardando há mais de 1 hora</p>
-                </div>
+              <div>
+                <p className="text-sm font-medium text-orange-900">Nao lidas</p>
+                <p className="text-xs text-orange-700">Mensagens pendentes para o admin</p>
               </div>
               <div className="text-right">
-                <div className="text-2xl font-bold text-orange-600">{noResponseConversations}</div>
-                <Badge variant="outline" className="text-xs border-orange-300 text-orange-700">Pendente</Badge>
+                <div className="text-2xl font-bold text-orange-600">{unreadMessages}</div>
+                <Clock className="ml-auto h-5 w-5 text-orange-500" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200 bg-blue-50/60">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-900">Ativas</p>
+                <p className="text-xs text-blue-700">Conversas abertas no monitoramento</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-blue-600">{activeConversations}</div>
+                <Users className="ml-auto h-5 w-5 text-blue-500" />
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Estatísticas Principais */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Métricas de Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChatStatsCards />
-        </CardContent>
-      </Card>
+      <ChatStatsCards key={`stats-${refreshKey}`} />
 
-      {/* Tabs de Navegação */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-          <TabsTrigger value="conversations">Conversas</TabsTrigger>
-          <TabsTrigger value="analytics">Análises</TabsTrigger>
-        </TabsList>
+      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)_320px]">
+        <Card className="overflow-hidden">
+          <CardHeader className="border-b">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5" />
+              Conversas
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[720px] p-0">
+            <ConversationsList
+              key={`conversations-${refreshKey}`}
+              onSelectConversation={handleSelectConversation}
+              selectedConversationId={selectedConversation?.id}
+              initialProtocolo={initialProtocolo}
+              initialServicoId={initialServicoId}
+              initialOrderId={initialOrderId}
+              onConversationsLoaded={handleConversationsLoaded}
+            />
+          </CardContent>
+        </Card>
 
-        {/* Visão Geral */}
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Lista de Conversas Compacta */}
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Conversas Ativas
-                  </span>
-                  <Badge variant="secondary">{activeConversations}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="max-h-96 overflow-y-auto">
-                  <ConversationsList
-                    onSelectConversation={handleSelectConversation}
-                    selectedConversationId={selectedConversation?.id}
-                    initialProtocolo={initialProtocolo}
-                    initialServicoId={initialServicoId}
-                    initialOrderId={initialOrderId}
-                    compact={true}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+        <div className="h-[720px] min-w-0">
+          <ChatMessages conversation={selectedConversation} />
+        </div>
 
-            {/* Métricas Rápidas */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Indicadores de Performance
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-blue-600">--</div>
-                    <p className="text-sm text-muted-foreground">Tempo Médio de Resposta</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">--</div>
-                    <p className="text-sm text-muted-foreground">Taxa de Satisfação</p>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">{totalConversations}</div>
-                    <p className="text-sm text-muted-foreground">Conversas Hoje</p>
-                  </div>
-                  <div className="text-center p-4 bg-orange-50 rounded-lg">
-                    <div className="text-2xl font-bold text-orange-600">--</div>
-                    <p className="text-sm text-muted-foreground">Avaliação Média</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+        {selectedConversation ? (
+          <AdminActionsPanel conversation={selectedConversation} onUpdate={() => setRefreshKey((value) => value + 1)} />
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MessageCircle className="h-5 w-5" />
+                Painel administrativo
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground">
+              Selecione uma conversa para ajustar status, prioridade, responsavel e notas internas.
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-        {/* Conversas */}
-        <TabsContent value="conversations" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Lista de Conversas Completa */}
-            <Card className="lg:col-span-1">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Todas as Conversas
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      <Filter className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="h-[600px] overflow-y-auto">
-                  <ConversationsList
-                    onSelectConversation={handleSelectConversation}
-                    selectedConversationId={selectedConversation?.id}
-                    initialProtocolo={initialProtocolo}
-                    initialServicoId={initialServicoId}
-                    initialOrderId={initialOrderId}
-                    compact={false}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Painel de Mensagens */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <MessageCircle className="h-5 w-5" />
-                    {selectedConversation ? (
-                      <span className="flex items-center gap-2">
-                        <span className="truncate">{selectedConversation.clientName}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {selectedConversation.orderProtocol || selectedConversation.orderId || 'N/A'}
-                        </Badge>
-                      </span>
-                    ) : (
-                      "Selecione uma conversa"
-                    )}
-                  </span>
-                  {selectedConversation && (
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
-                        <Phone className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Video className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Archive className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="h-[600px] overflow-hidden">
-                  <ChatMessages conversation={selectedConversation} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Analytics */}
-        <TabsContent value="analytics" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Volume de Conversas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Hoje</span>
-                    <span className="font-semibold">{activeConversations}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Esta Semana</span>
-                    <span className="font-semibold">{totalConversations}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Este Mês</span>
-                    <span className="font-semibold">{totalConversations}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Tempo de Resposta
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Média</span>
-                    <span className="font-semibold text-green-600">
-                      {averageResponseMinutes > 0 ? `${averageResponseMinutes.toFixed(1)}m` : "--"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Mais Rápido</span>
-                    <span className="font-semibold text-blue-600">--</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Mais Lento</span>
-                    <span className="font-semibold text-orange-600">--</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5" />
-                  Satisfação
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Avaliação Média</span>
-                    <span className="font-semibold text-yellow-600">--</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Positivas</span>
-                    <span className="font-semibold text-green-600">--</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Neutras</span>
-                    <span className="font-semibold text-gray-600">--</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {selectedConversation?.notes ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Resumo da conversa selecionada</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-gray-700">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">Pedido: {selectedConversation.orderProtocol || selectedConversation.orderId}</Badge>
+              {selectedConversation.assignedAdmin ? <Badge variant="outline">Responsavel: {selectedConversation.assignedAdmin}</Badge> : null}
+            </div>
+            <p className="whitespace-pre-wrap">{selectedConversation.notes}</p>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   )
 }

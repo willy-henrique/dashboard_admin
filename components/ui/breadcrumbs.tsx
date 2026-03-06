@@ -38,7 +38,6 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
       const labelMap: Record<string, string> = {
         'servicos': 'Serviços',
         'controle': 'Controle',
-        'autem-mobile': 'AutEM Mobile',
         'estoque': 'Estoque',
         'frota': 'Frota',
         'users': 'Usuários',
@@ -49,7 +48,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         'pending': 'Pendentes',
         'active': 'Ativos',
         'completed': 'Concluídos',
-        'chat': 'Chat de Suporte',
+        'chat': 'Monitoramento de Chat',
         'financial': 'Financeiro',
         'financeiro': 'Financeiro',
         'contas': 'Contas',
@@ -121,3 +120,4 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
     </nav>
   )
 }
+

@@ -17,6 +17,7 @@ export interface FirebaseProvider {
   telefone: string
   email: string
   status: ProviderStatus
+  verificationStatus?: string
   localizacao: {
     lat: number
     lng: number
@@ -66,6 +67,7 @@ function normalizeProvider(raw: Record<string, unknown>, id: string): FirebasePr
     telefone: stringOrEmpty(raw.telefone ?? raw.phone ?? raw.phoneNumber),
     email: stringOrEmpty(raw.email),
     status,
+    verificationStatus: stringOrEmpty(raw.verificationStatus ?? raw.statusVerificacao ?? raw.verification_status),
     localizacao: {
       lat: latitude,
       lng: longitude,
@@ -105,7 +107,7 @@ export class FirebaseProvidersService {
         normalizeProvider(currentDoc.data() as Record<string, unknown>, currentDoc.id)
       )
 
-      return this.sortByLastUpdate(mapped.filter((provider) => provider.ativo === true))
+      return this.sortByLastUpdate(mapped)
     } catch (error) {
       console.error('Erro ao buscar prestadores:', error)
       return []

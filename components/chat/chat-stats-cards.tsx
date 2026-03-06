@@ -32,6 +32,11 @@ export function ChatStatsCards() {
 
   if (!stats) return null
 
+  const activePercentage =
+    stats.totalConversations > 0
+      ? ((stats.activeConversations / stats.totalConversations) * 100).toFixed(1)
+      : "0.0"
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Métricas Essenciais */}
@@ -45,7 +50,7 @@ export function ChatStatsCards() {
         <CardContent>
           <div className="text-2xl font-bold text-gray-900">{stats.activeConversations}</div>
           <p className="text-xs text-blue-600 mt-1">
-            {((stats.activeConversations / stats.totalConversations) * 100).toFixed(1)}% do total
+            {activePercentage}% do total
           </p>
         </CardContent>
       </Card>

@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Download, Eye, Edit, Ban, CheckCircle, Shield, Star, Loader2 } from "lucide-react"
+import { Search, Eye, Ban, CheckCircle, Shield, Star, Loader2, RefreshCw } from "lucide-react"
 import { ProviderModal } from "./provider-modal"
 import { FirebaseProvidersService, type FirebaseProvider } from "@/lib/services/firebase-providers"
 import { mapProviderStatusToLegacy } from "@/lib/providers/status"
@@ -30,22 +30,31 @@ interface Provider {
   createdAt: string
 }
 
-function convertFirebaseToProvider(fp: FirebaseProvider): Provider {
+function convertFirebaseToProvider(provider: FirebaseProvider): Provider {
+  const verificationStatus = String((provider as any).verificationStatus || "").toLowerCase()
+  const isVerified = ["verificado", "verified", "approved"].includes(verificationStatus)
+  const status =
+    verificationStatus === "rejected"
+      ? "blocked"
+      : verificationStatus === "pending"
+        ? "pending"
+        : mapProviderStatusToLegacy(provider.status)
+
   return {
-    id: fp.id,
-    name: fp.nome,
-    email: fp.email || '',
-    phone: fp.telefone || '',
-    cpf: '',
-    address: '',
-    serviceCategories: fp.especialidades || [],
-    experience: '',
-    isVerified: fp.ativo ?? false,
-    rating: fp.avaliacao || 0,
-    totalOrders: fp.totalServicos || 0,
-    totalEarnings: 0,
-    status: mapProviderStatusToLegacy(fp.status),
-    createdAt: toIsoStringFromUnknown(fp.createdAt),
+    id: provider.id,
+    name: provider.nome,
+    email: provider.email || "",
+    phone: provider.telefone || "",
+    cpf: String((provider as any).cpf || (provider as any).documento || ""),
+    address: String((provider as any).endereco || (provider as any).address || ""),
+    serviceCategories: provider.especialidades || [],
+    experience: String((provider as any).experience || (provider as any).experiencia || ""),
+    isVerified,
+    rating: provider.avaliacao || 0,
+    totalOrders: provider.totalServicos || 0,
+    totalEarnings: Number((provider as any).totalEarnings || (provider as any).totalGanhos || 0),
+    status,
+    createdAt: provider.createdAt ? toIsoStringFromUnknown(provider.createdAt) : "",
   }
 }
 
@@ -67,8 +76,8 @@ export function ProvidersTable() {
       const firebaseProviders = await FirebaseProvidersService.getProviders()
       setProviders(firebaseProviders.map(convertFirebaseToProvider))
     } catch (err) {
-      console.error('Erro ao buscar prestadores:', err)
-      setError('Erro ao carregar prestadores')
+      console.error("Erro ao buscar prestadores:", err)
+      setError("Erro ao carregar prestadores")
     } finally {
       setLoading(false)
     }
@@ -78,19 +87,31 @@ export function ProvidersTable() {
     fetchProviders()
   }, [fetchProviders])
 
+  const availableCategories = useMemo(() => {
+    return Array.from(
+      new Set(
+        providers.flatMap((provider) => provider.serviceCategories).filter(Boolean)
+      )
+    ).sort((left, right) => left.localeCompare(right, "pt-BR"))
+  }, [providers])
+
   const filteredProviders = providers.filter((provider) => {
+    const normalizedSearch = searchTerm.trim().toLowerCase()
     const matchesSearch =
-      provider.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      provider.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      !normalizedSearch ||
+      provider.name.toLowerCase().includes(normalizedSearch) ||
+      provider.email.toLowerCase().includes(normalizedSearch) ||
+      provider.phone.toLowerCase().includes(normalizedSearch) ||
       provider.cpf.includes(searchTerm)
+
     const matchesStatus = statusFilter === "all" || provider.status === statusFilter
     const matchesCategory =
-      categoryFilter === "all" ||
-      provider.serviceCategories.some((cat) => cat.toLowerCase().includes(categoryFilter.toLowerCase()))
+      categoryFilter === "all" || provider.serviceCategories.some((category) => category === categoryFilter)
+
     return matchesSearch && matchesStatus && matchesCategory
   })
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: Provider["status"]) => {
     switch (status) {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Ativo</Badge>
@@ -109,7 +130,6 @@ export function ProvidersTable() {
     try {
       setUpdatingProviderId(provider.id)
       setError(null)
-
       const firebaseStatus = newStatus === "active" ? "disponivel" : "offline"
       await FirebaseProvidersService.updateProviderStatus(provider.id, firebaseStatus)
       await fetchProviders()
@@ -130,21 +150,28 @@ export function ProvidersTable() {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Prestadores</CardTitle>
-          <CardDescription>
-            {filteredProviders.length} de {providers.length} prestadores
-          </CardDescription>
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <CardTitle>Prestadores cadastrados</CardTitle>
+              <CardDescription>
+                {filteredProviders.length} de {providers.length} prestadores exibidos
+              </CardDescription>
+            </div>
+            <Button variant="outline" onClick={fetchProviders} disabled={loading}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Atualizar
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar por nome, email ou CPF..."
+                placeholder="Buscar por nome, email, telefone ou CPF"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-20"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="pl-10"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -152,7 +179,7 @@ export function ProvidersTable() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os Status</SelectItem>
+                <SelectItem value="all">Todos os status</SelectItem>
                 <SelectItem value="active">Ativo</SelectItem>
                 <SelectItem value="inactive">Inativo</SelectItem>
                 <SelectItem value="pending">Pendente</SelectItem>
@@ -160,51 +187,44 @@ export function ProvidersTable() {
               </SelectContent>
             </Select>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="w-full sm:w-56">
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas Categorias</SelectItem>
-                <SelectItem value="limpeza">Limpeza</SelectItem>
-                <SelectItem value="manutenção">Manutenção</SelectItem>
-                <SelectItem value="jardinagem">Jardinagem</SelectItem>
-                <SelectItem value="pintura">Pintura</SelectItem>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {availableCategories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" className="flex items-center gap-2 bg-transparent">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
           </div>
 
-          {/* Loading state */}
-          {loading && (
+          {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
               <span className="ml-3 text-gray-500">Carregando prestadores...</span>
             </div>
-          )}
+          ) : null}
 
-          {/* Error state */}
-          {error && !loading && (
-            <div className="text-center py-12">
-              <p className="text-red-600 font-medium">{error}</p>
+          {error && !loading ? (
+            <div className="py-12 text-center">
+              <p className="font-medium text-red-600">{error}</p>
               <Button variant="outline" className="mt-4" onClick={fetchProviders}>
                 Tentar novamente
               </Button>
             </div>
-          )}
+          ) : null}
 
-          {/* Empty state */}
-          {!loading && !error && filteredProviders.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 font-medium">Nenhum prestador encontrado</p>
-              <p className="text-sm text-gray-400 mt-1">Ajuste os filtros ou cadastre novos prestadores</p>
+          {!loading && !error && filteredProviders.length === 0 ? (
+            <div className="py-12 text-center">
+              <p className="font-medium text-gray-500">Nenhum prestador encontrado</p>
+              <p className="mt-1 text-sm text-gray-400">Ajuste os filtros para ampliar a busca.</p>
             </div>
-          )}
+          ) : null}
 
-          {/* Table */}
-          {!loading && !error && filteredProviders.length > 0 && (
+          {!loading && !error && filteredProviders.length > 0 ? (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -213,73 +233,61 @@ export function ProvidersTable() {
                     <TableHead>Contato</TableHead>
                     <TableHead>Categorias</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Avaliação</TableHead>
+                    <TableHead>Avaliacao</TableHead>
                     <TableHead>Pedidos</TableHead>
                     <TableHead>Ganhos</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
+                    <TableHead className="text-right">Acoes</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredProviders.map((provider) => (
                     <TableRow key={provider.id}>
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <div className="font-medium flex items-center gap-2">
-                              {provider.name}
-                              {provider.isVerified && <Shield className="h-4 w-4 text-blue-600" />}
-                            </div>
-                            <div className="text-sm text-gray-500">{provider.cpf}</div>
+                        <div>
+                          <div className="flex items-center gap-2 font-medium">
+                            {provider.name}
+                            {provider.isVerified ? <Shield className="h-4 w-4 text-blue-600" /> : null}
                           </div>
+                          <div className="text-sm text-gray-500">{provider.cpf || "Sem CPF"}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="text-sm">{provider.email}</div>
-                          <div className="text-sm text-gray-500">{provider.phone}</div>
+                          <div className="text-sm">{provider.email || "Sem email"}</div>
+                          <div className="text-sm text-gray-500">{provider.phone || "Sem telefone"}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {provider.serviceCategories.map((category) => (
-                            <Badge key={category} variant="outline" className="text-xs">
-                              {category}
-                            </Badge>
-                          ))}
+                          {provider.serviceCategories.length > 0 ? (
+                            provider.serviceCategories.map((category) => (
+                              <Badge key={category} variant="outline" className="text-xs">
+                                {category}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-gray-500">Sem categorias</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(provider.status)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                          <span>{provider.rating}</span>
+                          <Star className="h-4 w-4 fill-current text-yellow-400" />
+                          <span>{provider.rating.toFixed(1)}</span>
                         </div>
                       </TableCell>
                       <TableCell>{provider.totalOrders}</TableCell>
-                      <TableCell>R$ {provider.totalEarnings.toFixed(2)}</TableCell>
+                      <TableCell>
+                        {provider.totalEarnings > 0
+                          ? `R$ ${provider.totalEarnings.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                          : "N/A"}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button variant="ghost" size="sm" onClick={() => handleViewProvider(provider)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled
-                            title="Edicao detalhada sera conectada ao backend em breve"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          {!provider.isVerified && provider.status === "pending" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled
-                              title="Verificacao sera sincronizada pelo cadastro oficial"
-                            >
-                              <Shield className="h-4 w-4 text-blue-600" />
-                            </Button>
-                          )}
                           {provider.status === "active" ? (
                             <Button
                               variant="ghost"
@@ -289,7 +297,7 @@ export function ProvidersTable() {
                             >
                               <Ban className="h-4 w-4 text-red-600" />
                             </Button>
-                          ) : provider.status === "blocked" ? (
+                          ) : (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -298,7 +306,7 @@ export function ProvidersTable() {
                             >
                               <CheckCircle className="h-4 w-4 text-green-600" />
                             </Button>
-                          ) : null}
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -306,7 +314,7 @@ export function ProvidersTable() {
                 </TableBody>
               </Table>
             </div>
-          )}
+          ) : null}
         </CardContent>
       </Card>
 

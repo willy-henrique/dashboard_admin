@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -21,31 +20,13 @@ import {
   Shield,
   FileText,
   MessageSquare,
-  MapPin,
-  Calendar,
   TrendingUp,
-  Activity,
-  Bell,
-  Database,
-  Key,
   LogOut,
   X,
   ChevronRight,
   ChevronDown,
-  Clock,
-  CheckCircle,
-  Star,
   ClipboardList,
   MousePointer,
-  Smartphone,
-  Wifi,
-  Route,
-  XCircle,
-  Package,
-  Truck,
-  Download,
-  Building,
-  Wrench,
 } from "lucide-react"
 
 const navigation = [
@@ -66,7 +47,6 @@ const navigation = [
     icon: MousePointer,
     permission: "controle",
     children: [
-      { name: "AutEM Mobile", href: "/dashboard/controle/autem-mobile", icon: Smartphone },
       { name: "Monitoramento de Chat", href: "/dashboard/controle/chat", icon: MessageSquare },
     ],
   },
@@ -85,8 +65,6 @@ const navigation = [
     permission: "gestaoPedidos",
     children: [
       { name: "Todos os Pedidos", href: "/orders", icon: ShoppingCart },
-      // Rota dedicada "/orders/completed" não existe; usamos tab via query param
-      { name: "Pedidos Concluídos", href: "/orders?tab=concluidos", icon: CheckCircle },
     ],
   },
   {
@@ -342,3 +320,4 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
     </>
   )
 }
+
