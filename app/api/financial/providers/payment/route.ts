@@ -141,6 +141,17 @@ export async function POST(request: NextRequest) {
       if (providerDocId) {
         acceptedProviderIds.add(providerDocId)
       }
+
+      const providerDataProviderId = readString(providerData.providerId)
+      if (providerDataProviderId) {
+        acceptedProviderIds.add(providerDataProviderId)
+      }
+
+      const providerDataProviderUid = readString(providerData.providerUid)
+      if (providerDataProviderUid) {
+        acceptedProviderIds.add(providerDataProviderUid)
+      }
+
       if (providerUid) {
         acceptedProviderIds.add(providerUid)
       }

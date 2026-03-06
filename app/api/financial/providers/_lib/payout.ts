@@ -192,16 +192,36 @@ export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
   const provider = getNestedRecord(orderData.provider)
 
   return (
+    readString(orderData.provider) ||
+    readString(orderData.prestador) ||
     readString(orderData.providerId) ||
     readString(orderData.providerUid) ||
+    readString(orderData.provider_id) ||
+    readString(orderData.provider_uid) ||
     readString(orderData.prestadorId) ||
     readString(orderData.prestadorUid) ||
+    readString(orderData.prestador_id) ||
+    readString(orderData.prestador_uid) ||
+    readString(orderData.assignedProviderId) ||
+    readString(orderData.assignedProviderUid) ||
+    readString(orderData.assigned_provider_id) ||
+    readString(orderData.assigned_provider_uid) ||
     readString(prestador.id) ||
     readString(prestador.uid) ||
+    readString(prestador.userId) ||
+    readString(prestador.user_id) ||
     readString(prestador.providerId) ||
     readString(prestador.providerUid) ||
+    readString(prestador.provider_id) ||
+    readString(prestador.provider_uid) ||
     readString(provider.id) ||
-    readString(provider.uid)
+    readString(provider.uid) ||
+    readString(provider.userId) ||
+    readString(provider.user_id) ||
+    readString(provider.providerId) ||
+    readString(provider.providerUid) ||
+    readString(provider.provider_id) ||
+    readString(provider.provider_uid)
   )
 }
 

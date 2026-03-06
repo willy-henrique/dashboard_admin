@@ -104,6 +104,22 @@ export async function GET() {
       const provider = createProviderEntry(providerDoc.id, providerData)
       providerMap.set(providerDoc.id, provider)
       providerLookup.set(providerDoc.id, providerDoc.id)
+
+      const providerDataId = readString(providerData.id)
+      if (providerDataId) {
+        providerLookup.set(providerDataId, providerDoc.id)
+      }
+
+      const providerDataProviderId = readString(providerData.providerId)
+      if (providerDataProviderId) {
+        providerLookup.set(providerDataProviderId, providerDoc.id)
+      }
+
+      const providerDataProviderUid = readString(providerData.providerUid)
+      if (providerDataProviderUid) {
+        providerLookup.set(providerDataProviderUid, providerDoc.id)
+      }
+
       if (provider.uid) {
         providerLookup.set(provider.uid, providerDoc.id)
       }
