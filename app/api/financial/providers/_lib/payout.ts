@@ -6,10 +6,29 @@ const toNumberOrNull = (value: unknown): number | null => {
   }
 
   if (typeof value === "string") {
-    const normalized = value.replace(",", ".").trim()
+    let normalized = value.trim()
     if (!normalized) {
       return null
     }
+
+    // Handles strings like "R$ 1.234,56", "1,23", "1.23".
+    normalized = normalized.replace(/\s+/g, "").replace(/r\$/gi, "")
+    normalized = normalized.replace(/[^\d,.-]/g, "")
+    if (!normalized) {
+      return null
+    }
+
+    if (normalized.includes(",") && normalized.includes(".")) {
+      const lastComma = normalized.lastIndexOf(",")
+      const lastDot = normalized.lastIndexOf(".")
+      normalized =
+        lastComma > lastDot
+          ? normalized.replace(/\./g, "").replace(",", ".")
+          : normalized.replace(/,/g, "")
+    } else if (normalized.includes(",")) {
+      normalized = normalized.replace(/\./g, "").replace(",", ".")
+    }
+
     const parsed = Number(normalized)
     return Number.isFinite(parsed) ? parsed : null
   }
@@ -123,7 +142,21 @@ const getOrderSortTimestamp = (order: UnknownRecord): number => {
 }
 
 const getOrderCommissionCents = (order: UnknownRecord): number => {
-  const providerCommission = toNumberOrNull(order.providerCommission) ?? 0
+  const providerCommissionCents =
+    toNumberOrNull(order.providerCommissionCents) ??
+    toNumberOrNull(order.providercommissioncents) ??
+    toNumberOrNull(order.provider_commission_cents)
+
+  if (providerCommissionCents !== null && providerCommissionCents > 0) {
+    return Math.round(providerCommissionCents)
+  }
+
+  const providerCommission =
+    toNumberOrNull(order.providerCommission) ??
+    toNumberOrNull(order.providercommission) ??
+    toNumberOrNull(order.provider_commission) ??
+    0
+
   if (providerCommission <= 0) {
     return 0
   }
@@ -133,8 +166,14 @@ const getOrderCommissionCents = (order: UnknownRecord): number => {
 }
 
 const getOrderPaidCents = (order: UnknownRecord, totalCommissionCents: number): number => {
-  const rawPaidCents = toNumberOrNull(order.providerPayoutPaidCents)
-  const rawPaidAmount = toNumberOrNull(order.providerPayoutPaidAmount)
+  const rawPaidCents =
+    toNumberOrNull(order.providerPayoutPaidCents) ??
+    toNumberOrNull(order.providerpayoutpaidcents) ??
+    toNumberOrNull(order.provider_payout_paid_cents)
+  const rawPaidAmount =
+    toNumberOrNull(order.providerPayoutPaidAmount) ??
+    toNumberOrNull(order.providerpayoutpaidamount) ??
+    toNumberOrNull(order.provider_payout_paid_amount)
 
   const paidCents =
     rawPaidCents !== null
@@ -155,7 +194,12 @@ export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
   return (
     readString(orderData.providerId) ||
     readString(orderData.providerUid) ||
+    readString(orderData.prestadorId) ||
+    readString(orderData.prestadorUid) ||
     readString(prestador.id) ||
+    readString(prestador.uid) ||
+    readString(prestador.providerId) ||
+    readString(prestador.providerUid) ||
     readString(provider.id) ||
     readString(provider.uid)
   )
