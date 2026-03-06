@@ -1,6 +1,9 @@
 type UnknownRecord = Record<string, unknown>
 
-const COMPLETED_STATUSES = new Set(["completed", "concluido"])
+const COMPLETED_STATUSES = new Set(["completed", "concluido", "finalizado", "finished"])
+const PAID_STATUSES = new Set(["paid", "pago"])
+const COMPLETED_STATUS_HINTS = ["conclu", "finaliz", "finish", "complet"]
+const PAID_STATUS_HINTS = ["paid", "pago"]
 
 const toNumberOrNull = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -26,7 +29,54 @@ export const readString = (value: unknown): string => {
   return value.trim()
 }
 
-const readLower = (value: unknown): string => readString(value).toLowerCase()
+const normalizeText = (value: unknown): string =>
+  readString(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+
+const readLower = (value: unknown): string => normalizeText(value)
+
+const getNestedRecord = (value: unknown): UnknownRecord => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {}
+  }
+  return value as UnknownRecord
+}
+
+const isTruthy = (value: unknown): boolean => {
+  if (value === true) return true
+  if (typeof value === "number") return value === 1
+  if (typeof value === "string") {
+    const normalized = readLower(value)
+    return normalized === "true" || normalized === "1" || normalized === "sim" || normalized === "yes"
+  }
+  return false
+}
+
+const isCompletedStatus = (status: string): boolean => {
+  if (!status) {
+    return false
+  }
+
+  if (COMPLETED_STATUSES.has(status)) {
+    return true
+  }
+
+  return COMPLETED_STATUS_HINTS.some((hint) => status.includes(hint))
+}
+
+const isPaidStatus = (status: string): boolean => {
+  if (!status) {
+    return false
+  }
+
+  if (PAID_STATUSES.has(status)) {
+    return true
+  }
+
+  return PAID_STATUS_HINTS.some((hint) => status.includes(hint))
+}
 
 export const amountToCents = (amount: number): number => {
   if (!Number.isFinite(amount)) {
@@ -125,6 +175,7 @@ const getOrderCommissionCents = (order: UnknownRecord): number => {
     return 0
   }
 
+  // The app writes providerCommission as the payout amount to provider.
   return amountToCents(providerCommission)
 }
 
@@ -144,6 +195,19 @@ const getOrderPaidCents = (order: UnknownRecord, totalCommissionCents: number): 
   return Math.min(paidCents, totalCommissionCents)
 }
 
+export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
+  const prestador = getNestedRecord(orderData.prestador)
+  const provider = getNestedRecord(orderData.provider)
+
+  return (
+    readString(orderData.providerId) ||
+    readString(orderData.providerUid) ||
+    readString(prestador.id) ||
+    readString(provider.id) ||
+    readString(provider.uid)
+  )
+}
+
 export interface OrderPayoutSnapshot {
   orderId: string
   providerId: string
@@ -158,19 +222,19 @@ export const buildOrderPayoutSnapshot = (
   orderId: string,
   orderData: UnknownRecord
 ): OrderPayoutSnapshot => {
-  const providerId = readString(orderData.providerId)
+  const providerId = resolveOrderProviderId(orderData)
   const paymentStatus = readLower(orderData.paymentStatus)
   const status = readLower(orderData.status)
-  const providerCompletionConfirmed = orderData.providerCompletionConfirmed === true
+  const providerCompletionConfirmed = isTruthy(orderData.providerCompletionConfirmed)
 
   const totalCommissionCents = getOrderCommissionCents(orderData)
   const alreadyPaidCents = getOrderPaidCents(orderData, totalCommissionCents)
   const remainingCents = Math.max(totalCommissionCents - alreadyPaidCents, 0)
 
-  const isCompleted = providerCompletionConfirmed || COMPLETED_STATUSES.has(status)
+  const isCompleted = providerCompletionConfirmed || isCompletedStatus(status)
   const eligible =
     providerId.length > 0 &&
-    paymentStatus === "paid" &&
+    isPaidStatus(paymentStatus) &&
     isCompleted &&
     totalCommissionCents > 0
 

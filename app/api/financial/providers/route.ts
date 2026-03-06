@@ -91,30 +91,37 @@ export async function GET() {
 
     const db = adminApp.firestore()
 
-    const [providersSnapshot, paidOrdersSnapshot] = await Promise.all([
+    const [providersSnapshot, ordersSnapshot] = await Promise.all([
       db.collection('providers').get(),
-      db.collection('orders').where('paymentStatus', '==', 'paid').get(),
+      db.collection('orders').get(),
     ])
 
     const providerMap = new Map<string, ProviderBilling>()
+    const providerLookup = new Map<string, string>()
 
     providersSnapshot.forEach((providerDoc) => {
       const providerData = providerDoc.data() as Record<string, unknown>
-      providerMap.set(providerDoc.id, createProviderEntry(providerDoc.id, providerData))
+      const provider = createProviderEntry(providerDoc.id, providerData)
+      providerMap.set(providerDoc.id, provider)
+      providerLookup.set(providerDoc.id, providerDoc.id)
+      if (provider.uid) {
+        providerLookup.set(provider.uid, providerDoc.id)
+      }
     })
 
-    paidOrdersSnapshot.forEach((orderDoc) => {
+    ordersSnapshot.forEach((orderDoc) => {
       const orderData = orderDoc.data() as Record<string, unknown>
       const payout = buildOrderPayoutSnapshot(orderDoc.id, orderData)
       if (!payout.eligible) {
         return
       }
 
-      let providerEntry = providerMap.get(payout.providerId)
+      const providerKey = providerLookup.get(payout.providerId) || payout.providerId
+      let providerEntry = providerMap.get(providerKey)
       if (!providerEntry) {
         const prestador = getNestedRecord(orderData.prestador)
         providerEntry = createProviderEntry(
-          payout.providerId,
+          providerKey,
           {},
           {
             nome: readString(orderData.providerName) || readString(prestador.nome) || 'Sem nome',
@@ -122,7 +129,12 @@ export async function GET() {
             email: readString(orderData.providerEmail),
           }
         )
-        providerMap.set(payout.providerId, providerEntry)
+        providerMap.set(providerKey, providerEntry)
+      }
+
+      providerLookup.set(payout.providerId, providerKey)
+      if (providerEntry.uid) {
+        providerLookup.set(providerEntry.uid, providerKey)
       }
 
       providerEntry.totalJobs = (providerEntry.totalJobs ?? 0) + 1

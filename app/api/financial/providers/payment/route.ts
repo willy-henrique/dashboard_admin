@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     const result = await db.runTransaction(async (transaction): Promise<TransactionResult> => {
       const providerRef = db.collection('providers').doc(providerId)
-      const ordersQuery = db.collection('orders').where('providerId', '==', providerId)
+      const ordersQuery = db.collection('orders')
 
       const [providerDoc, ordersSnapshot] = await Promise.all([
         transaction.get(providerRef),
@@ -136,6 +136,14 @@ export async function POST(request: NextRequest) {
 
       const providerName = resolveProviderName(providerId, providerData)
       const providerUid = resolveProviderUid(providerId, providerData)
+      const acceptedProviderIds = new Set<string>([providerId])
+      const providerDocId = readString(providerData.id)
+      if (providerDocId) {
+        acceptedProviderIds.add(providerDocId)
+      }
+      if (providerUid) {
+        acceptedProviderIds.add(providerUid)
+      }
 
       const candidates: OrderCandidate[] = []
 
@@ -143,7 +151,11 @@ export async function POST(request: NextRequest) {
         const orderData = orderDoc.data() as Record<string, unknown>
         const payout = buildOrderPayoutSnapshot(orderDoc.id, orderData)
 
-        if (!payout.eligible || payout.remainingCents <= 0) {
+        if (
+          !payout.eligible ||
+          payout.remainingCents <= 0 ||
+          !acceptedProviderIds.has(payout.providerId)
+        ) {
           return
         }
 
