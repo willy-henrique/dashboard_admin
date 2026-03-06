@@ -7,6 +7,9 @@ import {
   getDocs
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { isProviderActiveStatus } from '@/lib/providers/status'
+import { getMockFirebaseProviders } from './firebase-dev-mock-data'
+import { shouldUseFirebaseDevMocks } from './firebase-dev-fallback'
 
 export interface FirebaseProvider {
   id: string
@@ -31,11 +34,24 @@ export interface FirebaseProvider {
 export class FirebaseProvidersService {
   private static collectionName = 'providers'
 
+  private static getFallbackProviders(activeOnly: boolean = false): FirebaseProvider[] {
+    if (!shouldUseFirebaseDevMocks()) {
+      return []
+    }
+
+    const providers = getMockFirebaseProviders()
+    if (!activeOnly) {
+      return providers
+    }
+
+    return providers.filter((provider) => isProviderActiveStatus(provider.status))
+  }
+
   // Buscar todos os prestadores (filtro/ordenação em memória - sem índice composto)
   static async getProviders(): Promise<FirebaseProvider[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackProviders()
     }
 
     try {
@@ -49,7 +65,7 @@ export class FirebaseProvidersService {
       })
     } catch (error) {
       console.error('Erro ao buscar prestadores:', error)
-      return []
+      return this.getFallbackProviders()
     }
   }
 
@@ -57,14 +73,14 @@ export class FirebaseProvidersService {
   static async getActiveProviders(): Promise<FirebaseProvider[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackProviders(true)
     }
 
     try {
       const snapshot = await getDocs(collection(db, this.collectionName))
       const mapped = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as FirebaseProvider[]
       const providers = mapped.filter(p =>
-        p.ativo === true && ['disponivel', 'ocupado', 'online'].includes(p.status)
+        p.ativo === true && isProviderActiveStatus(p.status)
       )
       return providers.sort((a, b) => {
         const aDate = a.ultimaAtualizacao?.toDate?.() ?? a.ultimaAtualizacao ?? new Date(0)
@@ -73,7 +89,7 @@ export class FirebaseProvidersService {
       })
     } catch (error) {
       console.error('Erro ao buscar prestadores ativos:', error)
-      return []
+      return this.getFallbackProviders(true)
     }
   }
 
@@ -134,7 +150,7 @@ export class FirebaseProvidersService {
   ): () => void {
     if (!db) {
       console.warn('Firebase não inicializado')
-      callback([])
+      callback(this.getFallbackProviders(true))
       return () => { }
     }
 
@@ -144,7 +160,7 @@ export class FirebaseProvidersService {
       return onSnapshot(colRef, (snapshot) => {
         const mapped = snapshot.docs.map(d => ({ id: d.id, ...d.data() })) as FirebaseProvider[]
         const allProviders = mapped.filter(p =>
-          p.ativo === true && ['disponivel', 'ocupado', 'online'].includes(p.status)
+          p.ativo === true && isProviderActiveStatus(p.status)
         )
         const providers = allProviders
           .sort((a, b) => {
@@ -156,7 +172,7 @@ export class FirebaseProvidersService {
       })
     } catch (error) {
       console.error('Erro ao escutar prestadores:', error)
-      callback([])
+      callback(this.getFallbackProviders(true))
       return () => { }
     }
   }

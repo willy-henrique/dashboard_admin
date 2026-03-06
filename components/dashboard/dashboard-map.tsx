@@ -1,20 +1,30 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { FirebaseOrdersService } from "@/lib/services/firebase-orders"
 
 // Fix para ícones do Leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl
+const iconDefaultPrototype = L.Icon.Default.prototype as { _getIconUrl?: unknown }
+delete iconDefaultPrototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
   iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 })
 
-const services: { id: number; title: string; lat: number; lng: number; status: string; profissional: string }[] = []
+interface MapService {
+  id: string
+  title: string
+  lat: number
+  lng: number
+  status: string
+  profissional: string
+}
 
 const statusColors = {
+  pendente: "#f59e0b",
   agendado: "#6b7280",
   aceito: "#16a34a",
   aguardando: "#f59e0b",
@@ -26,7 +36,9 @@ const statusColors = {
 
 export function DashboardMap() {
   const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<L.Map | null>(null)
+  const mapInstanceRef = useRef<ReturnType<typeof L.map> | null>(null)
+  const markersRef = useRef<Array<ReturnType<typeof L.marker>>>([])
+  const [services, setServices] = useState<MapService[]>([])
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return
@@ -39,8 +51,6 @@ export function DashboardMap() {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
 
-    // TODO: Carregar marcadores de serviços do Firebase quando disponíveis
-
     mapInstanceRef.current = map
 
     return () => {
@@ -50,6 +60,69 @@ export function DashboardMap() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    return FirebaseOrdersService.listenToOrders((orders) => {
+      const mapped: MapService[] = []
+      orders.forEach((order) => {
+        const coordinates = order.endereco?.coordenadas
+        if (!coordinates) {
+          return
+        }
+
+        mapped.push({
+          id: order.id,
+          title: order.numero || "Pedido sem numero",
+          lat: coordinates.lat,
+          lng: coordinates.lng,
+          status: order.status,
+          profissional: order.prestador?.nome || "Nao atribuido",
+        })
+      })
+
+      setServices(mapped)
+    })
+  }, [])
+
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    if (!map) {
+      return
+    }
+
+    markersRef.current.forEach((marker) => marker.remove())
+    markersRef.current = []
+
+    services.forEach((service) => {
+      const marker = L.marker([service.lat, service.lng])
+        .addTo(map)
+        .bindPopup(`
+          <div class="p-2">
+            <h3 class="font-bold text-sm">${service.title}</h3>
+            <p class="text-xs text-gray-600">Profissional: ${service.profissional}</p>
+            <p class="text-xs text-gray-600">Status: ${service.status}</p>
+          </div>
+        `)
+
+      const statusColor = statusColors[service.status as keyof typeof statusColors] ?? "#6b7280"
+      const customIcon = L.divIcon({
+        className: "custom-marker",
+        html: `<div style="
+          width: 12px;
+          height: 12px;
+          background-color: ${statusColor};
+          border: 2px solid white;
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>`,
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+      })
+
+      marker.setIcon(customIcon)
+      markersRef.current.push(marker)
+    })
+  }, [services])
 
   return (
     <div className="space-y-4">

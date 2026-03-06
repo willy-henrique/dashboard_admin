@@ -67,14 +67,21 @@ export default function ClientsPage() {
       // Aplicar filtro de busca se existir
       if (search) {
         const searchLower = search.toLowerCase()
-        filteredClients = filteredClients.filter(user => 
-          user.fullName?.toLowerCase().includes(searchLower) ||
-          user.name?.toLowerCase().includes(searchLower) ||
-          user.nome?.toLowerCase().includes(searchLower) ||
-          user.email?.toLowerCase().includes(searchLower) ||
-          user.cpf?.toLowerCase().includes(searchLower) ||
-          user.document?.toLowerCase().includes(searchLower)
-        )
+        filteredClients = filteredClients.filter(user => {
+          const dynamicUser = user as unknown as Record<string, unknown>
+          const nome = typeof dynamicUser.nome === "string" ? dynamicUser.nome.toLowerCase() : ""
+          const cpf = typeof dynamicUser.cpf === "string" ? dynamicUser.cpf.toLowerCase() : ""
+          const document = typeof dynamicUser.document === "string" ? dynamicUser.document.toLowerCase() : ""
+
+          return (
+            user.fullName?.toLowerCase().includes(searchLower) ||
+            user.name?.toLowerCase().includes(searchLower) ||
+            nome.includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower) ||
+            cpf.includes(searchLower) ||
+            document.includes(searchLower)
+          )
+        })
       }
       
       // Aplicar filtro de status se não for "all"
@@ -395,7 +402,7 @@ export default function ClientsPage() {
                   </div>
                 </div>
                 <div className="text-sm text-gray-600">
-                  <p><strong>Filtro aplicado:</strong> userType: 'client'</p>
+                  <p><strong>Filtro aplicado:</strong> userType: &apos;client&apos;</p>
                   <p><strong>Status:</strong> {loading ? 'Carregando...' : 'Concluído'}</p>
                 </div>
               </div>

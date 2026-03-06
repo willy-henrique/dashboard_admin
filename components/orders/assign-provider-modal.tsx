@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, Star, MapPin, UserPlus, Loader2 } from "lucide-react"
 import { FirebaseProvidersService } from "@/lib/services/firebase-providers"
+import { isProviderAssignableStatus } from "@/lib/providers/status"
 
 interface Order {
   id: string
@@ -48,12 +49,14 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
   const [searchTerm, setSearchTerm] = useState("")
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen) return
     async function fetchProviders() {
       try {
         setLoading(true)
+        setError(null)
         const fbProviders = await FirebaseProvidersService.getActiveProviders()
         setProviders(fbProviders.map(fp => ({
           id: fp.id,
@@ -62,10 +65,11 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
           totalOrders: fp.totalServicos || 0,
           serviceCategories: fp.especialidades || [],
           location: '',
-          isAvailable: fp.status === 'disponivel',
+          isAvailable: isProviderAssignableStatus(fp.status),
         })))
       } catch (err) {
         console.error('Erro ao buscar prestadores:', err)
+        setError('Erro ao carregar prestadores')
       } finally {
         setLoading(false)
       }
@@ -77,7 +81,11 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
 
   const filteredProviders = providers.filter((provider) => {
     const matchesSearch = provider.name.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch && provider.isAvailable
+    const normalizedCategory = order.serviceCategory.trim().toLowerCase()
+    const matchesCategory = normalizedCategory.length === 0 || provider.serviceCategories.some((category) => (
+      category.toLowerCase().includes(normalizedCategory)
+    ))
+    return matchesSearch && matchesCategory && provider.isAvailable
   })
 
   const handleAssignProvider = (provider: Provider) => {
@@ -131,6 +139,12 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
               <span className="ml-2 text-gray-500">Carregando prestadores...</span>
+            </div>
+          )}
+
+          {error && !loading && (
+            <div className="text-center py-4">
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 

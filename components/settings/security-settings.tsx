@@ -9,11 +9,12 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Shield, Key, Clock, Database, AlertTriangle, Download } from "lucide-react"
-
-// TODO: carregar logs de auditoria do Firebase
-const auditLogs: { id: string; action: string; user: string; timestamp: string; ip: string; status: string }[] = []
+import { getMockSecurityAuditLogs } from "@/lib/mocks/ui-data"
+import { shouldUseFirebaseDevMocks } from "@/lib/services/firebase-dev-fallback"
 
 export function SecuritySettings() {
+  const auditLogs = shouldUseFirebaseDevMocks() ? getMockSecurityAuditLogs() : []
+
   const [passwordPolicy, setPasswordPolicy] = useState({
     minLength: 8,
     requireUppercase: true,
@@ -189,7 +190,7 @@ export function SecuritySettings() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="remember-duration">Duração "Lembrar de mim" (dias)</Label>
+              <Label htmlFor="remember-duration">Duração &quot;Lembrar de mim&quot; (dias)</Label>
               <Input
                 id="remember-duration"
                 type="number"

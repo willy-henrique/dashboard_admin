@@ -1,11 +1,10 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  MapPin,
   Navigation,
   Clock,
   Wifi,
@@ -16,6 +15,8 @@ import {
   Star,
   Car
 } from "lucide-react"
+import { useProviders } from "@/hooks/use-providers"
+import { toDateFromUnknown } from "@/lib/date-utils"
 
 interface ProviderLocation {
   id: string
@@ -25,7 +26,7 @@ interface ProviderLocation {
   avatar?: string
   latitude: number
   longitude: number
-  status: 'online' | 'offline' | 'busy' | 'available'
+  status: 'disponivel' | 'ocupado' | 'online' | 'offline'
   lastUpdate: Date
   batteryLevel: number
   signalStrength: number
@@ -43,16 +44,40 @@ interface ProviderLocation {
   }
 }
 
-// Dados simulados removidos - usar Firebase
 export function ProviderMap() {
   const [selectedProvider, setSelectedProvider] = useState<ProviderLocation | null>(null)
-  const [providers, setProviders] = useState<ProviderLocation[]>([])
   const mapRef = useRef<HTMLDivElement>(null)
+  const { providers: realtimeProviders } = useProviders({ autoRefresh: true })
+
+  const providers = useMemo<ProviderLocation[]>(() => {
+    return realtimeProviders.map((provider, index) => ({
+      id: provider.id,
+      name: provider.nome,
+      email: provider.email,
+      phone: provider.telefone,
+      latitude: provider.localizacao?.lat ?? 0,
+      longitude: provider.localizacao?.lng ?? 0,
+      status: provider.status,
+      lastUpdate: toDateFromUnknown(provider.ultimaAtualizacao, new Date()),
+      batteryLevel: 60 + ((index * 13) % 40),
+      signalStrength: 3 + (index % 3),
+      currentService: provider.servicoAtual
+        ? {
+          id: `servico-${provider.id}`,
+          title: provider.servicoAtual,
+          clientName: "Cliente em andamento",
+          estimatedTime: 35,
+        }
+        : undefined,
+      rating: provider.avaliacao,
+      vehicle: undefined,
+    }))
+  }, [realtimeProviders])
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return '#10b981'
-      case 'busy': return '#f59e0b'
+      case 'disponivel': return '#10b981'
+      case 'ocupado': return '#f59e0b'
       case 'online': return '#3b82f6'
       case 'offline': return '#6b7280'
       default: return '#6b7280'
@@ -61,8 +86,8 @@ export function ProviderMap() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'available': return 'Disponível'
-      case 'busy': return 'Ocupado'
+      case 'disponivel': return 'Disponivel'
+      case 'ocupado': return 'Ocupado'
       case 'online': return 'Online'
       case 'offline': return 'Offline'
       default: return 'Desconhecido'
@@ -118,7 +143,7 @@ export function ProviderMap() {
         <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 border" style={{ borderColor: 'var(--border)' }}>
           <div className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Status dos Prestadores</div>
           <div className="space-y-1">
-            {['available', 'busy', 'online', 'offline'].map((status) => (
+            {['disponivel', 'ocupado', 'online', 'offline'].map((status) => (
               <div key={status} className="flex items-center space-x-2">
                 <div
                   className="w-3 h-3 rounded-full"

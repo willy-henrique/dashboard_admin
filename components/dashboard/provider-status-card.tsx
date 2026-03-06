@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import {
   Users,
   MapPin,
-  Clock,
   Wifi,
   User,
   Phone,
@@ -17,6 +16,8 @@ import {
   Loader2
 } from "lucide-react"
 import { useProviders, type Provider } from "@/hooks/use-providers"
+import { getProviderStatusLabel } from "@/lib/providers/status"
+import { toDateFromUnknown } from "@/lib/date-utils"
 
 export function ProviderStatusCard() {
   const { providers: rawProviders, stats, loading, error } = useProviders({ autoRefresh: true })
@@ -31,18 +32,12 @@ export function ProviderStatusCard() {
     }
   }
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'disponivel': return 'Disponível'
-      case 'ocupado': return 'Ocupado'
-      case 'online': return 'Online'
-      case 'offline': return 'Offline'
-      default: return 'Desconhecido'
-    }
+  const getStatusText = (status: Provider["status"]) => {
+    return getProviderStatusLabel(status)
   }
 
-  const getTimeAgo = (dateStr: string) => {
-    const date = new Date(dateStr)
+  const getTimeAgo = (dateValue: unknown) => {
+    const date = toDateFromUnknown(dateValue, new Date())
     const now = new Date()
     const diff = now.getTime() - date.getTime()
     const minutes = Math.floor(diff / 60000)

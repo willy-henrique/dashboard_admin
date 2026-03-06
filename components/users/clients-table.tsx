@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Download, Eye, Edit, Ban, CheckCircle, Loader2 } from "lucide-react"
 import { ClientModal } from "./client-modal"
 import { useAllClients } from "@/hooks/use-users"
+import { toIsoStringFromUnknown } from "@/lib/date-utils"
 
 interface Client {
   id: string
@@ -33,19 +34,46 @@ export function ClientsTable() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Converter dados do Firebase para o formato Client
-  const clients: Client[] = rawClients.map((u) => ({
-    id: u.id,
-    name: u.name || u.displayName || 'Sem nome',
-    email: u.email || '',
-    phone: (u as any).phone || (u as any).telefone || '',
-    cpf: (u as any).cpf || '',
-    address: (u as any).address || (u as any).endereco || '',
-    createdAt: u.createdAt?.toDate?.()?.toISOString?.() || new Date().toISOString(),
-    lastLogin: (u as any).lastLogin?.toDate?.()?.toISOString?.() || '',
-    status: u.isActive === false ? 'blocked' : 'active',
-    totalOrders: (u as any).totalOrders || (u as any).totalPedidos || 0,
-    totalSpent: (u as any).totalSpent || (u as any).totalGasto || 0,
-  }))
+  const clients: Client[] = rawClients.map((u) => {
+    const dynamic = u as unknown as Record<string, unknown>
+    const displayName = typeof dynamic.displayName === "string" ? dynamic.displayName : ""
+    const phone = typeof dynamic.phone === "string"
+      ? dynamic.phone
+      : typeof dynamic.telefone === "string"
+        ? dynamic.telefone
+        : ""
+    const cpf = typeof dynamic.cpf === "string" ? dynamic.cpf : ""
+    const address = typeof dynamic.address === "string"
+      ? dynamic.address
+      : typeof dynamic.endereco === "string"
+        ? dynamic.endereco
+        : ""
+    const lastLoginRaw = dynamic.lastLogin ?? dynamic.lastLoginAt
+    const totalOrders = typeof dynamic.totalOrders === "number"
+      ? dynamic.totalOrders
+      : typeof dynamic.totalPedidos === "number"
+        ? dynamic.totalPedidos
+        : 0
+    const totalSpent = typeof dynamic.totalSpent === "number"
+      ? dynamic.totalSpent
+      : typeof dynamic.totalGasto === "number"
+        ? dynamic.totalGasto
+        : 0
+
+    return {
+      id: u.id,
+      name: u.name || displayName || "Sem nome",
+      email: u.email || "",
+      phone,
+      cpf,
+      address,
+      createdAt: toIsoStringFromUnknown(u.createdAt),
+      lastLogin: toIsoStringFromUnknown(lastLoginRaw, ""),
+      status: u.isActive === false ? "blocked" : "active",
+      totalOrders,
+      totalSpent,
+    }
+  })
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
@@ -181,15 +209,30 @@ export function ClientsTable() {
                           <Button variant="ghost" size="sm" onClick={() => handleViewClient(client)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            title="Edicao detalhada sera conectada ao backend em breve"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           {client.status === "active" ? (
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled
+                              title="Bloqueio direto sera conectado ao backend em breve"
+                            >
                               <Ban className="h-4 w-4 text-red-600" />
                             </Button>
                           ) : client.status === "blocked" ? (
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled
+                              title="Desbloqueio direto sera conectado ao backend em breve"
+                            >
                               <CheckCircle className="h-4 w-4 text-green-600" />
                             </Button>
                           ) : null}

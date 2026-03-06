@@ -12,7 +12,6 @@ import { LegacyChatConversation } from "@/lib/services/chat-service"
 import { 
   Shield, 
   Archive, 
-  Unarchive, 
   Ban, 
   Unlock, 
   Star, 
@@ -42,7 +41,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [actionType, setActionType] = useState<string>("")
   const [note, setNote] = useState("")
-  const [priority, setPriority] = useState<ChatConversation['priority']>(conversation.priority)
+  const [priority, setPriority] = useState<LegacyChatConversation['priority']>(conversation.priority)
   
   const { 
     updateConversationStatus, 
@@ -272,7 +271,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
             </div>
             <div className="p-2 bg-gray-50 rounded text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-gray-700">Prioridade alterada para "Alta"</span>
+                <span className="text-gray-700">Prioridade alterada para &quot;Alta&quot;</span>
                 <span className="text-gray-500 text-xs">há 1 hora</span>
               </div>
             </div>

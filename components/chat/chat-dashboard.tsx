@@ -13,13 +13,9 @@ import {
   Clock,
   Activity,
   TrendingUp,
-  Shield,
-  Zap,
   Filter,
   Search,
   Settings,
-  Bell,
-  Eye,
   Archive,
   MoreHorizontal,
   Phone,
@@ -28,10 +24,10 @@ import {
   MessageCircle,
   BarChart3
 } from "lucide-react"
+import { useChatStats } from "@/hooks/use-chat"
 import { ChatStatsCards } from "./chat-stats-cards"
 import { ConversationsList } from "./conversations-list"
 import { ChatMessages } from "./chat-messages"
-import { cn } from "@/lib/utils"
 
 interface ChatDashboardProps {
   initialProtocolo?: string | null
@@ -42,13 +38,17 @@ interface ChatDashboardProps {
 export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrderId }: ChatDashboardProps) {
   const [selectedConversation, setSelectedConversation] = useState<LegacyChatConversation | null>(null)
   const [activeTab, setActiveTab] = useState("conversations")
+  const { stats } = useChatStats()
 
   const handleSelectConversation = (conversation: LegacyChatConversation) => {
     setSelectedConversation(conversation)
   }
 
-  const urgentConversations = 0 // TODO: carregar do Firebase
-  const noResponseConversations = 0 // TODO: carregar do Firebase
+  const urgentConversations = stats?.conversationsByPriority.urgent ?? 0
+  const noResponseConversations = stats?.unreadMessages ?? 0
+  const activeConversations = stats?.activeConversations ?? 0
+  const totalConversations = stats?.totalConversations ?? 0
+  const averageResponseMinutes = stats?.averageResponseTime ?? 0
 
   return (
     <div className="space-y-6">
@@ -151,7 +151,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                     <Users className="h-5 w-5" />
                     Conversas Ativas
                   </span>
-                  <Badge variant="secondary">0</Badge>
+                  <Badge variant="secondary">{activeConversations}</Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -187,7 +187,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                     <p className="text-sm text-muted-foreground">Taxa de Satisfação</p>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">0</div>
+                    <div className="text-2xl font-bold text-purple-600">{totalConversations}</div>
                     <p className="text-sm text-muted-foreground">Conversas Hoje</p>
                   </div>
                   <div className="text-center p-4 bg-orange-50 rounded-lg">
@@ -293,15 +293,15 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Hoje</span>
-                    <span className="font-semibold">0</span>
+                    <span className="font-semibold">{activeConversations}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Esta Semana</span>
-                    <span className="font-semibold">0</span>
+                    <span className="font-semibold">{totalConversations}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Este Mês</span>
-                    <span className="font-semibold">0</span>
+                    <span className="font-semibold">{totalConversations}</span>
                   </div>
                 </div>
               </CardContent>
@@ -318,7 +318,9 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Média</span>
-                    <span className="font-semibold text-green-600">--</span>
+                    <span className="font-semibold text-green-600">
+                      {averageResponseMinutes > 0 ? `${averageResponseMinutes.toFixed(1)}m` : "--"}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Mais Rápido</span>

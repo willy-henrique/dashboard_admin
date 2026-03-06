@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Download, Eye, Edit, Ban, CheckCircle, Shield, Star, Loader2 } from "lucide-react"
 import { ProviderModal } from "./provider-modal"
 import { FirebaseProvidersService, type FirebaseProvider } from "@/lib/services/firebase-providers"
+import { mapProviderStatusToLegacy } from "@/lib/providers/status"
+import { toIsoStringFromUnknown } from "@/lib/date-utils"
 
 interface Provider {
   id: string
@@ -29,12 +31,6 @@ interface Provider {
 }
 
 function convertFirebaseToProvider(fp: FirebaseProvider): Provider {
-  const statusMap: Record<string, Provider['status']> = {
-    'disponivel': 'active',
-    'ocupado': 'active',
-    'online': 'active',
-    'offline': 'inactive',
-  }
   return {
     id: fp.id,
     name: fp.nome,
@@ -48,8 +44,8 @@ function convertFirebaseToProvider(fp: FirebaseProvider): Provider {
     rating: fp.avaliacao || 0,
     totalOrders: fp.totalServicos || 0,
     totalEarnings: 0,
-    status: statusMap[fp.status] || 'inactive',
-    createdAt: fp.createdAt?.toDate?.()?.toISOString?.() || new Date().toISOString(),
+    status: mapProviderStatusToLegacy(fp.status),
+    createdAt: toIsoStringFromUnknown(fp.createdAt),
   }
 }
 
@@ -57,28 +53,30 @@ export function ProvidersTable() {
   const [providers, setProviders] = useState<Provider[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [updatingProviderId, setUpdatingProviderId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  useEffect(() => {
-    async function fetchProviders() {
-      try {
-        setLoading(true)
-        setError(null)
-        const firebaseProviders = await FirebaseProvidersService.getProviders()
-        setProviders(firebaseProviders.map(convertFirebaseToProvider))
-      } catch (err) {
-        console.error('Erro ao buscar prestadores:', err)
-        setError('Erro ao carregar prestadores')
-      } finally {
-        setLoading(false)
-      }
+  const fetchProviders = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const firebaseProviders = await FirebaseProvidersService.getProviders()
+      setProviders(firebaseProviders.map(convertFirebaseToProvider))
+    } catch (err) {
+      console.error('Erro ao buscar prestadores:', err)
+      setError('Erro ao carregar prestadores')
+    } finally {
+      setLoading(false)
     }
-    fetchProviders()
   }, [])
+
+  useEffect(() => {
+    fetchProviders()
+  }, [fetchProviders])
 
   const filteredProviders = providers.filter((provider) => {
     const matchesSearch =
@@ -107,18 +105,20 @@ export function ProvidersTable() {
     }
   }
 
-  const handleStatusChange = (providerId: string, newStatus: "active" | "blocked") => {
-    setProviders(
-      providers.map((provider) => (provider.id === providerId ? { ...provider, status: newStatus } : provider)),
-    )
-  }
+  const handleStatusChange = async (provider: Provider, newStatus: "active" | "blocked") => {
+    try {
+      setUpdatingProviderId(provider.id)
+      setError(null)
 
-  const handleVerifyProvider = (providerId: string) => {
-    setProviders(
-      providers.map((provider) =>
-        provider.id === providerId ? { ...provider, isVerified: true, status: "active" } : provider,
-      ),
-    )
+      const firebaseStatus = newStatus === "active" ? "disponivel" : "offline"
+      await FirebaseProvidersService.updateProviderStatus(provider.id, firebaseStatus)
+      await fetchProviders()
+    } catch (err) {
+      console.error("Erro ao atualizar status do prestador:", err)
+      setError("Erro ao atualizar status do prestador")
+    } finally {
+      setUpdatingProviderId(null)
+    }
   }
 
   const handleViewProvider = (provider: Provider) => {
@@ -189,7 +189,7 @@ export function ProvidersTable() {
           {error && !loading && (
             <div className="text-center py-12">
               <p className="text-red-600 font-medium">{error}</p>
-              <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+              <Button variant="outline" className="mt-4" onClick={fetchProviders}>
                 Tentar novamente
               </Button>
             </div>
@@ -262,20 +262,40 @@ export function ProvidersTable() {
                           <Button variant="ghost" size="sm" onClick={() => handleViewProvider(provider)}>
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled
+                            title="Edicao detalhada sera conectada ao backend em breve"
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           {!provider.isVerified && provider.status === "pending" && (
-                            <Button variant="ghost" size="sm" onClick={() => handleVerifyProvider(provider.id)}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled
+                              title="Verificacao sera sincronizada pelo cadastro oficial"
+                            >
                               <Shield className="h-4 w-4 text-blue-600" />
                             </Button>
                           )}
                           {provider.status === "active" ? (
-                            <Button variant="ghost" size="sm" onClick={() => handleStatusChange(provider.id, "blocked")}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusChange(provider, "blocked")}
+                              disabled={updatingProviderId === provider.id}
+                            >
                               <Ban className="h-4 w-4 text-red-600" />
                             </Button>
                           ) : provider.status === "blocked" ? (
-                            <Button variant="ghost" size="sm" onClick={() => handleStatusChange(provider.id, "active")}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleStatusChange(provider, "active")}
+                              disabled={updatingProviderId === provider.id}
+                            >
                               <CheckCircle className="h-4 w-4 text-green-600" />
                             </Button>
                           ) : null}

@@ -11,6 +11,8 @@ import {
   serverTimestamp
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { getMockFirebaseOrders } from './firebase-dev-mock-data'
+import { createMockId, shouldUseFirebaseDevMocks } from './firebase-dev-fallback'
 
 export interface FirebaseOrder {
   id: string
@@ -60,11 +62,18 @@ export interface FirebaseOrder {
 export class FirebaseOrdersService {
   private static collectionName = 'orders'
 
+  private static getFallbackOrders(): FirebaseOrder[] {
+    if (!shouldUseFirebaseDevMocks()) {
+      return []
+    }
+    return getMockFirebaseOrders()
+  }
+
   // Buscar todos os pedidos
   static async getOrders(): Promise<FirebaseOrder[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackOrders()
     }
 
     try {
@@ -80,14 +89,14 @@ export class FirebaseOrdersService {
       })) as FirebaseOrder[]
     } catch (error) {
       console.error('Erro ao buscar pedidos:', error)
-      return []
+      return this.getFallbackOrders()
     }
   }
 
   static async getOrdersByStatus(status: FirebaseOrder['status']): Promise<FirebaseOrder[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackOrders().filter((order) => order.status === status)
     }
 
     try {
@@ -104,7 +113,7 @@ export class FirebaseOrdersService {
       })) as FirebaseOrder[]
     } catch (error) {
       console.error('Erro ao buscar pedidos por status:', error)
-      return []
+      return this.getFallbackOrders().filter((order) => order.status === status)
     }
   }
 
@@ -112,7 +121,7 @@ export class FirebaseOrdersService {
   static async createOrder(orderData: Omit<FirebaseOrder, 'id' | 'numero' | 'dataCriacao' | 'createdAt' | 'updatedAt'>): Promise<string> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return ''
+      return shouldUseFirebaseDevMocks() ? createMockId('order') : ''
     }
 
     try {
@@ -129,6 +138,9 @@ export class FirebaseOrdersService {
       return docRef.id
     } catch (error) {
       console.error('Erro ao criar pedido:', error)
+      if (shouldUseFirebaseDevMocks()) {
+        return createMockId('order')
+      }
       throw error
     }
   }
@@ -158,6 +170,9 @@ export class FirebaseOrdersService {
       await updateDoc(orderRef, updateData)
     } catch (error) {
       console.error('Erro ao atualizar status do pedido:', error)
+      if (shouldUseFirebaseDevMocks()) {
+        return
+      }
       throw error
     }
   }
@@ -168,7 +183,7 @@ export class FirebaseOrdersService {
   ): () => void {
     if (!db) {
       console.warn('Firebase não inicializado')
-      callback([])
+      callback(this.getFallbackOrders())
       return () => { }
     }
 
@@ -187,9 +202,8 @@ export class FirebaseOrdersService {
       })
     } catch (error) {
       console.error('Erro ao escutar pedidos:', error)
-      callback([])
+      callback(this.getFallbackOrders())
       return () => { }
     }
   }
 }
-

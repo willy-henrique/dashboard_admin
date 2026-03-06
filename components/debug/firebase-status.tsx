@@ -106,7 +106,7 @@ export function FirebaseStatus() {
             <li>2. Selecione o projeto: aplicativoservico-143c2</li>
             <li>3. Vá em Storage → Rules</li>
             <li>4. Cole as regras do arquivo storage.rules</li>
-            <li>5. Clique em "Publish"</li>
+            <li>5. Clique em &quot;Publish&quot;</li>
           </ol>
         </div>
       </CardContent>

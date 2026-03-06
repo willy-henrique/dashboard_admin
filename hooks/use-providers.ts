@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { FirebaseProvidersService, FirebaseProvider } from '@/lib/services/firebase-providers'
+import { toIsoStringFromUnknown } from '@/lib/date-utils'
+import { isProviderRealtimeStatus } from '@/lib/providers/status'
 
 export interface Provider {
   id: string
@@ -49,19 +51,23 @@ export function useProviders(options?: {
   const [error, setError] = useState<string | null>(null)
 
   // Converter FirebaseProvider para Provider
-  const convertFirebaseProvider = (fbProvider: FirebaseProvider): Provider => ({
-    id: fbProvider.id,
-    nome: fbProvider.nome,
-    telefone: fbProvider.telefone,
-    email: fbProvider.email,
-    status: fbProvider.status,
-    localizacao: fbProvider.localizacao,
-    ultimaAtualizacao: fbProvider.ultimaAtualizacao?.toDate?.()?.toISOString() || new Date().toISOString(),
-    servicoAtual: fbProvider.servicoAtual,
-    especialidades: fbProvider.especialidades,
-    avaliacao: fbProvider.avaliacao,
-    totalServicos: fbProvider.totalServicos
-  })
+  const convertFirebaseProvider = (fbProvider: FirebaseProvider): Provider => {
+    const status = isProviderRealtimeStatus(fbProvider.status) ? fbProvider.status : 'offline'
+
+    return {
+      id: fbProvider.id,
+      nome: fbProvider.nome || 'Prestador sem nome',
+      telefone: fbProvider.telefone || '',
+      email: fbProvider.email || '',
+      status,
+      localizacao: fbProvider.localizacao || { lat: 0, lng: 0 },
+      ultimaAtualizacao: toIsoStringFromUnknown(fbProvider.ultimaAtualizacao),
+      servicoAtual: fbProvider.servicoAtual ?? null,
+      especialidades: Array.isArray(fbProvider.especialidades) ? fbProvider.especialidades : [],
+      avaliacao: Number(fbProvider.avaliacao || 0),
+      totalServicos: Number(fbProvider.totalServicos || 0)
+    }
+  }
 
   // Calcular estatísticas
   const calculateStats = (providersList: Provider[]): ProvidersStats => {

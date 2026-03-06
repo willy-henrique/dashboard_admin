@@ -17,15 +17,15 @@ import {
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { shouldUseFirebaseDevMocks } from "@/lib/services/firebase-dev-fallback"
+import { getMockAdminLogs } from "@/lib/mocks/ui-data"
 
 export function AdminLogs() {
   const [logs, setLogs] = useState<AdminAction[]>([])
   const [loading, setLoading] = useState(true)
 
-  // TODO: Buscar logs reais do Firestore
   useEffect(() => {
-    // Sem dados mocados - carregará do Firebase quando implementado
-    setLogs([])
+    setLogs(shouldUseFirebaseDevMocks() ? getMockAdminLogs() : [])
     setLoading(false)
   }, [])
 

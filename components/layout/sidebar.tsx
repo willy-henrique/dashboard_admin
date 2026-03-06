@@ -103,10 +103,7 @@ const navigation = [
     icon: BarChart3,
     permission: "relatorios",
     children: [
-      { name: "Relatórios e Análises", href: "/reports", icon: BarChart3 },
-      { name: "Painel de Análises", href: "/reports/analytics", icon: TrendingUp },
-      // Página específica de performance não existe; usamos aba via query param
-      { name: "Performance", href: "/reports/analytics?tab=performance", icon: TrendingUp },
+      { name: "Central de Relatórios", href: "/reports", icon: TrendingUp },
     ],
   },
   {

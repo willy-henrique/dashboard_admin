@@ -16,11 +16,12 @@ import {
   User,
   Bot,
   AlertCircle,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { shouldUseFirebaseDevMocks } from "@/lib/services/firebase-dev-fallback"
+import { getMockSupportMessages } from "@/lib/mocks/ui-data"
 
 interface Message {
   id: string
@@ -47,6 +48,14 @@ export function SupportChat({ orderId, clientName, clientEmail, clientPhone }: S
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
+
+  useEffect(() => {
+    if (!shouldUseFirebaseDevMocks()) {
+      return
+    }
+
+    setMessages(getMockSupportMessages(orderId))
+  }, [orderId])
 
   useEffect(() => {
     scrollToBottom()

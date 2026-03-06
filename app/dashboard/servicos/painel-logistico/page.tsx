@@ -21,7 +21,6 @@ import {
   Upload,
   FileText,
   Layout,
-  Bell,
   Target,
   Info,
   Volume2,
@@ -159,10 +158,6 @@ export default function PainelLogisticoPage() {
 
       {/* Barra de Notificações */}
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" className="relative">
-          <Bell className="h-4 w-4" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></div>
-        </Button>
         <Button variant="outline" size="sm">
           <Target className="h-4 w-4" />
         </Button>

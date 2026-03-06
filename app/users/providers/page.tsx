@@ -360,7 +360,7 @@ export default function ProvidersPage() {
                   </div>
                 </div>
                 <div className="text-sm text-gray-600">
-                  <p><strong>Filtro aplicado:</strong> userType: 'provider'</p>
+                  <p><strong>Filtro aplicado:</strong> userType: &apos;provider&apos;</p>
                   <p><strong>Status:</strong> {loading ? 'Carregando...' : 'Concluído'}</p>
                 </div>
               </div>

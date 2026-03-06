@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, User, Clock, Phone, RefreshCw } from "lucide-react"
-import { useProviders, Provider } from "@/hooks/use-providers"
+import { useProviders } from "@/hooks/use-providers"
+import type { Provider } from "@/hooks/use-providers"
 
 const statusConfig = {
   disponivel: { color: "bg-green-500", label: "Disponível", textColor: "text-green-700" },

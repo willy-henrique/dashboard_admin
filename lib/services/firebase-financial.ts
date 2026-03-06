@@ -11,6 +11,8 @@ import {
   serverTimestamp
 } from 'firebase/firestore'
 import { db } from '../firebase'
+import { getMockFirebaseAccounts, getMockFirebaseTransactions } from './firebase-dev-mock-data'
+import { createMockId, shouldUseFirebaseDevMocks } from './firebase-dev-fallback'
 
 export interface FirebaseTransaction {
   id: string
@@ -55,13 +57,27 @@ export class FirebaseFinancialService {
   private static transactionsCollection = 'transactions'
   private static accountsCollection = 'accounts'
 
+  private static getFallbackTransactions(): FirebaseTransaction[] {
+    if (!shouldUseFirebaseDevMocks()) {
+      return []
+    }
+    return getMockFirebaseTransactions()
+  }
+
+  private static getFallbackAccounts(): FirebaseAccount[] {
+    if (!shouldUseFirebaseDevMocks()) {
+      return []
+    }
+    return getMockFirebaseAccounts()
+  }
+
   // === TRANSAÇÕES ===
 
   // Buscar todas as transações
   static async getTransactions(): Promise<FirebaseTransaction[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackTransactions()
     }
 
     try {
@@ -77,7 +93,7 @@ export class FirebaseFinancialService {
       })) as FirebaseTransaction[]
     } catch (error) {
       console.error('Erro ao buscar transações:', error)
-      return []
+      return this.getFallbackTransactions()
     }
   }
 
@@ -88,7 +104,9 @@ export class FirebaseFinancialService {
   ): Promise<FirebaseTransaction[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackTransactions().filter((transaction) => (
+        transaction.data >= dataInicio && transaction.data <= dataFim
+      ))
     }
 
     try {
@@ -106,7 +124,9 @@ export class FirebaseFinancialService {
       })) as FirebaseTransaction[]
     } catch (error) {
       console.error('Erro ao buscar transações por período:', error)
-      return []
+      return this.getFallbackTransactions().filter((transaction) => (
+        transaction.data >= dataInicio && transaction.data <= dataFim
+      ))
     }
   }
 
@@ -116,7 +136,7 @@ export class FirebaseFinancialService {
   ): Promise<string> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return ''
+      return shouldUseFirebaseDevMocks() ? createMockId('transaction') : ''
     }
 
     try {
@@ -129,6 +149,9 @@ export class FirebaseFinancialService {
       return docRef.id
     } catch (error) {
       console.error('Erro ao criar transação:', error)
+      if (shouldUseFirebaseDevMocks()) {
+        return createMockId('transaction')
+      }
       throw error
     }
   }
@@ -139,7 +162,7 @@ export class FirebaseFinancialService {
   static async getAccounts(): Promise<FirebaseAccount[]> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return []
+      return this.getFallbackAccounts()
     }
 
     try {
@@ -156,7 +179,7 @@ export class FirebaseFinancialService {
       })) as FirebaseAccount[]
     } catch (error) {
       console.error('Erro ao buscar contas:', error)
-      return []
+      return this.getFallbackAccounts()
     }
   }
 
@@ -166,7 +189,7 @@ export class FirebaseFinancialService {
   ): Promise<string> {
     if (!db) {
       console.warn('Firebase não inicializado')
-      return ''
+      return shouldUseFirebaseDevMocks() ? createMockId('account') : ''
     }
 
     try {
@@ -179,6 +202,9 @@ export class FirebaseFinancialService {
       return docRef.id
     } catch (error) {
       console.error('Erro ao criar conta:', error)
+      if (shouldUseFirebaseDevMocks()) {
+        return createMockId('account')
+      }
       throw error
     }
   }
@@ -189,7 +215,7 @@ export class FirebaseFinancialService {
   ): () => void {
     if (!db) {
       console.warn('Firebase não inicializado')
-      callback([])
+      callback(this.getFallbackTransactions())
       return () => { }
     }
 
@@ -208,7 +234,7 @@ export class FirebaseFinancialService {
       })
     } catch (error) {
       console.error('Erro ao escutar transações:', error)
-      callback([])
+      callback(this.getFallbackTransactions())
       return () => { }
     }
   }
