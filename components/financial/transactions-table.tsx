@@ -141,7 +141,7 @@ export function TransactionsTable() {
           <div>
             <CardTitle>Transacoes do Pagar.me</CardTitle>
             <CardDescription>
-              {filteredCharges.length} de {charges.length} cobrancas • Total: {PagarmeService.formatCurrency(PagarmeService.fromCents(totalAmount))} • Pago: {PagarmeService.formatCurrency(PagarmeService.fromCents(totalPaid))}
+              {filteredCharges.length} de {charges.length} cobrancas - Total: {PagarmeService.formatCurrency(PagarmeService.fromCents(totalAmount))} - Pago: {PagarmeService.formatCurrency(PagarmeService.fromCents(totalPaid))}
             </CardDescription>
           </div>
           <Button onClick={() => void refetch()} variant="outline" size="sm">
