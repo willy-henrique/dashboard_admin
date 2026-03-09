@@ -203,6 +203,8 @@ export const resolveOrderProviderId = (orderData: UnknownRecord): string => {
     readString(orderData.prestadorUid) ||
     readString(orderData.prestador_id) ||
     readString(orderData.prestador_uid) ||
+    readString(orderData.assignedProvider) ||
+    readString(orderData.assigned_provider) ||
     readString(orderData.assignedProviderId) ||
     readString(orderData.assignedProviderUid) ||
     readString(orderData.assigned_provider_id) ||

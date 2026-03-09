@@ -6,7 +6,7 @@ function emptyChargesPayload(warning: string) {
     success: true,
     data: [],
     paging: { total: 0, page: 1 },
-    source: 'fallback',
+    source: 'empty',
     warning,
   }
 }

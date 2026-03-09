@@ -13,7 +13,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react"
-import { usePagarmeBalance, usePagarmeCharges, usePagarmeOrders } from "@/hooks/use-pagarme"
+import { usePagarmeBalance, usePagarmeCharges } from "@/hooks/use-pagarme"
 import { PagarmeService } from "@/lib/services/pagarme-service"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -52,16 +52,24 @@ const getPaymentMethodIcon = (method: string) => {
 
 export default function ContasPage() {
   const [search, setSearch] = useState("")
-  const { balance, loading: balanceLoading, error: balanceError, refetch: refetchBalance } = usePagarmeBalance(true)
-  const { charges, loading: chargesLoading, error: chargesError, refetch: refetchCharges } = usePagarmeCharges({
-    autoRefresh: true,
-  })
-  const { loading: ordersLoading, error: ordersError, refetch: refetchOrders } = usePagarmeOrders({
-    autoRefresh: true,
-  })
+  const {
+    balance,
+    loading: balanceLoading,
+    error: balanceError,
+    warning: balanceWarning,
+    refetch: refetchBalance,
+  } = usePagarmeBalance(true)
+  const {
+    charges,
+    loading: chargesLoading,
+    error: chargesError,
+    warning: chargesWarning,
+    refetch: refetchCharges,
+  } = usePagarmeCharges({ autoRefresh: true })
 
-  const statusMessage = balanceError || chargesError || ordersError
-  const loading = balanceLoading || chargesLoading || ordersLoading
+  const statusMessage = balanceError || chargesError
+  const warningMessage = balanceWarning || chargesWarning
+  const loading = balanceLoading || chargesLoading
 
   const stats = useMemo(() => {
     const saldoDisponivel = PagarmeService.fromCents(balance?.available_amount ?? 0)
@@ -76,7 +84,7 @@ export default function ContasPage() {
       charges
         ?.filter((charge) => {
           const chargeDate = new Date(charge.created_at)
-          return chargeDate >= firstDay && chargeDate <= lastDay && charge.status === 'paid'
+          return chargeDate >= firstDay && chargeDate <= lastDay && charge.status === "paid"
         })
         ?.reduce((sum, charge) => sum + PagarmeService.fromCents(charge.paid_amount || charge.amount), 0) ?? 0
 
@@ -84,7 +92,7 @@ export default function ContasPage() {
       charges
         ?.filter((charge) => {
           const chargeDate = new Date(charge.created_at)
-          return chargeDate >= firstDay && chargeDate <= lastDay && charge.status === 'paid'
+          return chargeDate >= firstDay && chargeDate <= lastDay && charge.status === "paid"
         })
         ?.reduce((sum, charge) => {
           const valor = PagarmeService.fromCents(charge.paid_amount || charge.amount)
@@ -123,9 +131,9 @@ export default function ContasPage() {
   const movimentacoes = useMemo(() => {
     return (charges || []).slice(0, 10).map((charge) => ({
       id: charge.id,
-      data: new Date(charge.created_at).toLocaleDateString('pt-BR'),
+      data: new Date(charge.created_at).toLocaleDateString("pt-BR"),
       descricao: `Pagamento ${charge.payment_method.toUpperCase()} - ${charge.customer.name}`,
-      tipo: charge.status === 'paid' ? 'receita' : 'pendente',
+      tipo: charge.status === "paid" ? "receita" : "pendente",
       valor: PagarmeService.fromCents(charge.paid_amount || charge.amount),
       conta: "Saldo Pagar.me",
       status: charge.status,
@@ -134,9 +142,8 @@ export default function ContasPage() {
   }, [charges])
 
   const handleRefresh = () => {
-    refetchBalance()
-    refetchCharges()
-    refetchOrders()
+    void refetchBalance()
+    void refetchCharges()
   }
 
   return (
@@ -158,11 +165,13 @@ export default function ContasPage() {
         </div>
       </div>
 
-      {statusMessage && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {statusMessage}
-        </div>
-      )}
+      {statusMessage ? (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{statusMessage}</div>
+      ) : null}
+
+      {warningMessage && !statusMessage ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">{warningMessage}</div>
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -172,9 +181,7 @@ export default function ContasPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{PagarmeService.formatCurrency(stats.saldoTotal)}</div>
-            <p className="text-xs text-gray-500">
-              Disponivel: {PagarmeService.formatCurrency(stats.saldoDisponivel)}
-            </p>
+            <p className="text-xs text-gray-500">Disponivel: {PagarmeService.formatCurrency(stats.saldoDisponivel)}</p>
           </CardContent>
         </Card>
 
@@ -207,9 +214,7 @@ export default function ContasPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{contas.length}</div>
-            <p className="text-xs text-gray-500">
-              {contas.length > 0 ? "Fonte financeira conectada" : "Nenhuma conta real conectada"}
-            </p>
+            <p className="text-xs text-gray-500">{contas.length > 0 ? "Fonte financeira conectada" : "Nenhuma conta real conectada"}</p>
           </CardContent>
         </Card>
       </div>
@@ -227,7 +232,7 @@ export default function ContasPage() {
             />
           </div>
         </div>
-        {loading && <p className="text-sm text-gray-500">Atualizando dados financeiros...</p>}
+        {loading ? <p className="text-sm text-gray-500">Atualizando dados financeiros...</p> : null}
       </div>
 
       <Card>
@@ -262,12 +267,8 @@ export default function ContasPage() {
                       <TableCell>
                         <Badge className="bg-blue-100 text-blue-800">{account.tipo}</Badge>
                       </TableCell>
-                      <TableCell className="font-medium text-green-600">
-                        {PagarmeService.formatCurrency(account.saldo)}
-                      </TableCell>
-                      <TableCell className="font-medium text-yellow-600">
-                        {PagarmeService.formatCurrency(account.saldoAReceber)}
-                      </TableCell>
+                      <TableCell className="font-medium text-green-600">{PagarmeService.formatCurrency(account.saldo)}</TableCell>
+                      <TableCell className="font-medium text-yellow-600">{PagarmeService.formatCurrency(account.saldoAReceber)}</TableCell>
                       <TableCell>
                         <Badge className="bg-green-100 text-green-800">{account.status}</Badge>
                       </TableCell>
@@ -298,17 +299,12 @@ export default function ContasPage() {
           <div className="space-y-4">
             {movimentacoes.length > 0 ? (
               movimentacoes.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0"
-                >
+                <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gray-100 rounded-full">{getPaymentMethodIcon(transaction.metodo)}</div>
                     <div>
                       <p className="font-medium text-gray-900">{transaction.descricao}</p>
-                      <p className="text-sm text-gray-500">
-                        {transaction.conta} - {transaction.data}
-                      </p>
+                      <p className="text-sm text-gray-500">{transaction.conta} - {transaction.data}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -324,7 +320,7 @@ export default function ContasPage() {
               <div className="text-center py-8 text-gray-500">
                 <DollarSign className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p>Nenhuma movimentacao encontrada</p>
-                <p className="text-sm">As transacoes so aparecem aqui quando o provedor retorna dados reais.</p>
+                <p className="text-sm">{warningMessage || "As transacoes so aparecem aqui quando o provedor retorna dados reais."}</p>
               </div>
             )}
           </div>

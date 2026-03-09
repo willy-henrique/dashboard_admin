@@ -1,10 +1,5 @@
 "use client"
 
-/**
- * HOOKS CUSTOMIZADOS PARA PAGAR.ME
- * Facilita o uso da API do Pagar.me nos componentes React
- */
-
 import { useState, useEffect, useCallback } from 'react'
 import {
   PagarmeOrder,
@@ -15,9 +10,14 @@ import {
   PagarmeAnalytics,
 } from '@/types/pagarme'
 
-// ==========================================
-// HOOK: useP agarmeOrders
-// ==========================================
+interface ApiEnvelope<T> {
+  success: boolean
+  data?: T
+  error?: string
+  errors?: Array<{ message?: string }>
+  warning?: string
+}
+
 export function usePagarmeOrders(options?: {
   status?: string
   customer_id?: string
@@ -26,56 +26,65 @@ export function usePagarmeOrders(options?: {
   const [orders, setOrders] = useState<PagarmeOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+      setWarning(null)
 
       const params = new URLSearchParams()
       if (options?.status) params.append('status', options.status)
       if (options?.customer_id) params.append('customer_id', options.customer_id)
 
       const response = await fetch(`/api/pagarme/orders?${params.toString()}`)
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeOrder[]>
 
       if (data.success) {
         setOrders(data.data || [])
+        setWarning(data.warning || null)
       } else {
-        setError(data.error || 'Erro ao buscar pedidos')
+        setWarning(data.warning || null)
+        setError(data.error || data.errors?.[0]?.message || 'Erro ao buscar pedidos')
       }
     } catch (err) {
       console.error('Erro ao buscar pedidos:', err)
       setError('Erro ao buscar pedidos')
+      setWarning(null)
     } finally {
       setLoading(false)
     }
   }, [options?.status, options?.customer_id])
 
   useEffect(() => {
-    fetchOrders()
+    void fetchOrders()
 
     if (options?.autoRefresh) {
-      const interval = setInterval(fetchOrders, 30000) // Atualiza a cada 30s
+      const interval = setInterval(() => {
+        void fetchOrders()
+      }, 30000)
       return () => clearInterval(interval)
     }
+
+    return undefined
   }, [fetchOrders, options?.autoRefresh])
 
-  const createOrder = async (orderData: any) => {
+  const createOrder = async (orderData: unknown) => {
     try {
       const response = await fetch('/api/pagarme/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeOrder>
 
       if (data.success) {
-        await fetchOrders() // Recarrega a lista
-        return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
+        await fetchOrders()
+        return { success: true, data: data.data, warning: data.warning }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao criar pedido' }
     } catch (err) {
       console.error('Erro ao criar pedido:', err)
       return { success: false, error: 'Erro ao criar pedido' }
@@ -87,14 +96,14 @@ export function usePagarmeOrders(options?: {
       const response = await fetch(`/api/pagarme/orders/${orderId}`, {
         method: 'DELETE',
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeOrder>
 
       if (data.success) {
-        await fetchOrders() // Recarrega a lista
+        await fetchOrders()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao cancelar pedido' }
     } catch (err) {
       console.error('Erro ao cancelar pedido:', err)
       return { success: false, error: 'Erro ao cancelar pedido' }
@@ -105,15 +114,13 @@ export function usePagarmeOrders(options?: {
     orders,
     loading,
     error,
+    warning,
     refetch: fetchOrders,
     createOrder,
     cancelOrder,
   }
 }
 
-// ==========================================
-// HOOK: usePagarmeCustomers
-// ==========================================
 export function usePagarmeCustomers() {
   const [customers, setCustomers] = useState<PagarmeCustomer[]>([])
   const [loading, setLoading] = useState(true)
@@ -125,12 +132,12 @@ export function usePagarmeCustomers() {
       setError(null)
 
       const response = await fetch('/api/pagarme/customers')
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeCustomer[]>
 
       if (data.success) {
         setCustomers(data.data || [])
       } else {
-        setError(data.error || 'Erro ao buscar clientes')
+        setError(data.error || data.errors?.[0]?.message || 'Erro ao buscar clientes')
       }
     } catch (err) {
       console.error('Erro ao buscar clientes:', err)
@@ -141,7 +148,7 @@ export function usePagarmeCustomers() {
   }, [])
 
   useEffect(() => {
-    fetchCustomers()
+    void fetchCustomers()
   }, [fetchCustomers])
 
   const createCustomer = async (customerData: Partial<PagarmeCustomer>) => {
@@ -151,14 +158,14 @@ export function usePagarmeCustomers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customerData),
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeCustomer>
 
       if (data.success) {
-        await fetchCustomers() // Recarrega a lista
+        await fetchCustomers()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao criar cliente' }
     } catch (err) {
       console.error('Erro ao criar cliente:', err)
       return { success: false, error: 'Erro ao criar cliente' }
@@ -172,14 +179,14 @@ export function usePagarmeCustomers() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customerData),
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeCustomer>
 
       if (data.success) {
-        await fetchCustomers() // Recarrega a lista
+        await fetchCustomers()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao atualizar cliente' }
     } catch (err) {
       console.error('Erro ao atualizar cliente:', err)
       return { success: false, error: 'Erro ao atualizar cliente' }
@@ -196,9 +203,6 @@ export function usePagarmeCustomers() {
   }
 }
 
-// ==========================================
-// HOOK: usePagarmeCharges
-// ==========================================
 export function usePagarmeCharges(options?: {
   status?: string
   customer_id?: string
@@ -207,39 +211,48 @@ export function usePagarmeCharges(options?: {
   const [charges, setCharges] = useState<PagarmeCharge[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const fetchCharges = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+      setWarning(null)
 
       const params = new URLSearchParams()
       if (options?.status) params.append('status', options.status)
       if (options?.customer_id) params.append('customer_id', options.customer_id)
 
       const response = await fetch(`/api/pagarme/charges?${params.toString()}`)
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeCharge[]>
 
       if (data.success) {
         setCharges(data.data || [])
+        setWarning(data.warning || null)
       } else {
-        setError(data.error || 'Erro ao buscar cobranças')
+        setWarning(data.warning || null)
+        setError(data.error || data.errors?.[0]?.message || 'Erro ao buscar cobrancas')
       }
     } catch (err) {
-      console.error('Erro ao buscar cobranças:', err)
-      setError('Erro ao buscar cobranças')
+      console.error('Erro ao buscar cobrancas:', err)
+      setError('Erro ao buscar cobrancas')
+      setWarning(null)
     } finally {
       setLoading(false)
     }
   }, [options?.status, options?.customer_id])
 
   useEffect(() => {
-    fetchCharges()
+    void fetchCharges()
 
     if (options?.autoRefresh) {
-      const interval = setInterval(fetchCharges, 30000) // Atualiza a cada 30s
+      const interval = setInterval(() => {
+        void fetchCharges()
+      }, 30000)
       return () => clearInterval(interval)
     }
+
+    return undefined
   }, [fetchCharges, options?.autoRefresh])
 
   const refundCharge = async (chargeId: string, amount?: number) => {
@@ -249,17 +262,17 @@ export function usePagarmeCharges(options?: {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeCharge>
 
       if (data.success) {
-        await fetchCharges() // Recarrega a lista
+        await fetchCharges()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao reembolsar cobranca' }
     } catch (err) {
-      console.error('Erro ao reembolsar cobrança:', err)
-      return { success: false, error: 'Erro ao reembolsar cobrança' }
+      console.error('Erro ao reembolsar cobranca:', err)
+      return { success: false, error: 'Erro ao reembolsar cobranca' }
     }
   }
 
@@ -268,17 +281,17 @@ export function usePagarmeCharges(options?: {
       const response = await fetch(`/api/pagarme/charges/${chargeId}`, {
         method: 'DELETE',
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeCharge>
 
       if (data.success) {
-        await fetchCharges() // Recarrega a lista
+        await fetchCharges()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao cancelar cobranca' }
     } catch (err) {
-      console.error('Erro ao cancelar cobrança:', err)
-      return { success: false, error: 'Erro ao cancelar cobrança' }
+      console.error('Erro ao cancelar cobranca:', err)
+      return { success: false, error: 'Erro ao cancelar cobranca' }
     }
   }
 
@@ -286,15 +299,13 @@ export function usePagarmeCharges(options?: {
     charges,
     loading,
     error,
+    warning,
     refetch: fetchCharges,
     refundCharge,
     cancelCharge,
   }
 }
 
-// ==========================================
-// HOOK: usePagarmeSubscriptions
-// ==========================================
 export function usePagarmeSubscriptions(options?: {
   status?: string
   customer_id?: string
@@ -314,12 +325,12 @@ export function usePagarmeSubscriptions(options?: {
       if (options?.customer_id) params.append('customer_id', options.customer_id)
 
       const response = await fetch(`/api/pagarme/subscriptions?${params.toString()}`)
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeSubscription[]>
 
       if (data.success) {
         setSubscriptions(data.data || [])
       } else {
-        setError(data.error || 'Erro ao buscar assinaturas')
+        setError(data.error || data.errors?.[0]?.message || 'Erro ao buscar assinaturas')
       }
     } catch (err) {
       console.error('Erro ao buscar assinaturas:', err)
@@ -330,29 +341,33 @@ export function usePagarmeSubscriptions(options?: {
   }, [options?.status, options?.customer_id])
 
   useEffect(() => {
-    fetchSubscriptions()
+    void fetchSubscriptions()
 
     if (options?.autoRefresh) {
-      const interval = setInterval(fetchSubscriptions, 60000) // Atualiza a cada 60s
+      const interval = setInterval(() => {
+        void fetchSubscriptions()
+      }, 60000)
       return () => clearInterval(interval)
     }
+
+    return undefined
   }, [fetchSubscriptions, options?.autoRefresh])
 
-  const createSubscription = async (subscriptionData: any) => {
+  const createSubscription = async (subscriptionData: unknown) => {
     try {
       const response = await fetch('/api/pagarme/subscriptions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(subscriptionData),
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeSubscription>
 
       if (data.success) {
-        await fetchSubscriptions() // Recarrega a lista
+        await fetchSubscriptions()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao criar assinatura' }
     } catch (err) {
       console.error('Erro ao criar assinatura:', err)
       return { success: false, error: 'Erro ao criar assinatura' }
@@ -364,14 +379,14 @@ export function usePagarmeSubscriptions(options?: {
       const response = await fetch(`/api/pagarme/subscriptions/${subscriptionId}`, {
         method: 'DELETE',
       })
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeSubscription>
 
       if (data.success) {
-        await fetchSubscriptions() // Recarrega a lista
+        await fetchSubscriptions()
         return { success: true, data: data.data }
-      } else {
-        return { success: false, error: data.error || data.errors }
       }
+
+      return { success: false, error: data.error || data.errors?.[0]?.message || 'Erro ao cancelar assinatura' }
     } catch (err) {
       console.error('Erro ao cancelar assinatura:', err)
       return { success: false, error: 'Erro ao cancelar assinatura' }
@@ -388,64 +403,70 @@ export function usePagarmeSubscriptions(options?: {
   }
 }
 
-// ==========================================
-// HOOK: usePagarmeBalance
-// ==========================================
 export function usePagarmeBalance(autoRefresh?: boolean) {
   const [balance, setBalance] = useState<PagarmeBalance | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const fetchBalance = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+      setWarning(null)
 
       const response = await fetch('/api/pagarme/balance')
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeBalance>
 
       if (data.success) {
-        setBalance(data.data)
+        setBalance(data.data || null)
+        setWarning(data.warning || null)
       } else {
-        setError(data.error || 'Erro ao buscar saldo')
+        setWarning(data.warning || null)
+        setError(data.error || data.errors?.[0]?.message || 'Erro ao buscar saldo')
       }
     } catch (err) {
       console.error('Erro ao buscar saldo:', err)
       setError('Erro ao buscar saldo')
+      setWarning(null)
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchBalance()
+    void fetchBalance()
 
     if (autoRefresh) {
-      const interval = setInterval(fetchBalance, 60000) // Atualiza a cada 60s
+      const interval = setInterval(() => {
+        void fetchBalance()
+      }, 60000)
       return () => clearInterval(interval)
     }
+
+    return undefined
   }, [fetchBalance, autoRefresh])
 
   return {
     balance,
     loading,
     error,
+    warning,
     refetch: fetchBalance,
   }
 }
 
-// ==========================================
-// HOOK: usePagarmeAnalytics
-// ==========================================
 export function usePagarmeAnalytics(startDate: string, endDate: string) {
   const [analytics, setAnalytics] = useState<PagarmeAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
 
   const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
+      setWarning(null)
 
       const params = new URLSearchParams({
         start_date: startDate,
@@ -453,16 +474,19 @@ export function usePagarmeAnalytics(startDate: string, endDate: string) {
       })
 
       const response = await fetch(`/api/pagarme/analytics?${params.toString()}`)
-      const data = await response.json()
+      const data = (await response.json()) as ApiEnvelope<PagarmeAnalytics>
 
       if (data.success) {
-        setAnalytics(data.data)
+        setAnalytics(data.data || null)
+        setWarning(data.warning || null)
       } else {
-        setError(data.error || 'Erro ao buscar analytics')
+        setWarning(data.warning || null)
+        setError(data.error || data.errors?.[0]?.message || 'Erro ao buscar analytics')
       }
     } catch (err) {
       console.error('Erro ao buscar analytics:', err)
       setError('Erro ao buscar analytics')
+      setWarning(null)
     } finally {
       setLoading(false)
     }
@@ -470,7 +494,7 @@ export function usePagarmeAnalytics(startDate: string, endDate: string) {
 
   useEffect(() => {
     if (startDate && endDate) {
-      fetchAnalytics()
+      void fetchAnalytics()
     }
   }, [fetchAnalytics, startDate, endDate])
 
@@ -478,7 +502,7 @@ export function usePagarmeAnalytics(startDate: string, endDate: string) {
     analytics,
     loading,
     error,
+    warning,
     refetch: fetchAnalytics,
   }
 }
-

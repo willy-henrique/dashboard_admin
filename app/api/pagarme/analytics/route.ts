@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         conversionRate: 0,
         paymentMethods: analytics.payment_methods,
         recentCharges: [],
-        source: 'fallback',
+        source: 'empty',
         warning: 'API_KEY_PRIVATE_PAGARME não configurada',
       })
     }
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
       conversionRate: 0,
       paymentMethods: analytics.payment_methods,
       recentCharges: [],
-      source: 'fallback',
+      source: 'empty',
       warning: 'Erro ao buscar analytics do Pagar.me',
     })
   }

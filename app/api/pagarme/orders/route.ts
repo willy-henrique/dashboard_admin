@@ -7,7 +7,7 @@ function emptyOrdersPayload(warning: string) {
     success: true,
     data: [],
     paging: { total: 0, page: 1 },
-    source: 'fallback',
+    source: 'empty',
     warning,
   }
 }
@@ -87,12 +87,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    let warning: string | undefined
+
     if (response.data) {
       try {
         await PagarmeFirebaseSync.saveOrder(response.data)
         await PagarmeFirebaseSync.logSync('order_created', 1, 'success')
       } catch (syncError) {
         console.error('Erro ao sincronizar com Firebase:', syncError)
+        warning = 'Pedido criado no Pagar.me, mas a sincronizacao com o Firebase falhou.'
       }
     }
 
@@ -101,6 +104,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: response.data,
         message: 'Pedido criado com sucesso',
+        warning,
       },
       { status: 201 }
     )
