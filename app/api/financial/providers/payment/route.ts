@@ -66,11 +66,13 @@ class HttpError extends Error {
   }
 }
 
-const resolveProviderName = (providerId: string, providerData: Record<string, unknown>): string =>
+const resolveProviderName = (
+  _providerId: string,
+  providerData: Record<string, unknown>
+): string =>
   readString(providerData.nome) ||
   readString(providerData.name) ||
-  readString(providerData.fullName) ||
-  `Prestador ${providerId.slice(0, 8)}`
+  readString(providerData.fullName)
 
 const resolveProviderUid = (providerId: string, providerData: Record<string, unknown>): string =>
   readString(providerData.uid) || providerId
@@ -277,7 +279,7 @@ export async function POST(request: NextRequest) {
         paymentMethod,
         description:
           readString(body.description) ||
-          `Pagamento para ${providerName} no valor de R$ ${centsToAmount(amountCents).toFixed(2)}`,
+          `Pagamento para ${providerName || providerUid || providerId} no valor de R$ ${centsToAmount(amountCents).toFixed(2)}`,
         status: 'completed',
         allocations,
         totalOrdersAffected: allocations.length,

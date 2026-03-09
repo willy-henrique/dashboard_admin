@@ -51,7 +51,7 @@ export default function FaturamentoPage() {
   const [amountError, setAmountError] = useState<string | null>(null)
 
   const { toast } = useToast()
-  const { providers, loading, error, refetch, totalEarnings } = useProvidersBilling({
+  const { providers, loading, error, warning, refetch, totalEarnings } = useProvidersBilling({
     autoRefresh: true,
     refreshInterval: 30000,
   })
@@ -109,16 +109,35 @@ export default function FaturamentoPage() {
 
   const stats = useMemo(() => {
     const withEarnings = providers.filter((provider) => provider.totalEarnings > 0).length
-    const totalJobs = providers.reduce((sum, provider) => sum + (provider.totalJobs || 0), 0)
+    const pendingOrders = providers.reduce(
+      (sum, provider) => sum + (provider.pendingOrdersCount || 0),
+      0
+    )
+    const averageEarnings =
+      withEarnings > 0 ? totalEarnings / withEarnings : null
 
     return {
       totalProviders: providers.length,
       withEarnings,
       totalEarnings,
-      totalJobs,
-      averageEarnings: providers.length > 0 ? totalEarnings / providers.length : 0,
+      pendingOrders,
+      averageEarnings,
     }
   }, [providers, totalEarnings])
+
+  const hasActiveFilters = search.trim().length > 0 || filterEarnings !== "all"
+
+  const emptyTableMessage = useMemo(() => {
+    if (hasActiveFilters) {
+      return "Nenhum prestador corresponde aos filtros aplicados."
+    }
+
+    if (warning) {
+      return warning
+    }
+
+    return "Nenhum dado real de faturamento encontrado para prestadores."
+  }, [hasActiveFilters, warning])
 
   const handleOpenPaymentDialog = (provider: ProviderBilling) => {
     setSelectedProvider(provider)
@@ -270,6 +289,20 @@ export default function FaturamentoPage() {
         <p className="text-gray-600 dark:text-gray-400">appservico.com &gt; financeiro &gt; pagamentos a prestadores</p>
       </div>
 
+      {warning ? (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3 text-amber-900">
+              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold">Aviso de faturamento</p>
+                <p className="text-sm text-amber-800">{warning}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
@@ -300,8 +333,10 @@ export default function FaturamentoPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Media por Prestador</p>
-                <p className="text-2xl font-bold text-purple-600">{formatCurrency(stats.averageEarnings)}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Media por Prestador com Saldo</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {stats.averageEarnings === null ? "--" : formatCurrency(stats.averageEarnings)}
+                </p>
               </div>
               <Wallet className="h-8 w-8 text-purple-600" />
             </div>
@@ -312,8 +347,8 @@ export default function FaturamentoPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pedidos Elegiveis</p>
-                <p className="text-2xl font-bold text-orange-600">{stats.totalJobs}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pedidos com Saldo</p>
+                <p className="text-2xl font-bold text-orange-600">{stats.pendingOrders}</p>
               </div>
               <CreditCard className="h-8 w-8 text-orange-600" />
             </div>
@@ -368,7 +403,7 @@ export default function FaturamentoPage() {
                 {filteredProviders.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                      Nenhum prestador encontrado
+                      {emptyTableMessage}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -423,9 +458,15 @@ export default function FaturamentoPage() {
 
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <Badge variant={provider.isActive ? "default" : "secondary"} className="w-fit">
-                            {provider.isActive ? "Ativo" : "Inativo"}
-                          </Badge>
+                          {typeof provider.isActive === "boolean" ? (
+                            <Badge variant={provider.isActive ? "default" : "secondary"} className="w-fit">
+                              {provider.isActive ? "Ativo" : "Inativo"}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="w-fit">
+                              Status nao informado
+                            </Badge>
+                          )}
                           {provider.isVerified ? (
                             <Badge variant="outline" className="w-fit text-green-600 border-green-600">
                               <CheckCircle2 className="h-3 w-3 mr-1" />

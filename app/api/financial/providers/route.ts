@@ -35,11 +35,10 @@ const getNestedRecord = (value: unknown): Record<string, unknown> => {
   return value as Record<string, unknown>
 }
 
-const resolveProviderName = (providerId: string, data: Record<string, unknown>): string =>
+const resolveProviderName = (_providerId: string, data: Record<string, unknown>): string =>
   readString(data.nome) ||
   readString(data.name) ||
-  readString(data.fullName) ||
-  `Prestador ${providerId.slice(0, 8)}`
+  readString(data.fullName)
 
 const resolvePixKey = (data: Record<string, unknown>): string => {
   return readString(data.pixKey)
@@ -56,7 +55,7 @@ const createProviderEntry = (
 ): ProviderBilling => ({
   id: providerId,
   uid: readString(data.uid) || providerId,
-  nome: resolveProviderName(providerId, data) || fallback?.nome || 'Sem nome',
+  nome: resolveProviderName(providerId, data) || fallback?.nome || '',
   phone: readString(data.phone) || readString(data.telefone) || fallback?.phone || '',
   email: readString(data.email) || fallback?.email || '',
   pixKey: resolvePixKey(data),
@@ -66,10 +65,10 @@ const createProviderEntry = (
   totalJobs: 0,
   eligibleOrdersCount: 0,
   pendingOrdersCount: 0,
-  isActive: data.isActive !== false,
-  isVerified: data.isVerified === true,
-  verificationStatus: readString(data.verificationStatus) || 'pending',
-  updatedAt: toIsoDate(data.updatedAt),
+  isActive: typeof data.isActive === 'boolean' ? data.isActive : undefined,
+  isVerified: typeof data.isVerified === 'boolean' ? data.isVerified : undefined,
+  verificationStatus: readString(data.verificationStatus) || undefined,
+  updatedAt: toIsoDate(data.updatedAt, '') || undefined,
 })
 
 /**
@@ -148,7 +147,7 @@ export async function GET() {
           providerKey,
           {},
           {
-            nome: readString(orderData.providerName) || readString(prestador.nome) || 'Sem nome',
+            nome: readString(orderData.providerName) || readString(prestador.nome),
             phone: readString(prestador.telefone),
             email: readString(orderData.providerEmail),
           }
@@ -183,12 +182,20 @@ export async function GET() {
       0
     )
 
+    const warning =
+      providers.length === 0
+        ? 'Nenhum prestador real encontrado para faturamento.'
+        : totalEarningsCents <= 0
+          ? 'Nenhum saldo pendente real encontrado para prestadores.'
+          : undefined
+
     return NextResponse.json({
       success: true,
       providers,
       totalEarnings: centsToAmount(totalEarningsCents),
       totalEarningsCents,
       count: providers.length,
+      warning,
     })
   } catch (error) {
     console.error('Erro ao buscar prestadores:', error)
