@@ -32,9 +32,27 @@ interface ProviderModalProps {
 export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps) {
   if (!provider) return null
 
-  const createdAtLabel = Number.isNaN(new Date(provider.createdAt).getTime())
-    ? "N/A"
-    : new Date(provider.createdAt).toLocaleDateString("pt-BR")
+  const toDisplayText = (value: unknown, fallback = "Nao informado") => {
+    if (typeof value === "string") {
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? trimmed : fallback
+    }
+    if (typeof value === "number") {
+      return String(value)
+    }
+    return fallback
+  }
+
+  const formatDateSafe = (value: unknown) => {
+    if (!value) return "Nao informado"
+
+    const date = value instanceof Date ? value : new Date(String(value))
+    if (Number.isNaN(date.getTime())) {
+      return "Nao informado"
+    }
+
+    return date.toLocaleDateString("pt-BR")
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -75,11 +93,11 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Nome Completo</label>
-                  <p className="text-sm">{provider.name}</p>
+                  <p className="text-sm">{toDisplayText(provider.name)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">CPF</label>
-                  <p className="text-sm">{provider.cpf}</p>
+                  <p className="text-sm">{toDisplayText(provider.cpf)}</p>
                 </div>
               </div>
 
@@ -88,15 +106,15 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{provider.email}</span>
+                  <span className="text-sm">{toDisplayText(provider.email)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{provider.phone}</span>
+                  <span className="text-sm">{toDisplayText(provider.phone)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{provider.address}</span>
+                  <span className="text-sm">{toDisplayText(provider.address)}</span>
                 </div>
               </div>
             </CardContent>
@@ -113,7 +131,7 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
                   <label className="text-sm font-medium text-gray-500">Experiência</label>
                   <div className="flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm">{provider.experience}</span>
+                    <span className="text-sm">{toDisplayText(provider.experience)}</span>
                   </div>
                 </div>
                 <div>
@@ -128,11 +146,15 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
               <div>
                 <label className="text-sm font-medium text-gray-500">Categorias de Serviço</label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {provider.serviceCategories.map((category) => (
-                    <Badge key={category} variant="outline">
-                      {category}
-                    </Badge>
-                  ))}
+                  {Array.isArray(provider.serviceCategories) && provider.serviceCategories.length > 0 ? (
+                    provider.serviceCategories.map((category) => (
+                      <Badge key={category} variant="outline">
+                        {toDisplayText(category)}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-500">Nao informado</span>
+                  )}
                 </div>
               </div>
 
@@ -168,7 +190,7 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
                     <div>
                       <p className="text-sm font-medium">Cadastrado em</p>
                       <p className="text-sm text-gray-600">
-                        {createdAtLabel}
+                        {formatDateSafe(provider.createdAt)}
                       </p>
                     </div>
                   </div>

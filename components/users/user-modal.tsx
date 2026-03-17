@@ -52,6 +52,32 @@ const statusConfig = {
 }
 
 export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProps) {
+  const toText = (value: unknown, fallback = "") => {
+    if (typeof value === "string") return value
+    if (typeof value === "number") return String(value)
+    return fallback
+  }
+
+  const toRole = (value: unknown): UserType["role"] => {
+    if (value === "admin" || value === "operador" || value === "prestador" || value === "cliente") {
+      return value
+    }
+    if (value === "provider") return "prestador"
+    if (value === "client") return "cliente"
+    return "cliente"
+  }
+
+  const toStatus = (value: unknown): UserType["status"] => {
+    if (value === "ativo" || value === "inativo" || value === "bloqueado") {
+      return value
+    }
+    return "ativo"
+  }
+
+  const toUserType = (value: unknown): "client" | "provider" => {
+    return value === "provider" ? "provider" : "client"
+  }
+
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -67,15 +93,15 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
   useEffect(() => {
     if (user && mode !== 'create') {
       setFormData({
-        nome: user.fullName || user.nome || user.name || '',
-        email: user.email || '',
-        telefone: user.telefone || user.phone || '',
-        cpf: user.cpf || '',
-        endereco: user.endereco || '',
-        role: user.role || 'cliente',
-        userType: user.userType || 'client',
-        status: user.status || 'ativo',
-        rating: user.rating || 0
+        nome: toText(user.fullName || user.nome || user.name, ''),
+        email: toText(user.email, ''),
+        telefone: toText(user.telefone || user.phone, ''),
+        cpf: toText(user.cpf, ''),
+        endereco: toText(user.endereco, ''),
+        role: toRole(user.role),
+        userType: toUserType(user.userType),
+        status: toStatus(user.status),
+        rating: typeof user.rating === "number" ? user.rating : 0
       })
     } else if (mode === 'create') {
       setFormData({
@@ -98,9 +124,16 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
   }
 
   const handleInputChange = (field: string, value: string) => {
+    const parsedValue =
+      field === "rating"
+        ? Number.isNaN(Number.parseFloat(value))
+          ? 0
+          : Number.parseFloat(value)
+        : value
+
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: parsedValue
     }))
   }
 

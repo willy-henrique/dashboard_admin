@@ -29,6 +29,28 @@ interface ClientModalProps {
 export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
   if (!client) return null
 
+  const toDisplayText = (value: unknown, fallback = "Nao informado") => {
+    if (typeof value === "string") {
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? trimmed : fallback
+    }
+    if (typeof value === "number") {
+      return String(value)
+    }
+    return fallback
+  }
+
+  const formatDateSafe = (value: unknown) => {
+    if (!value) return "Nao informado"
+
+    const date = value instanceof Date ? value : new Date(String(value))
+    if (Number.isNaN(date.getTime())) {
+      return "Nao informado"
+    }
+
+    return date.toLocaleDateString("pt-BR")
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
@@ -63,11 +85,11 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Nome Completo</label>
-                  <p className="text-sm">{client.name}</p>
+                  <p className="text-sm">{toDisplayText(client.name)}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">CPF</label>
-                  <p className="text-sm">{client.cpf}</p>
+                  <p className="text-sm">{toDisplayText(client.cpf)}</p>
                 </div>
               </div>
 
@@ -76,15 +98,15 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{client.email}</span>
+                  <span className="text-sm">{toDisplayText(client.email)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{client.phone}</span>
+                  <span className="text-sm">{toDisplayText(client.phone)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm">{client.address}</span>
+                  <span className="text-sm">{toDisplayText(client.address)}</span>
                 </div>
               </div>
             </CardContent>
@@ -102,14 +124,14 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm font-medium">Cadastrado em</p>
-                      <p className="text-sm text-gray-600">{new Date(client.createdAt).toLocaleDateString("pt-BR")}</p>
+                      <p className="text-sm text-gray-600">{formatDateSafe(client.createdAt)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <div>
                       <p className="text-sm font-medium">Último login</p>
-                      <p className="text-sm text-gray-600">{new Date(client.lastLogin).toLocaleDateString("pt-BR")}</p>
+                      <p className="text-sm text-gray-600">{formatDateSafe(client.lastLogin)}</p>
                     </div>
                   </div>
                 </div>

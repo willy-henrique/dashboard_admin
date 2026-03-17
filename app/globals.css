@@ -1,3 +1,4 @@
+@config "../tailwind.config.js";
 @import "tailwindcss";
 
 html,
@@ -82,6 +83,33 @@ body {
   --sidebar-accent-foreground: #fbbf24;
   --sidebar-border: #475569;
   --sidebar-ring: #fb923c;
+}
+
+/* Fallbacks para garantir fundos sólidos em componentes Radix/SHADCN */
+[data-slot="card"] {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-color: var(--border);
+}
+
+[data-slot="dialog-content"] {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-color: var(--border);
+}
+
+[data-slot="dialog-overlay"] {
+  background-color: rgb(15 23 42 / 0.58);
+  backdrop-filter: blur(2px);
+}
+
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"],
+[data-slot="select-content"],
+[data-slot="popover-content"] {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border-color: var(--border);
 }
 
 * {

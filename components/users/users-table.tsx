@@ -201,9 +201,7 @@ export function UsersTable({
                 </TableHeader>
                 <TableBody>
                   {users.map((user) => (
-                    <TableRow key={user.id} className="transition-colors" style={{ 
-                      ':hover': { backgroundColor: 'var(--muted)' }
-                    }}>
+                    <TableRow key={user.id} className="transition-colors hover:bg-muted/40">
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full flex items-center justify-center shadow-md" style={{ background: 'var(--primary)' }}>
@@ -274,7 +272,15 @@ export function UsersTable({
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-52 border shadow-xl"
+                            style={{
+                              backgroundColor: "var(--popover)",
+                              color: "var(--popover-foreground)",
+                              borderColor: "var(--border)",
+                            }}
+                          >
                             {onView && (
                               <DropdownMenuItem onClick={() => onView(user.id)}>
                                 <Eye className="mr-2 h-4 w-4" />
