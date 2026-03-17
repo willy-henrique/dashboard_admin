@@ -1,4 +1,5 @@
 ﻿import { NextRequest, NextResponse } from 'next/server'
+import * as admin from 'firebase-admin'
 import { adminApp } from '@/lib/firebase-admin'
 import {
   amountToCents,
@@ -240,7 +241,7 @@ export async function POST(request: NextRequest) {
           providerPayoutRemainingAmount: centsToAmount(remainingCents),
           providerPayoutRemainingCents: remainingCents,
           providerPayoutLastPaymentId: paymentId,
-          providerPayoutUpdatedAt: adminApp.firestore.FieldValue.serverTimestamp(),
+          providerPayoutUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
         })
 
         allocations.push({
@@ -283,7 +284,7 @@ export async function POST(request: NextRequest) {
         status: 'completed',
         allocations,
         totalOrdersAffected: allocations.length,
-        processedAt: adminApp.firestore.FieldValue.serverTimestamp(),
+        processedAt: admin.firestore.FieldValue.serverTimestamp(),
         processedBy: 'admin',
       })
 
@@ -331,4 +332,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

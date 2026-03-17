@@ -212,10 +212,17 @@ export default function FaturamentoPage() {
         }),
       })
 
-      const data = await response.json()
+      const contentType = response.headers.get("content-type") || ""
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : null
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Erro ao processar pagamento")
+      if (!response.ok || !data?.success) {
+        const serverMessage =
+          (data && typeof data.error === "string" && data.error) ||
+          (data && typeof data.details === "string" && data.details) ||
+          `Falha HTTP ${response.status}`
+        throw new Error(serverMessage || "Erro ao processar pagamento")
       }
 
       toast({
@@ -635,4 +642,3 @@ export default function FaturamentoPage() {
     </div>
   )
 }
-
