@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { AppShell } from "@/components/layout/app-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -44,11 +44,21 @@ import { UserDocumentsStructure } from "@/components/users/user-documents-struct
 import { useDocumentAuth } from "@/hooks/use-document-auth"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
-export const VerificationsPageContent = () => {
+export interface VerificationsPageContentProps {
+  /** Quando true, não envolve em AppShell (use dentro do layout do dashboard). */
+  embedded?: boolean
+  /** Filtro inicial de status (ex.: "pending" na fila de aceitação). */
+  defaultStatusFilter?: string
+}
+
+export const VerificationsPageContent = ({
+  embedded = false,
+  defaultStatusFilter = "approved",
+}: VerificationsPageContentProps) => {
   const [search, setSearch] = useState("")
-  // Iniciar mostrando apenas quem já está liberado para usar o site
-  const [statusFilter, setStatusFilter] = useState<string>("approved")
+  const [statusFilter, setStatusFilter] = useState<string>(defaultStatusFilter)
   const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("all")
   const [selectedVerification, setSelectedVerification] = useState<any>(null)
   const [showDetails, setShowDetails] = useState(false)
@@ -210,20 +220,31 @@ export const VerificationsPageContent = () => {
     }, 0)
   }
 
-  return (
-    <AppShell>
-      <div className="w-full max-w-full min-w-0 overflow-x-hidden bg-gradient-to-b from-slate-50 via-white to-orange-50/30">
+  const shell = (body: ReactNode) =>
+    embedded ? <>{body}</> : <AppShell>{body}</AppShell>
+
+  return shell(
+    <div className="w-full max-w-full min-w-0 overflow-x-hidden bg-gradient-to-b from-slate-50 via-white to-orange-50/30">
         <div className="space-y-6 sm:space-y-8 pb-8 sm:pb-12 overflow-x-hidden">
           {/* Header */}
           <div className="flex flex-col gap-4 sm:gap-6">
-            <Button
-              variant="ghost"
-              onClick={() => window.history.back()}
-              className="w-fit -ml-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl h-10 sm:h-11 px-3 sm:px-4 gap-2 font-medium transition-colors text-sm sm:text-base"
-            >
-              <ArrowLeft className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">Voltar para Usuários</span>
-            </Button>
+            {embedded ? (
+              <Button variant="ghost" asChild className="w-fit -ml-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl h-10 sm:h-11 px-3 sm:px-4 gap-2 font-medium transition-colors text-sm sm:text-base">
+                <Link href="/dashboard">
+                  <ArrowLeft className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">Voltar ao painel</span>
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={() => window.history.back()}
+                className="w-fit -ml-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl h-10 sm:h-11 px-3 sm:px-4 gap-2 font-medium transition-colors text-sm sm:text-base"
+              >
+                <ArrowLeft className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">Voltar para Usuários</span>
+              </Button>
+            )}
 
             <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex items-start gap-3 sm:gap-5 min-w-0">
@@ -232,10 +253,12 @@ export const VerificationsPageContent = () => {
                 </div>
                 <div className="space-y-1 min-w-0">
                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-slate-900 truncate">
-                    Aprovar Utilização do Site
+                    {embedded ? "Aceitação de cadastro de prestadores" : "Aprovar Utilização do Site"}
                   </h1>
                   <p className="text-slate-600 text-sm sm:text-base max-w-xl line-clamp-2">
-                    Solicitações de parceiros aguardando liberação para utilizar o site completo.
+                    {embedded
+                      ? "Analise os documentos enviados ao Firebase Storage, aprove ou rejeite o cadastro para liberar o uso do aplicativo."
+                      : "Solicitações de parceiros aguardando liberação para utilizar o site completo."}
                   </p>
                 </div>
               </div>
@@ -855,6 +878,5 @@ export const VerificationsPageContent = () => {
         )}
         </div>
       </div>
-    </AppShell>
   )
 }

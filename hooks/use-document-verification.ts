@@ -81,9 +81,8 @@ export const useDocumentVerification = () => {
 
       for (let i = 0; i < providerIds.length; i += BATCH_SIZE) {
         const batchIds = providerIds.slice(i, i + BATCH_SIZE)
-        const providerRefs = batchIds.map(id => doc(db, 'providers', id))
         const [providersSnap, verifSnap] = await Promise.all([
-          getDocs(query(collection(db, 'providers'), where(documentId(), 'in', providerRefs))).catch(() => null),
+          getDocs(query(collection(db, 'providers'), where(documentId(), 'in', batchIds))).catch(() => null),
           getDocs(query(collection(db, 'provider_verifications'), where('providerId', 'in', batchIds)))
         ])
         providersSnap?.forEach(d => { providersMap[d.id] = d.data() })
@@ -100,8 +99,7 @@ export const useDocumentVerification = () => {
       const missingIds = providerIds.filter(id => !providersMap[id])
       for (let i = 0; i < missingIds.length; i += BATCH_SIZE) {
         const batchIds = missingIds.slice(i, i + BATCH_SIZE)
-        const userRefs = batchIds.map(id => doc(db, 'users', id))
-        const usersSnap = await getDocs(query(collection(db, 'users'), where(documentId(), 'in', userRefs))).catch(() => null)
+        const usersSnap = await getDocs(query(collection(db, 'users'), where(documentId(), 'in', batchIds))).catch(() => null)
         usersSnap?.forEach(d => { providersMap[d.id] = d.data() })
       }
 
@@ -265,6 +263,7 @@ export const useDocumentVerification = () => {
         await updateDoc(providerRef, {
           verificationStatus: 'verificado',
           isVerified: true,
+          ativo: true,
           updatedAt: serverTimestamp(),
         })
       } else {

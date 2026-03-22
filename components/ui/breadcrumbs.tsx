@@ -49,6 +49,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         'active': 'Ativos',
         'completed': 'Concluídos',
         'chat': 'Monitoramento de Chat',
+        'aceitacao-prestadores': 'Aceitação de Prestadores',
         'financial': 'Financeiro',
         'financeiro': 'Financeiro',
         'contas': 'Contas',

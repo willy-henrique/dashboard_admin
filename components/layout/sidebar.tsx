@@ -27,6 +27,7 @@ import {
   ChevronDown,
   ClipboardList,
   MousePointer,
+  BadgeCheck,
 } from "lucide-react"
 
 const navigation = [
@@ -48,6 +49,11 @@ const navigation = [
     permission: "controle",
     children: [
       { name: "Monitoramento de Chat", href: "/dashboard/controle/chat", icon: MessageSquare },
+      {
+        name: "Aceitação de Prestadores",
+        href: "/dashboard/controle/aceitacao-prestadores",
+        icon: BadgeCheck,
+      },
     ],
   },
   {
