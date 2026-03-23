@@ -5,12 +5,10 @@ import { AppShell } from "@/components/layout/app-shell"
 import { OrdersDashboard } from "@/components/orders/orders-dashboard"
 import { OrdersTable } from "@/components/orders/orders-table"
 import { OrderDetailModal } from "@/components/orders/order-detail-modal"
-import { useOrders } from "@/hooks/use-orders"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { PageWithBack } from "@/components/layout/page-with-back"
 
 function OrdersPageContent() {
-  const { orders } = useOrders()
   const { trackPageView, trackUserAction } = useAnalytics()
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -19,13 +17,12 @@ function OrdersPageContent() {
     trackPageView("Gestao de Pedidos")
   }, [trackPageView])
 
-  const handleView = (orderId: string) => {
-    trackUserAction("visualizar_pedido", "pedidos", { orderId })
-    const order = orders.find((item) => item.id === orderId)
+  const handleView = (order: any) => {
     if (!order) {
       return
     }
 
+    trackUserAction("visualizar_pedido", "pedidos", { orderId: String(order.id) })
     setSelectedOrder(order)
     setIsModalOpen(true)
   }

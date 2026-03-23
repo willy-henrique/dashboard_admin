@@ -42,7 +42,7 @@ interface OrdersTableProps {
     isEmergency?: boolean
     searchTerm?: string
   }
-  onView?: (orderId: string) => void
+  onView?: (order: any) => void
   onEdit?: (orderId: string) => void
 }
 
@@ -328,7 +328,7 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => onView?.(order.id)}
+                            onClick={() => onView?.(order)}
                             className="h-8 gap-2 px-3 hover:bg-gray-100"
                           >
                             <Eye className="h-4 w-4 text-gray-600" />
@@ -382,7 +382,7 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
                       </div>
                     </div>
 
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => onView?.(order.id)}>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => onView?.(order)}>
                       <Eye className="mr-2 h-4 w-4" />
                       Ver detalhes
                     </Button>
