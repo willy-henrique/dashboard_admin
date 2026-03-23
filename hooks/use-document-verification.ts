@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast'
 import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, getDocs, collection, query, where, updateDoc, addDoc, serverTimestamp, documentId } from 'firebase/firestore'
+import { extractServiceCategories } from '@/lib/services/firebase-providers'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -124,6 +125,7 @@ export const useDocumentVerification = () => {
               `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
               userData?.endereco || '',
           providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
+          providerServiceCategories: userData ? extractServiceCategories(userData as Record<string, unknown>) : [],
           status: currentStatus,
           documents: provider.documents,
           submittedAt: verifData?.submittedAt || provider.firstUploadedAt || provider.uploadedAt,
@@ -198,6 +200,7 @@ export const useDocumentVerification = () => {
                        `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
                        userData?.endereco || '',
         providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
+        providerServiceCategories: userData ? extractServiceCategories(userData as Record<string, unknown>) : [],
         status: 'pending',
         documents: documents.documents,
         submittedAt: documents.uploadedAt,

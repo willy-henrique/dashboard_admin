@@ -144,6 +144,20 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
                 </p>
               </div>
             </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <p className="text-sm font-medium text-muted-foreground">Serviços que atende</p>
+              {verification.providerServiceCategories && verification.providerServiceCategories.length > 0 ? (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {verification.providerServiceCategories.map((cat) => (
+                    <Badge key={cat} variant="outline" className="font-medium">
+                      {cat}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 mt-1">Não informado</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

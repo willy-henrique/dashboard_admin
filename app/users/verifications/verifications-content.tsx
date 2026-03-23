@@ -573,6 +573,18 @@ export const VerificationsPageContent = ({
 
                           {isExpanded && (
                             <div className="space-y-4 sm:space-y-5 pt-4 sm:pt-5 border-t border-slate-100">
+                              {verification.providerServiceCategories && verification.providerServiceCategories.length > 0 && (
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-xs sm:text-sm text-slate-700">Serviços que atende</h4>
+                                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                    {verification.providerServiceCategories.map((cat) => (
+                                      <Badge key={cat} variant="outline" className="rounded-lg text-xs border-orange-200 bg-orange-50 text-orange-700">
+                                        {cat}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                               <div className="space-y-2">
                                 <h4 className="font-medium text-xs sm:text-sm text-slate-700">Documentos enviados</h4>
                                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
@@ -834,6 +846,18 @@ export const VerificationsPageContent = ({
                           <div><span className="text-gray-500">Email:</span> <span className="font-medium">{selectedVerification.providerEmail}</span></div>
                           {selectedVerification.providerPhone && <div><span className="text-gray-500">Telefone:</span> <span className="font-medium">{selectedVerification.providerPhone}</span></div>}
                           <div><span className="text-gray-500">Enviado:</span> <span className="font-medium">{format(selectedVerification.submittedAt, "dd/MM/yyyy HH:mm", { locale: ptBR })}</span></div>
+                          <div className="xs:col-span-2">
+                            <span className="text-gray-500 block mb-1">Serviços que atende:</span>
+                            {selectedVerification.providerServiceCategories && selectedVerification.providerServiceCategories.length > 0 ? (
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                {selectedVerification.providerServiceCategories.map((cat) => (
+                                  <Badge key={cat} variant="outline" className="text-xs font-medium">{cat}</Badge>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400 text-sm">Não informado</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="bg-white rounded-xl p-4 shadow-sm border">

@@ -34,6 +34,7 @@ export interface DocumentVerification {
   providerRg?: string;
   providerAddress?: string;
   providerBirthDate?: string;
+  providerServiceCategories?: string[];
   status: 'pending' | 'approved' | 'rejected';
   documents: ProviderDocuments['documents'];
   submittedAt: Date;

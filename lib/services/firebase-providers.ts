@@ -44,6 +44,23 @@ function arrayOfString(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }
 
+/** Extrai categorias de serviço de múltiplos formatos usados no Firebase (app móvel). Exportado para uso em verificações. */
+export function extractServiceCategories(raw: Record<string, unknown>): string[] {
+  const arr = arrayOfString(
+    raw.especialidades ?? raw.serviceCategories ?? raw.categories ?? raw.servicos ?? raw.niches
+  )
+  if (arr.length > 0) return arr
+
+  const servicosAtendidos = raw.servicosAtendidos ?? raw.servicosSelecionados ?? raw.nichesSelecionados
+  if (Array.isArray(servicosAtendidos)) return arrayOfString(servicosAtendidos)
+  if (servicosAtendidos && typeof servicosAtendidos === 'object' && !Array.isArray(servicosAtendidos)) {
+    const obj = servicosAtendidos as Record<string, unknown>
+    const keys = Object.keys(obj).filter((k) => obj[k])
+    return keys.map((k) => k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' '))
+  }
+  return []
+}
+
 function normalizeProvider(raw: Record<string, unknown>, id: string): FirebaseProvider {
   const statusRaw = stringOrEmpty(raw.status ?? raw.situacao ?? raw.state).toLowerCase()
   const status: ProviderStatus =
@@ -74,7 +91,7 @@ function normalizeProvider(raw: Record<string, unknown>, id: string): FirebasePr
     },
     ultimaAtualizacao: raw.ultimaAtualizacao ?? raw.updatedAt ?? raw.lastSeenAt ?? raw.lastUpdate ?? null,
     servicoAtual: stringOrEmpty(raw.servicoAtual ?? raw.currentService) || null,
-    especialidades: arrayOfString(raw.especialidades ?? raw.serviceCategories ?? raw.categories),
+    especialidades: extractServiceCategories(raw),
     avaliacao: numberOrZero(raw.avaliacao ?? raw.rating),
     totalServicos: numberOrZero(raw.totalServicos ?? raw.totalOrders),
     ativo,
