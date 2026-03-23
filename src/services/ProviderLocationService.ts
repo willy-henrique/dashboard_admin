@@ -19,6 +19,51 @@ import {
 export class ProviderLocationService {
   private collectionName = 'provider_locations';
 
+  private mapLocationStatusToProviderStatus(
+    status?: IProviderLocation['status']
+  ): 'disponivel' | 'ocupado' | 'online' | 'offline' {
+    switch (status) {
+      case 'available':
+        return 'disponivel';
+      case 'busy':
+        return 'ocupado';
+      case 'online':
+        return 'online';
+      case 'offline':
+      default:
+        return 'offline';
+    }
+  }
+
+  private async syncProviderCoordinates(
+    providerId: string,
+    locationData: Partial<IProviderLocation>
+  ): Promise<void> {
+    const latitudeRaw = locationData.latitude;
+    const longitudeRaw = locationData.longitude;
+    const latitude = typeof latitudeRaw === 'number' ? latitudeRaw : Number(latitudeRaw);
+    const longitude = typeof longitudeRaw === 'number' ? longitudeRaw : Number(longitudeRaw);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return;
+    }
+
+    const providerRef = doc(db, 'providers', providerId);
+    const providerSnap = await getDoc(providerRef);
+    if (!providerSnap.exists()) {
+      return;
+    }
+
+    await updateDoc(providerRef, {
+      localizacao: { lat: latitude, lng: longitude },
+      latitude,
+      longitude,
+      ultimaAtualizacao: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      ...(locationData.status ? { status: this.mapLocationStatusToProviderStatus(locationData.status) } : {}),
+    });
+  }
+
   // Criar ou atualizar localização do prestador
   async updateProviderLocation(providerId: string, locationData: Partial<IProviderLocation>): Promise<ProviderLocation> {
     try {
@@ -65,6 +110,9 @@ export class ProviderLocationService {
           lastUpdate: new Date()
         });
       }
+
+      // Mantém a collection `providers` sincronizada para o dashboard/mapa.
+      await this.syncProviderCoordinates(providerId, locationData);
 
       return providerLocation;
     } catch (error) {
@@ -222,6 +270,16 @@ export class ProviderLocationService {
           updatedAt: Timestamp.now()
         });
       }
+
+      const providerRef = doc(db, 'providers', providerId);
+      const providerSnap = await getDoc(providerRef);
+      if (providerSnap.exists()) {
+        await updateDoc(providerRef, {
+          status: this.mapLocationStatusToProviderStatus(status),
+          ultimaAtualizacao: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        });
+      }
     } catch (error) {
       throw new Error(`Erro ao atualizar status do prestador: ${error}`);
     }
@@ -256,6 +314,17 @@ export class ProviderLocationService {
           updatedAt: Timestamp.now()
         });
       }
+
+      const providerRef = doc(db, 'providers', providerId);
+      const providerSnap = await getDoc(providerRef);
+      if (providerSnap.exists()) {
+        await updateDoc(providerRef, {
+          status: 'ocupado',
+          servicoAtual: service.title,
+          ultimaAtualizacao: Timestamp.now(),
+          updatedAt: Timestamp.now(),
+        });
+      }
     } catch (error) {
       throw new Error(`Erro ao iniciar serviço: ${error}`);
     }
@@ -277,6 +346,17 @@ export class ProviderLocationService {
           currentService: null,
           lastUpdate: Timestamp.now(),
           updatedAt: Timestamp.now()
+        });
+      }
+
+      const providerRef = doc(db, 'providers', providerId);
+      const providerSnap = await getDoc(providerRef);
+      if (providerSnap.exists()) {
+        await updateDoc(providerRef, {
+          status: 'disponivel',
+          servicoAtual: null,
+          ultimaAtualizacao: Timestamp.now(),
+          updatedAt: Timestamp.now(),
         });
       }
     } catch (error) {

@@ -22,13 +22,19 @@ export class ProviderLocationController {
         return;
       }
 
-      if (!locationData.latitude || !locationData.longitude) {
+      const latitude = Number(locationData.latitude);
+      const longitude = Number(locationData.longitude);
+
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
         res.status(400).json({
           success: false,
           message: 'Latitude e longitude são obrigatórios'
         });
         return;
       }
+
+      locationData.latitude = latitude;
+      locationData.longitude = longitude;
 
       const providerLocation = await this.providerLocationService.updateProviderLocation(
         providerId,

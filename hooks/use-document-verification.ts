@@ -21,6 +21,20 @@ export const useDocumentVerification = () => {
   })
   const { toast } = useToast()
 
+  const extractCoordinates = (userData: any): { lat?: number; lng?: number } => {
+    if (!userData || typeof userData !== 'object') return {}
+    const loc = userData.localizacao
+    const latRaw = loc?.lat ?? userData.latitude ?? userData.lat
+    const lngRaw = loc?.lng ?? userData.longitude ?? userData.lng
+    const lat = typeof latRaw === 'number' ? latRaw : Number(latRaw)
+    const lng = typeof lngRaw === 'number' ? lngRaw : Number(lngRaw)
+
+    return {
+      lat: Number.isFinite(lat) ? lat : undefined,
+      lng: Number.isFinite(lng) ? lng : undefined,
+    }
+  }
+
   const mapStatus = (status: any): 'pending' | 'approved' | 'rejected' => {
     if (!status) return 'pending'
     const s = String(status).toLowerCase()
@@ -124,6 +138,8 @@ export const useDocumentVerification = () => {
             typeof userData?.address === 'object' && userData?.address ?
               `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
               userData?.endereco || '',
+          providerLatitude: extractCoordinates(userData).lat,
+          providerLongitude: extractCoordinates(userData).lng,
           providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
           providerServiceCategories: userData ? extractServiceCategories(userData as Record<string, unknown>) : [],
           status: currentStatus,
@@ -199,6 +215,8 @@ export const useDocumentVerification = () => {
                        typeof userData?.address === 'object' && userData?.address ? 
                        `${userData.address.street || ''} ${userData.address.number || ''}, ${userData.address.city || ''}, ${userData.address.state || ''}`.trim().replace(/,$/, '') :
                        userData?.endereco || '',
+        providerLatitude: extractCoordinates(userData).lat,
+        providerLongitude: extractCoordinates(userData).lng,
         providerBirthDate: userData?.birthDate || userData?.dataNascimento || '',
         providerServiceCategories: userData ? extractServiceCategories(userData as Record<string, unknown>) : [],
         status: 'pending',

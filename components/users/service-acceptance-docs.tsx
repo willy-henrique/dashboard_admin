@@ -158,6 +158,14 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
                 <p className="text-sm text-gray-500 mt-1">Não informado</p>
               )}
             </div>
+            {(verification.providerLatitude !== undefined && verification.providerLongitude !== undefined) && (
+              <div className="md:col-span-2 lg:col-span-3">
+                <p className="text-sm font-medium text-muted-foreground">Localização cadastrada</p>
+                <p className="text-sm font-semibold text-gray-900 mt-1">
+                  {Number(verification.providerLatitude).toFixed(6)}, {Number(verification.providerLongitude).toFixed(6)}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

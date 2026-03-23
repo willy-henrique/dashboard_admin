@@ -33,6 +33,8 @@ export interface DocumentVerification {
   providerCpf?: string;
   providerRg?: string;
   providerAddress?: string;
+  providerLatitude?: number;
+  providerLongitude?: number;
   providerBirthDate?: string;
   providerServiceCategories?: string[];
   status: 'pending' | 'approved' | 'rejected';

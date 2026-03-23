@@ -866,6 +866,14 @@ export const VerificationsPageContent = ({
                           {selectedVerification.providerCpf && <div><span className="text-gray-500">CPF:</span> <span className="font-medium break-all">{selectedVerification.providerCpf}</span></div>}
                           {selectedVerification.providerRg && <div><span className="text-gray-500">RG:</span> <span className="font-medium">{selectedVerification.providerRg}</span></div>}
                           {selectedVerification.providerAddress && <div className="col-span-full"><span className="text-gray-500">Endereço:</span> <span className="font-medium break-words">{selectedVerification.providerAddress}</span></div>}
+                          {(selectedVerification.providerLatitude !== undefined && selectedVerification.providerLongitude !== undefined) && (
+                            <div className="col-span-full">
+                              <span className="text-gray-500">Localização:</span>{' '}
+                              <span className="font-medium">
+                                {selectedVerification.providerLatitude.toFixed(6)}, {selectedVerification.providerLongitude.toFixed(6)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </TabsContent>
