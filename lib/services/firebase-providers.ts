@@ -47,7 +47,7 @@ function arrayOfString(value: unknown): string[] {
 /** Extrai categorias de serviço de múltiplos formatos usados no Firebase (app móvel). Exportado para uso em verificações. */
 export function extractServiceCategories(raw: Record<string, unknown>): string[] {
   const arr = arrayOfString(
-    raw.especialidades ?? raw.serviceCategories ?? raw.categories ?? raw.servicos ?? raw.niches
+    raw.especialidades ?? raw.serviceCategories ?? raw.categories ?? raw.servicos ?? raw.niches ?? raw.services
   )
   if (arr.length > 0) return arr
 
