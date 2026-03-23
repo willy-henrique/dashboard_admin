@@ -52,7 +52,7 @@ const inferDocType = (fileName: string): 'cpf' | 'cnh' | 'comprovante_residencia
   return 'outros';
 };
 
-// Versão leve: apenas listAll, sem getMetadata/getDownloadURL (para carregamento inicial rápido)
+// Versão leve: sem downloadURL, mas com metadata para preservar horário real de envio.
 export const getProviderDocumentsLightweight = async (providerId: string): Promise<ProviderDocuments | null> => {
   if (!storageInstance) return null;
   try {
@@ -67,23 +67,39 @@ export const getProviderDocumentsLightweight = async (providerId: string): Promi
       firstUploadedAt: new Date(),
       status: 'pending'
     };
-    const now = new Date();
-
-    for (const itemRef of result.items) {
+    const processed = await runInBatches(result.items, 4, async (itemRef) => {
+      const metadata = await getMetadata(itemRef).catch(() => null);
       const fileName = itemRef.name.toLowerCase();
       const ext = fileName.split('.').pop() || '';
       const docType = inferDocType(fileName);
+      const uploadedAt = metadata?.timeCreated ? new Date(metadata.timeCreated) : new Date();
+      return {
+        docType,
+        document: {
+          id: itemRef.name,
+          name: metadata?.name || itemRef.name,
+          url: '', // Será carregado sob demanda
+          type: ext && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'].includes(ext) ? (ext === 'pdf' ? 'pdf' : 'image') : 'document',
+          size: metadata?.size || 0,
+          uploadedAt,
+          path: itemRef.fullPath
+        } as StorageDocument
+      } as const;
+    });
+
+    let minDate: Date | null = null;
+    let maxDate: Date | null = null;
+    processed.forEach((item) => {
+      const { docType, document } = item;
       if (!documents.documents[docType]) documents.documents[docType] = [];
-      documents.documents[docType]!.push({
-        id: itemRef.name,
-        name: itemRef.name,
-        url: '', // Será carregado sob demanda
-        type: ext && ['jpg','jpeg','png','gif','webp','pdf'].includes(ext) ? (ext === 'pdf' ? 'pdf' : 'image') : 'document',
-        size: 0,
-        uploadedAt: now,
-        path: itemRef.fullPath
-      });
-    }
+      documents.documents[docType]!.push(document);
+      if (!minDate || document.uploadedAt < minDate) minDate = document.uploadedAt;
+      if (!maxDate || document.uploadedAt > maxDate) maxDate = document.uploadedAt;
+    });
+
+    if (minDate) documents.firstUploadedAt = minDate;
+    if (maxDate) documents.uploadedAt = maxDate;
+
     return documents;
   } catch {
     return null;
