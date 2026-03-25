@@ -11,6 +11,7 @@ import { Search, Eye, Ban, CheckCircle, Shield, Star, Loader2, RefreshCw } from 
 import { ProviderModal } from "./provider-modal"
 import { FirebaseProvidersService, type FirebaseProvider } from "@/lib/services/firebase-providers"
 import { mapProviderStatusToLegacy } from "@/lib/providers/status"
+import { mapRawVerificationStatus } from "@/lib/verification-status"
 import { toIsoStringFromUnknown } from "@/lib/date-utils"
 
 interface Provider {
@@ -31,12 +32,12 @@ interface Provider {
 }
 
 function convertFirebaseToProvider(provider: FirebaseProvider): Provider {
-  const verificationStatus = String((provider as any).verificationStatus || "").toLowerCase()
-  const isVerified = ["verificado", "verified", "approved"].includes(verificationStatus)
+  const vs = mapRawVerificationStatus((provider as any).verificationStatus)
+  const isVerified = vs === "approved"
   const status =
-    verificationStatus === "rejected"
+    vs === "rejected"
       ? "blocked"
-      : verificationStatus === "pending"
+      : vs === "pending"
         ? "pending"
         : mapProviderStatusToLegacy(provider.status)
 

@@ -1,12 +1,21 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { ProviderDocuments, getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
+import { getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
 import { useToast } from '@/hooks/use-toast'
-import { DocumentVerification, VerificationStats, VerificationFilters } from '@/types/verification'
+import {
+  DocumentVerification,
+  VerificationStats,
+  VerificationFilters,
+  type ProviderDocuments,
+} from '@/types/verification'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, getDocs, collection, query, where, updateDoc, addDoc, serverTimestamp, documentId } from 'firebase/firestore'
 import { extractServiceCategories } from '@/lib/services/firebase-providers'
+import {
+  resolveQueueVerificationStatus,
+  PENDING_VERIFICATION_STATUS_IN_QUERY,
+} from '@/lib/verification-status'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -33,15 +42,6 @@ export const useDocumentVerification = () => {
       lat: Number.isFinite(lat) ? lat : undefined,
       lng: Number.isFinite(lng) ? lng : undefined,
     }
-  }
-
-  const mapStatus = (status: any): 'pending' | 'approved' | 'rejected' => {
-    if (!status) return 'pending'
-    const s = String(status).toLowerCase()
-    if (['verificado', 'verified', 'approved', 'approvado', 'approved_status'].includes(s)) return 'approved'
-    if (['rejected', 'rejeitado'].includes(s)) return 'rejected'
-    // under_review, pending, etc -> pendente
-    return 'pending'
   }
 
   // Buscar todas as verificações
@@ -73,8 +73,34 @@ export const useDocumentVerification = () => {
         storageProviders = []
       }
 
-      // Se não houver prestadores, retorna vazio
-      if (storageProviders.length === 0) {
+      const storageIds = new Set(storageProviders.map((p) => p.providerId))
+      const mergedFromFirestore: ProviderDocuments[] = []
+
+      if (db) {
+        try {
+          const pendingQuery = query(
+            collection(db, 'providers'),
+            where('verificationStatus', 'in', PENDING_VERIFICATION_STATUS_IN_QUERY)
+          )
+          const pendingSnap = await getDocs(pendingQuery)
+          pendingSnap.forEach((d) => {
+            if (storageIds.has(d.id)) return
+            mergedFromFirestore.push({
+              providerId: d.id,
+              documents: {},
+              uploadedAt: new Date(),
+              firstUploadedAt: new Date(),
+              status: 'pending',
+            })
+          })
+        } catch (mergeErr) {
+          console.warn('Não foi possível mesclar prestadores pendentes do Firestore:', mergeErr)
+        }
+      }
+
+      const allProvidersDocs: ProviderDocuments[] = [...storageProviders, ...mergedFromFirestore]
+
+      if (allProvidersDocs.length === 0) {
         setVerifications([])
         setStats({
           total: 0,
@@ -87,7 +113,7 @@ export const useDocumentVerification = () => {
         return
       }
 
-      const providerIds = storageProviders.map(p => p.providerId)
+      const providerIds = allProvidersDocs.map((p) => p.providerId)
 
       // Buscar providers e verifications em batch (Firestore limita 'in' a 30 itens)
       const BATCH_SIZE = 30
@@ -119,12 +145,13 @@ export const useDocumentVerification = () => {
       }
 
       // Montar verificações (dados em memória, sem I/O)
-      const verificationsData: DocumentVerification[] = storageProviders.map(provider => {
+      const verificationsData: DocumentVerification[] = allProvidersDocs.map((provider) => {
         const userData = providersMap[provider.providerId]
         const verifData = verificationsMap[provider.providerId]
-        let currentStatus: 'pending' | 'approved' | 'rejected' = 'pending'
-        if (verifData) currentStatus = mapStatus(verifData.status)
-        else if (userData?.verificationStatus) currentStatus = mapStatus(userData.verificationStatus)
+        const currentStatus = resolveQueueVerificationStatus(
+          userData?.verificationStatus,
+          verifData?.status
+        )
 
         return {
           id: `verification_${provider.providerId}`,
