@@ -26,11 +26,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   FirebaseProvidersService,
   type FirebaseProvider,
 } from "@/lib/services/firebase-providers"
-import { aggregateByCategory, UNCATEGORIZED_LABEL } from "@/lib/services/provider-classification"
+import {
+  aggregateByCategory,
+  UNCATEGORIZED_LABEL,
+  type ClassificationRow,
+} from "@/lib/services/provider-classification"
 import {
   Layers,
   Loader2,
@@ -42,6 +47,7 @@ import {
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
+  ChevronDown,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -62,6 +68,66 @@ function isVerifiedProvider(provider: FirebaseProvider) {
 
 type SortKey = "category" | "count" | "percent"
 type SortDir = "asc" | "desc"
+
+const NAME_PREVIEW = 6
+
+function ProviderNamesCell({ row }: { row: ClassificationRow }) {
+  const list = row.providers
+  const [open, setOpen] = useState(false)
+
+  if (list.length === 0) {
+    return <span className="text-muted-foreground">—</span>
+  }
+
+  const preview = list.slice(0, NAME_PREVIEW)
+  const rest = list.slice(NAME_PREVIEW)
+  const hasMore = rest.length > 0
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="w-full max-w-md min-w-[200px]">
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-1.5",
+          open && list.length > 12 && "max-h-56 overflow-y-auto rounded-md border border-border/60 bg-muted/25 p-2 sm:max-h-72"
+        )}
+      >
+        {(open ? list : preview).map((p) => (
+          <Badge
+            key={p.id}
+            variant="secondary"
+            className="max-w-[220px] shrink-0 truncate font-normal normal-case"
+            title={p.nome}
+          >
+            {p.nome}
+          </Badge>
+        ))}
+      </div>
+      {hasMore && (
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-1.5 h-8 gap-1 px-2 text-xs text-orange-700 hover:bg-orange-100/80 hover:text-orange-800 dark:text-orange-400 dark:hover:bg-orange-950/40"
+          >
+            <ChevronDown
+              className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
+              aria-hidden
+            />
+            {open ? "Ver menos" : `Ver mais ${rest.length} (${list.length} no total)`}
+          </Button>
+        </CollapsibleTrigger>
+      )}
+      {hasMore && (
+        <CollapsibleContent>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+            Lista em ordem alfabética. O mesmo prestador pode aparecer em outras linhas se tiver mais de
+            uma especialidade.
+          </p>
+        </CollapsibleContent>
+      )}
+    </Collapsible>
+  )
+}
 
 export function ProviderClassificationDashboard() {
   const [providers, setProviders] = useState<FirebaseProvider[]>([])
@@ -105,7 +171,11 @@ export function ProviderClassificationDashboard() {
   const searchedRows = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return rows
-    return rows.filter((r) => r.category.toLowerCase().includes(q))
+    return rows.filter(
+      (r) =>
+        r.category.toLowerCase().includes(q) ||
+        r.providers.some((p) => p.nome.toLowerCase().includes(q))
+    )
   }, [rows, search])
 
   const sortedRows = useMemo(() => {
@@ -202,7 +272,8 @@ export function ProviderClassificationDashboard() {
           <p className="max-w-2xl text-sm text-muted-foreground">
             Dados lidos diretamente da coleção <span className="font-mono text-xs">providers</span> no
             Firestore (especialidades, serviços, categorias e mapas de nichos). Categorias com o mesmo
-            nome (acentos/caixa) são unificadas. Um prestador em várias categorias conta em cada linha.
+            nome (acentos/caixa) são unificadas. Um prestador em várias categorias conta em cada linha. A
+            busca também filtra pelo nome do prestador.
           </p>
         </div>
         <Button
@@ -299,7 +370,7 @@ export function ProviderClassificationDashboard() {
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Filtrar linhas por nome da categoria..."
+              placeholder="Buscar por categoria ou nome do prestador..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
@@ -314,11 +385,11 @@ export function ProviderClassificationDashboard() {
           ) : (
             <div className="relative">
               <div className="overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
-                <Table className="min-w-[720px] text-sm">
+                <Table className="min-w-[960px] text-sm">
                   <TableHeader>
                     <TableRow className="bg-muted/40 hover:bg-muted/40">
                       <TableHead className="w-12 text-center font-semibold text-foreground">#</TableHead>
-                      <TableHead className="min-w-[200px] font-semibold text-foreground">
+                      <TableHead className="min-w-[180px] font-semibold text-foreground">
                         <button
                           type="button"
                           onClick={() => toggleSort("category")}
@@ -328,15 +399,18 @@ export function ProviderClassificationDashboard() {
                           <SortIcon column="category" />
                         </button>
                       </TableHead>
-                      <TableHead className="w-32 text-right font-semibold text-foreground">
+                      <TableHead className="w-28 text-right font-semibold text-foreground">
                         <button
                           type="button"
                           onClick={() => toggleSort("count")}
                           className="inline-flex w-full items-center justify-end rounded-md px-1 py-0.5 hover:bg-muted/80"
                         >
-                          Prestadores
+                          Quantidade
                           <SortIcon column="count" />
                         </button>
+                      </TableHead>
+                      <TableHead className="min-w-[260px] font-semibold text-foreground">
+                        Prestadores nesta categoria
                       </TableHead>
                       <TableHead className="w-28 text-right font-semibold text-foreground">
                         <button
@@ -348,7 +422,7 @@ export function ProviderClassificationDashboard() {
                           <SortIcon column="percent" />
                         </button>
                       </TableHead>
-                      <TableHead className="min-w-[180px] font-semibold text-foreground">
+                      <TableHead className="min-w-[160px] font-semibold text-foreground">
                         Distribuição relativa
                       </TableHead>
                     </TableRow>
@@ -378,6 +452,9 @@ export function ProviderClassificationDashboard() {
                         <TableCell className="text-right tabular-nums font-semibold text-foreground">
                           {row.count}
                         </TableCell>
+                        <TableCell className="align-top text-muted-foreground">
+                          <ProviderNamesCell row={row} />
+                        </TableCell>
                         <TableCell className="text-right tabular-nums text-muted-foreground">
                           {row.percentOfProviders}%
                         </TableCell>
@@ -397,7 +474,7 @@ export function ProviderClassificationDashboard() {
                       <TableCell colSpan={2} className="font-medium text-muted-foreground">
                         Resumo
                       </TableCell>
-                      <TableCell colSpan={3} className="text-right text-sm text-muted-foreground">
+                      <TableCell colSpan={4} className="text-right text-sm text-muted-foreground">
                         <span className="tabular-nums">{sortedRows.length}</span> categorias ·{" "}
                         <span className="tabular-nums">{totalProviders}</span> prestador(es) no filtro
                       </TableCell>

@@ -27,6 +27,11 @@ function pickDisplayName(votes: Map<string, number>): string {
   return best || '—'
 }
 
+export interface ProviderInCategory {
+  id: string
+  nome: string
+}
+
 export interface ClassificationRow {
   /** Chave estável para React (canonical ou especial para "sem categoria") */
   rowKey: string
@@ -35,6 +40,13 @@ export interface ClassificationRow {
   count: number
   /** % dos prestadores do conjunto filtrado que possuem esta categoria */
   percentOfProviders: number
+  /** Prestadores nesta categoria (ordenados por nome) */
+  providers: ProviderInCategory[]
+}
+
+type BucketEntry = {
+  displayVotes: Map<string, number>
+  members: Map<string, ProviderInCategory>
 }
 
 function categoriesForProvider(provider: FirebaseProvider): string[] {
@@ -42,9 +54,31 @@ function categoriesForProvider(provider: FirebaseProvider): string[] {
   return [...new Set(raw.map((c) => String(c).trim()).filter(Boolean))]
 }
 
+function addMembership(
+  bucket: Map<string, BucketEntry>,
+  canonical: string,
+  displayLabel: string,
+  provider: FirebaseProvider
+) {
+  let entry = bucket.get(canonical)
+  if (!entry) {
+    entry = { displayVotes: new Map(), members: new Map() }
+    bucket.set(canonical, entry)
+  }
+  if (entry.members.has(provider.id)) return
+
+  entry.members.set(provider.id, {
+    id: provider.id,
+    nome: (provider.nome || 'Sem nome').trim() || 'Sem nome',
+  })
+
+  const prev = entry.displayVotes.get(displayLabel) ?? 0
+  entry.displayVotes.set(displayLabel, prev + 1)
+}
+
 /**
- * Conta prestadores por categoria (um prestador com 3 categorias incrementa 3 linhas).
- * Unifica rótulos pela chave canônica para evitar duplicar "Eletricista" / "eletricista".
+ * Conta prestadores por categoria (um prestador com 3 categorias entra em 3 linhas).
+ * Unifica rótulos pela chave canônica e lista quem está em cada categoria.
  */
 export function aggregateByCategory(providers: FirebaseProvider[]): {
   rows: ClassificationRow[]
@@ -55,35 +89,19 @@ export function aggregateByCategory(providers: FirebaseProvider[]): {
   }
 
   const totalProviders = providers.length
-
-  // canonical -> { count, displayVotes }
-  const bucket = new Map<
-    string,
-    { count: number; displayVotes: Map<string, number> }
-  >()
-
-  const bump = (canonical: string, display: string, delta: number) => {
-    let entry = bucket.get(canonical)
-    if (!entry) {
-      entry = { count: 0, displayVotes: new Map() }
-      bucket.set(canonical, entry)
-    }
-    entry.count += delta
-    const prev = entry.displayVotes.get(display) ?? 0
-    entry.displayVotes.set(display, prev + delta)
-  }
+  const bucket = new Map<string, BucketEntry>()
 
   for (const p of providers) {
     const cats = categoriesForProvider(p)
     if (cats.length === 0) {
-      bump(UNCATEGORIZED_KEY, UNCATEGORIZED_LABEL, 1)
+      addMembership(bucket, UNCATEGORIZED_KEY, UNCATEGORIZED_LABEL, p)
     } else {
       const seen = new Set<string>()
       for (const c of cats) {
         const key = canonicalCategoryKey(c)
         if (seen.has(key)) continue
         seen.add(key)
-        bump(key, c.trim(), 1)
+        addMembership(bucket, key, c.trim(), p)
       }
     }
   }
@@ -93,13 +111,18 @@ export function aggregateByCategory(providers: FirebaseProvider[]): {
       canonical === UNCATEGORIZED_KEY
         ? UNCATEGORIZED_LABEL
         : pickDisplayName(data.displayVotes)
+    const count = data.members.size
     const percentOfProviders =
-      Math.round((data.count / totalProviders) * 1000) / 10
+      Math.round((count / totalProviders) * 1000) / 10
+    const providersSorted = [...data.members.values()].sort((a, b) =>
+      a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })
+    )
     return {
       rowKey: canonical === UNCATEGORIZED_KEY ? UNCATEGORIZED_KEY : canonical,
       category,
-      count: data.count,
+      count,
       percentOfProviders,
+      providers: providersSorted,
     }
   })
 
