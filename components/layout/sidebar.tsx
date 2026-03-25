@@ -28,6 +28,7 @@ import {
   ClipboardList,
   MousePointer,
   BadgeCheck,
+  Layers,
 } from "lucide-react"
 
 const navigation = [
@@ -63,6 +64,11 @@ const navigation = [
     children: [
       { name: "Pessoas cadastradas", href: "/users/clients", icon: Users },
       { name: "Prestadores", href: "/users/providers", icon: UserCheck },
+      {
+        name: "Classificação de Prestadores",
+        href: "/users/classificacao-prestadores",
+        icon: Layers,
+      },
     ],
   },
   {

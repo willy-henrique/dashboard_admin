@@ -40,25 +40,66 @@ function numberOrZero(value: unknown): number {
   return typeof value === 'number' ? value : 0
 }
 
-function arrayOfString(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+function pushStringInto(set: Set<string>, value: unknown) {
+  if (typeof value === 'string') {
+    const t = value.trim()
+    if (t) set.add(t)
+  } else if (typeof value === 'number' && Number.isFinite(value)) {
+    set.add(String(value))
+  }
+}
+
+function mergeArrayIntoSet(set: Set<string>, value: unknown) {
+  if (!Array.isArray(value)) return
+  for (const item of value) {
+    if (typeof item === 'string' || typeof item === 'number') {
+      pushStringInto(set, item)
+    } else if (item && typeof item === 'object' && !Array.isArray(item)) {
+      const o = item as Record<string, unknown>
+      pushStringInto(set, o.nome ?? o.name ?? o.title ?? o.label ?? o.categoria ?? o.category)
+    }
+  }
 }
 
 /** Extrai categorias de serviço de múltiplos formatos usados no Firebase (app móvel). Exportado para uso em verificações. */
 export function extractServiceCategories(raw: Record<string, unknown>): string[] {
-  const arr = arrayOfString(
-    raw.especialidades ?? raw.serviceCategories ?? raw.categories ?? raw.servicos ?? raw.niches ?? raw.services
-  )
-  if (arr.length > 0) return arr
+  const set = new Set<string>()
 
+  // Campos mais comuns (não usar ?? em cadeia: array vazio [] bloqueava os demais)
+  mergeArrayIntoSet(set, raw.especialidades)
+  mergeArrayIntoSet(set, raw.serviceCategories)
+  mergeArrayIntoSet(set, raw.categories)
+  mergeArrayIntoSet(set, raw.niches)
+  mergeArrayIntoSet(set, raw.servicos)
+  mergeArrayIntoSet(set, raw.services)
+
+  // Objetos / mapas de serviços selecionados (boolean map)
   const servicosAtendidos = raw.servicosAtendidos ?? raw.servicosSelecionados ?? raw.nichesSelecionados
-  if (Array.isArray(servicosAtendidos)) return arrayOfString(servicosAtendidos)
-  if (servicosAtendidos && typeof servicosAtendidos === 'object' && !Array.isArray(servicosAtendidos)) {
+  if (Array.isArray(servicosAtendidos)) {
+    mergeArrayIntoSet(set, servicosAtendidos)
+  } else if (servicosAtendidos && typeof servicosAtendidos === 'object' && !Array.isArray(servicosAtendidos)) {
     const obj = servicosAtendidos as Record<string, unknown>
     const keys = Object.keys(obj).filter((k) => obj[k])
-    return keys.map((k) => k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' '))
+    for (const k of keys) {
+      const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/_/g, ' ')
+      set.add(label)
+    }
   }
-  return []
+
+  // Campo único (vários nomes no app / painel)
+  const singleFields = [
+    raw.tipoServico,
+    raw.tipo_servico,
+    raw.categoria,
+    raw.categoriaPrincipal,
+    raw.serviceType,
+    raw.tipoPrestador,
+  ]
+  for (const s of singleFields) {
+    pushStringInto(set, s)
+  }
+
+  return [...set]
 }
 
 function normalizeProvider(raw: Record<string, unknown>, id: string): FirebaseProvider {

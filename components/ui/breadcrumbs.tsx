@@ -43,6 +43,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         'users': 'Usuários',
         'clients': 'Clientes',
         'providers': 'Prestadores',
+        'classificacao-prestadores': 'Classificação de Prestadores',
         'verifications': 'Verificações',
         'orders': 'Pedidos',
         'pending': 'Pendentes',
