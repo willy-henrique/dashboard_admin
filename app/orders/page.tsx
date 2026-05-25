@@ -1,3 +1,5 @@
+"use client"
+
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { ShoppingCart } from "lucide-react"
 import { useOrderDocumentRealtime } from "@/hooks/use-order-document-realtime"
