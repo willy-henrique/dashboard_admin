@@ -102,7 +102,7 @@ export default function ServicesLogisticsPage() {
       case "acionado":
         return <Badge className="bg-blue-500 text-white">ACEITO</Badge>
       case "aguardando":
-        return <Badge className="bg-gray-500 text-white">NÃO ENVIADO</Badge>
+        return <Badge className="bg-muted-foreground text-background">NÃO ENVIADO</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -116,7 +116,7 @@ export default function ServicesLogisticsPage() {
       case "aguardando":
         return <Clock className="h-4 w-4 text-orange-500" />
       default:
-        return <AlertCircle className="h-4 w-4 text-gray-500" />
+        return <AlertCircle className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -125,12 +125,12 @@ export default function ServicesLogisticsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Painel Logístico</h1>
-          <p className="text-gray-600">autem.com.br › serviços › painel logístico</p>
+          <p className="text-muted-foreground">autem.com.br › serviços › painel logístico</p>
         </div>
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
+      <div className="flex items-center gap-2 bg-muted p-2 rounded">
         <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
           <Plus className="h-4 w-4" />
         </Button>
@@ -163,12 +163,12 @@ export default function ServicesLogisticsPage() {
         </Button>
         <div className="bg-purple-600 text-white px-3 py-1 rounded text-sm font-medium">PROTOCOLO</div>
         <div className="flex-1 max-w-sm">
-          <Input placeholder="BUSCA RÁPIDA" className="bg-white" />
+          <Input placeholder="BUSCA RÁPIDA" className="bg-background" />
         </div>
       </div>
 
       {/* Service Count */}
-      <div className="text-right text-sm text-gray-600">5 SERVIÇO(S)</div>
+      <div className="text-right text-sm text-muted-foreground">5 SERVIÇO(S)</div>
 
       {/* Appointments List */}
       <div className="space-y-4">
@@ -182,13 +182,13 @@ export default function ServicesLogisticsPage() {
                 {/* Appointment Info */}
                 <div className="col-span-2">
                   <div className="font-medium text-sm">{appointment.type}</div>
-                  <div className="text-xs text-gray-600">{appointment.time}</div>
+                  <div className="text-xs text-muted-foreground">{appointment.time}</div>
                 </div>
 
                 {/* Client & Description */}
                 <div className="col-span-2">
                   <div className="font-medium text-sm">{appointment.client}</div>
-                  <div className="text-xs text-gray-600">{appointment.description}</div>
+                  <div className="text-xs text-muted-foreground">{appointment.description}</div>
                 </div>
 
                 {/* Location */}
@@ -221,7 +221,7 @@ export default function ServicesLogisticsPage() {
                     <CheckCircle className="h-4 w-4 text-green-500" />
                     <span className="text-sm font-medium">{appointment.professional}</span>
                   </div>
-                  <div className="text-xs text-gray-600">{appointment.professionalCode}</div>
+                  <div className="text-xs text-muted-foreground">{appointment.professionalCode}</div>
                 </div>
 
                 {/* Timing Info */}
@@ -233,8 +233,8 @@ export default function ServicesLogisticsPage() {
                       >
                         {appointment.delay}
                       </div>
-                      <div className="text-gray-600">{appointment.delayTime}</div>
-                      <div className="text-gray-600">{appointment.distance}</div>
+                      <div className="text-muted-foreground">{appointment.delayTime}</div>
+                      <div className="text-muted-foreground">{appointment.distance}</div>
                     </div>
                   </div>
                 </div>

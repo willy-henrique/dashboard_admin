@@ -1,387 +1,423 @@
 "use client"
 
-import { useEffect, useRef, useState, useMemo, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useRef, useState, useCallback } from "react"
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, User, Clock, Phone, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { MapPin, User, Clock, Phone, RefreshCw, Navigation, Star, AlertCircle } from "lucide-react"
 import { useProviders } from "@/hooks/use-providers"
 import type { Provider } from "@/hooks/use-providers"
 
-const statusConfig = {
-  disponivel: { color: "bg-green-500", label: "Disponível", textColor: "text-green-700" },
-  ocupado: { color: "bg-orange-500", label: "Ocupado", textColor: "text-orange-700" },
-  online: { color: "bg-blue-500", label: "Online", textColor: "text-blue-700" },
-  offline: { color: "bg-gray-500", label: "Offline", textColor: "text-gray-700" }
+const STATUS_CONFIG: Record<string, { dot: string; label: string; hex: string }> = {
+  disponivel: { dot: "bg-emerald-500", label: "Disponível", hex: "#10b981" },
+  ocupado:    { dot: "bg-amber-500",   label: "Ocupado",    hex: "#f59e0b" },
+  online:     { dot: "bg-blue-500",    label: "Online",     hex: "#3b82f6" },
+  offline:    { dot: "bg-muted-foreground",   label: "Offline",    hex: "#94a3b8" },
 }
 
-export function ProvidersMap() {
+function ProviderListItem({
+  provider,
+  selected,
+  onClick,
+}: {
+  provider: Provider
+  selected: boolean
+  onClick: () => void
+}) {
+  const cfg = STATUS_CONFIG[provider.status] ?? STATUS_CONFIG.offline
+  const hasGps = provider.localizacao.lat !== 0 || provider.localizacao.lng !== 0
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full text-left px-3 py-2.5 rounded-lg border transition-all duration-150",
+        selected
+          ? "border-primary bg-primary/5 shadow-card"
+          : "border-border bg-card hover:border-primary/30 hover:bg-muted/40"
+      )}
+    >
+      <div className="flex items-center gap-2.5">
+        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-sm font-semibold text-primary">
+          {provider.nome.charAt(0).toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className={cn("h-1.5 w-1.5 rounded-full shrink-0", cfg.dot)} />
+            <p className="text-xs font-medium text-foreground truncate">{provider.nome}</p>
+          </div>
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+            {cfg.label}{hasGps ? " · GPS ativo" : ""}
+          </p>
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function ProviderDetail({ provider, onClose }: { provider: Provider; onClose: () => void }) {
+  const cfg = STATUS_CONFIG[provider.status] ?? STATUS_CONFIG.offline
+  const hasGps = provider.localizacao.lat !== 0 || provider.localizacao.lng !== 0
+
+  return (
+    <div className="border-t border-border p-4 bg-muted/20">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+            {provider.nome.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">{provider.nome}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={cn("h-1.5 w-1.5 rounded-full", cfg.dot)} />
+              <span className="text-xs text-muted-foreground">{cfg.label}</span>
+            </div>
+          </div>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onClose} className="h-7 w-7 p-0 text-muted-foreground">
+          ×
+        </Button>
+      </div>
+
+      <div className="space-y-2 text-xs text-muted-foreground">
+        {provider.telefone && (
+          <div className="flex items-center gap-2">
+            <Phone className="h-3 w-3 shrink-0" />
+            <span>{provider.telefone}</span>
+          </div>
+        )}
+        {hasGps && (
+          <div className="flex items-center gap-2">
+            <Navigation className="h-3 w-3 shrink-0 text-primary" />
+            <span className="font-mono">
+              {provider.localizacao.lat.toFixed(5)}, {provider.localizacao.lng.toFixed(5)}
+            </span>
+          </div>
+        )}
+        {!hasGps && (
+          <div className="flex items-center gap-2 text-amber-600">
+            <AlertCircle className="h-3 w-3 shrink-0" />
+            <span>Localização não disponível</span>
+          </div>
+        )}
+        {provider.servicoAtual && (
+          <div className="flex items-start gap-2">
+            <User className="h-3 w-3 shrink-0 mt-0.5" />
+            <span>{provider.servicoAtual}</span>
+          </div>
+        )}
+        {provider.avaliacao > 0 && (
+          <div className="flex items-center gap-1.5 mt-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "h-3 w-3 rounded-sm",
+                  i < Math.round(provider.avaliacao) ? "bg-amber-400" : "bg-muted"
+                )}
+              />
+            ))}
+            <span className="ml-1 font-medium text-foreground">{provider.avaliacao.toFixed(1)}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 pt-1 border-t border-border mt-2">
+          <Clock className="h-3 w-3 shrink-0" />
+          <span>{new Date(provider.ultimaAtualizacao).toLocaleString("pt-BR")}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Google Maps map view (when API is available)
+function GoogleMapView({
+  providers,
+  onSelect,
+}: {
+  providers: Provider[]
+  onSelect: (p: Provider) => void
+}) {
   const mapRef = useRef<HTMLDivElement>(null)
-  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
-  const [mapLoaded, setMapLoaded] = useState(false)
-  const [mapInstance, setMapInstance] = useState<any>(null)
-  const [markers, setMarkers] = useState<any[]>([])
+  const [ready, setReady] = useState(false)
+  const mapInstance = useRef<any>(null)
 
-  // Usar o hook para buscar prestadores com atualização automática
-  const { providers, stats, loading, error, refetch } = useProviders({
-    ativo: true, // Apenas prestadores ativos
-    autoRefresh: true,
-    refreshInterval: 30000 // Atualiza a cada 30 segundos
-  })
-
-  // Usar prestadores reais do Firebase
-  const displayProviders = useMemo(() => {
-    return providers
-  }, [providers])
-
-  // Inicializar o mapa
   useEffect(() => {
-    if (!mapRef.current || mapLoaded) return
+    if (!mapRef.current || ready) return
 
-    const initMap = () => {
-      const mapsBlocked = typeof window !== "undefined" && (window as any).__googleMapsBlocked
-      if (mapsBlocked) {
-        createMockMap()
-        setMapLoaded(true)
-        return
-      }
-
-      if (typeof window !== 'undefined' && window.google && window.google.maps) {
+    const tryInit = () => {
+      if (typeof window !== "undefined" && window.google?.maps) {
         try {
           const map = new window.google.maps.Map(mapRef.current!, {
             center: { lat: -20.3155, lng: -40.3128 },
             zoom: 12,
-            styles: [
-              {
-                featureType: "poi",
-                elementType: "labels",
-                stylers: [{ visibility: "off" }]
-              }
-            ]
+            styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }],
           })
-
-          setMapInstance(map)
-          setMapLoaded(true)
-        } catch (mapsError) {
-          console.error("Erro ao inicializar Google Maps. Usando mapa mock.", mapsError)
-          createMockMap()
-          setMapLoaded(true)
+          mapInstance.current = map
+          setReady(true)
+        } catch {
+          setReady(false)
         }
-      } else {
-        createMockMap()
-        setMapLoaded(true)
       }
     }
 
-    // Tentar carregar Google Maps primeiro
-    if (typeof window !== 'undefined' && window.google && window.google.maps) {
-      initMap()
+    if (typeof window !== "undefined" && window.google?.maps) {
+      tryInit()
     } else {
-      // Aguardar um pouco para o Google Maps carregar
-      const timer = setTimeout(() => {
-        const mapsBlocked = typeof window !== "undefined" && (window as any).__googleMapsBlocked
-        if (!mapsBlocked && typeof window !== 'undefined' && window.google && window.google.maps) {
-          initMap()
-        } else {
-          createMockMap()
-          setMapLoaded(true)
-        }
-      }, 2000)
-
-      return () => clearTimeout(timer)
+      const t = setTimeout(tryInit, 1500)
+      return () => clearTimeout(t)
     }
-  }, [mapLoaded])
-
-  // Criar mapa mock quando Google Maps não estiver disponível - memoizado
-  const createMockMap = useCallback(() => {
-    if (!mapRef.current) return
-
-    const mapContainer = mapRef.current
-    mapContainer.innerHTML = `
-      <div class="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 relative overflow-hidden rounded-lg">
-        <!-- Grid pattern -->
-        <div class="absolute inset-0 opacity-20">
-          <div class="grid grid-cols-12 grid-rows-8 h-full">
-            ${Array.from({ length: 96 }, (_, i) =>
-      `<div class="border border-gray-300"></div>`
-    ).join('')}
-          </div>
-        </div>
-        
-        <!-- Mock markers for providers -->
-        ${displayProviders.map((provider, index) => {
-      const colors = {
-        disponivel: '#10b981',
-        ocupado: '#f59e0b',
-        online: '#3b82f6',
-        offline: '#6b7280'
-      }
-      const color = colors[provider.status] || '#6b7280'
-
-      return `
-            <div 
-              class="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-110 transition-transform"
-              style="
-                background-color: ${color};
-                left: ${20 + (index * 15) % 60}%;
-                top: ${30 + (index * 20) % 40}%;
-                z-index: 10;
-              "
-              title="${provider.nome} - ${provider.status}"
-              onclick="alert('${provider.nome}\\nStatus: ${provider.status}\\nTelefone: ${provider.telefone}')"
-            ></div>
-          `
-    }).join('')}
-        
-        <!-- Map info -->
-        <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-          <div class="text-sm font-medium text-gray-700">Vitória, ES</div>
-          <div class="text-xs text-gray-500">${displayProviders.length} prestadores ativos</div>
-        </div>
-        
-        <!-- Loading indicator -->
-        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-          <div class="flex items-center gap-2 text-xs text-gray-600">
-            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span>Ativo</span>
-          </div>
-        </div>
-      </div>
-    `
-  }, [displayProviders])
-
-  // Atualizar marcadores quando os prestadores mudarem
-  useEffect(() => {
-    if (!mapLoaded || !displayProviders.length) return
-
-    const mapsBlocked = typeof window !== "undefined" && (window as any).__googleMapsBlocked
-    if (!mapsBlocked && mapInstance && window.google && window.google.maps) {
-      // Google Maps está disponível
-      // Limpar marcadores existentes usando referência atual
-      markers.forEach(marker => {
-        if (marker && marker.setMap) {
-          marker.setMap(null)
-        }
-      })
-
-      // Adicionar novos marcadores
-      const newMarkers: any[] = []
-
-      displayProviders.forEach(provider => {
-        const marker = new window.google.maps.Marker({
-          position: provider.localizacao,
-          map: mapInstance,
-          title: provider.nome,
-          icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 8,
-            fillColor: statusConfig[provider.status].color.replace('bg-', '#').replace('-500', ''),
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 2
-          }
-        })
-
-        // Info window para cada marcador
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `
-            <div class="p-3 min-w-[200px]">
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-3 h-3 rounded-full ${statusConfig[provider.status].color}"></div>
-                <h3 class="font-semibold text-sm">${provider.nome}</h3>
-              </div>
-              <p class="text-xs text-gray-600 mb-1">${provider.telefone}</p>
-              <p class="text-xs ${statusConfig[provider.status].textColor} font-medium">${statusConfig[provider.status].label}</p>
-              ${provider.servicoAtual ? `<p class="text-xs text-gray-500 mt-1">Serviço: ${provider.servicoAtual}</p>` : ''}
-              <p class="text-xs text-gray-400 mt-1">Atualizado: ${new Date(provider.ultimaAtualizacao).toLocaleTimeString()}</p>
-            </div>
-          `
-        })
-
-        marker.addListener('click', () => {
-          setSelectedProvider(provider)
-          infoWindow.open(mapInstance, marker)
-        })
-
-        newMarkers.push(marker)
-      })
-
-      setMarkers(newMarkers)
-    } else if (mapLoaded) {
-      // Usar mapa mock - recriar com novos dados
-      createMockMap()
-    }
-  }, [mapInstance, mapLoaded, displayProviders, createMockMap])
-
-  // Cleanup: remover marcadores quando o componente desmontar ou quando markers mudar
-  const markersRef = useRef(markers)
-  useEffect(() => {
-    markersRef.current = markers
-  }, [markers])
+  }, [ready])
 
   useEffect(() => {
-    return () => {
-      // Limpar marcadores ao desmontar usando ref para evitar dependência
-      markersRef.current.forEach(marker => {
-        if (marker && marker.setMap) {
-          marker.setMap(null)
-        }
+    if (!ready || !mapInstance.current || !window.google?.maps) return
+
+    providers.forEach((provider) => {
+      if (provider.localizacao.lat === 0 && provider.localizacao.lng === 0) return
+      const cfg = STATUS_CONFIG[provider.status] ?? STATUS_CONFIG.offline
+      const marker = new window.google.maps.Marker({
+        position: provider.localizacao,
+        map: mapInstance.current,
+        title: provider.nome,
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: cfg.hex,
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2,
+        },
       })
-    }
-  }, [])
+      marker.addListener("click", () => onSelect(provider))
+    })
+  }, [ready, providers, onSelect])
+
+  if (!ready) return null
+
+  return <div ref={mapRef} className="w-full h-full" />
+}
+
+// Visual fallback map (no Google Maps needed)
+function VisualMapFallback({
+  providers,
+  selected,
+  onSelect,
+}: {
+  providers: Provider[]
+  selected: Provider | null
+  onSelect: (p: Provider) => void
+}) {
+  // Only providers with GPS
+  const withGps = providers.filter(
+    (p) => p.localizacao.lat !== 0 || p.localizacao.lng !== 0
+  )
+
+  // Compute bounds to normalize positions
+  const lats = withGps.map((p) => p.localizacao.lat)
+  const lngs = withGps.map((p) => p.localizacao.lng)
+  const minLat = Math.min(...lats, -20.5)
+  const maxLat = Math.max(...lats, -20.1)
+  const minLng = Math.min(...lngs, -40.5)
+  const maxLng = Math.max(...lngs, -40.1)
+
+  const normalize = (val: number, min: number, max: number) =>
+    max === min ? 50 : ((val - min) / (max - min)) * 80 + 10
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex-1">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                <span className="truncate">Rastreamento em Tempo Real</span>
-              </CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Localização atual dos prestadores de serviço ativos
-              </p>
-            </div>
-            <button
-              onClick={refetch}
-              disabled={loading}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors self-start sm:self-auto"
-              title="Atualizar localizações"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Estatísticas */}
-          {stats && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
-              <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
-                <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.disponivel}</div>
-                <div className="text-xs text-green-700">Disponíveis</div>
-              </div>
-              <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg">
-                <div className="text-lg sm:text-2xl font-bold text-orange-600">{stats.ocupado}</div>
-                <div className="text-xs text-orange-700">Ocupados</div>
-              </div>
-              <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
-                <div className="text-lg sm:text-2xl font-bold text-blue-600">{stats.online}</div>
-                <div className="text-xs text-blue-700">Online</div>
-              </div>
-              <div className="text-center p-2 sm:p-3 bg-gray-50 rounded-lg">
-                <div className="text-lg sm:text-2xl font-bold text-gray-600">{stats.total}</div>
-                <div className="text-xs text-gray-700">Total</div>
-              </div>
-            </div>
-          )}
+    <div className="relative w-full h-full bg-linear-to-br from-sky-50 via-blue-50 to-teal-50 dark:from-slate-800 dark:via-slate-900 dark:to-slate-800 overflow-hidden">
+      {/* Grid */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="h-full w-full"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, #64748b 1px, transparent 1px), linear-gradient(to bottom, #64748b 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+      </div>
 
-          {/* Mapa */}
-          <div className="relative">
-            <div
-              ref={mapRef}
-              className="w-full h-64 sm:h-80 md:h-96 rounded-lg border"
-              style={{ minHeight: '300px' }}
-            />
+      {/* Region label */}
+      <div className="absolute top-3 left-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground shadow-card">
+        Vitória, ES
+      </div>
 
-            {/* Loading overlay */}
-            {(!mapLoaded || loading) && (
-              <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-600">
-                    {!mapLoaded ? 'Carregando mapa...' : 'Atualizando localizações...'}
-                  </p>
-                </div>
-              </div>
+      {/* Status badge */}
+      <div className="absolute top-3 right-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-md px-2 py-1 text-[11px] text-muted-foreground flex items-center gap-1.5 shadow-card">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Tempo real
+      </div>
+
+      {/* Provider dots */}
+      {withGps.map((provider) => {
+        const cfg = STATUS_CONFIG[provider.status] ?? STATUS_CONFIG.offline
+        const x = normalize(provider.localizacao.lng, minLng, maxLng)
+        const y = 100 - normalize(provider.localizacao.lat, minLat, maxLat)
+        const isSelected = selected?.id === provider.id
+
+        return (
+          <button
+            key={provider.id}
+            onClick={() => onSelect(provider)}
+            title={provider.nome}
+            className={cn(
+              "absolute -translate-x-1/2 -translate-y-1/2 flex items-center justify-center rounded-full border-2 border-white shadow-md transition-all duration-150 hover:scale-125 z-10",
+              cfg.dot,
+              isSelected && "scale-125 ring-2 ring-primary ring-offset-1"
             )}
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              width: isSelected ? 20 : 14,
+              height: isSelected ? 20 : 14,
+            }}
+          >
+            {isSelected && <MapPin className="h-3 w-3 text-white" />}
+          </button>
+        )
+      })}
 
-            {/* Error overlay */}
-            {error && (
-              <div className="absolute inset-0 bg-red-50 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-red-500 mb-2">⚠️</div>
-                  <p className="text-sm text-red-600">{error}</p>
-                  <button
-                    onClick={refetch}
-                    className="mt-2 px-3 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
-                  >
-                    Tentar novamente
-                  </button>
-                </div>
-              </div>
-            )}
+      {/* No GPS providers message */}
+      {withGps.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <MapPin className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Nenhum prestador com localização ativa</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Os prestadores precisam compartilhar sua localização</p>
           </div>
+        </div>
+      )}
 
-          {/* Legenda */}
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium mb-2">Status dos Prestadores</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              {Object.entries(statusConfig).map(([status, config]) => (
-                <div key={status} className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${config.color}`}></div>
-                  <span className={config.textColor}>{config.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Detalhes do prestador selecionado */}
-      {selectedProvider && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <User className="h-4 w-4" />
-              <span className="truncate">{selectedProvider.nome}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                <span className="text-sm truncate">{selectedProvider.telefone}</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${statusConfig[selectedProvider.status].color} flex-shrink-0`}></div>
-                <Badge className={`${statusConfig[selectedProvider.status].textColor} text-xs`}>
-                  {statusConfig[selectedProvider.status].label}
-                </Badge>
-              </div>
-
-              {selectedProvider.servicoAtual && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700">Serviço Atual:</p>
-                  <p className="text-sm text-gray-600 break-words">{selectedProvider.servicoAtual}</p>
-                </div>
-              )}
-
-              <div className="flex items-start gap-2">
-                <Clock className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-gray-600">
-                  <p className="font-medium">Última atualização:</p>
-                  <p className="text-xs">{new Date(selectedProvider.ultimaAtualizacao).toLocaleString()}</p>
-                </div>
-              </div>
-
-              {/* Informações adicionais para mobile */}
-              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200">
-                <div className="text-center">
-                  <p className="text-xs text-gray-500">Avaliação</p>
-                  <p className="text-sm font-semibold">{selectedProvider.avaliacao}/5</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xs text-gray-500">Serviços</p>
-                  <p className="text-sm font-semibold">{selectedProvider.totalServicos}</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Bottom info */}
+      {withGps.length > 0 && (
+        <div className="absolute bottom-3 left-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-md px-2 py-1 text-[11px] text-muted-foreground shadow-card">
+          {withGps.length} prestador{withGps.length !== 1 ? "es" : ""} com GPS
+        </div>
       )}
     </div>
   )
 }
 
+export function ProvidersMap() {
+  const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null)
+  const [useGoogleMaps, setUseGoogleMaps] = useState(false)
+
+  const { providers, stats, loading, error, refetch } = useProviders({
+    ativo: true,
+    autoRefresh: true,
+    refreshInterval: 30000,
+  })
+
+  // Detect Google Maps availability once on mount
+  useEffect(() => {
+    const check = () => {
+      if (typeof window !== "undefined" && window.google?.maps) {
+        setUseGoogleMaps(true)
+      }
+    }
+    check()
+    const t = setTimeout(check, 2000)
+    return () => clearTimeout(t)
+  }, [])
+
+  const handleSelect = useCallback((p: Provider) => {
+    setSelectedProvider((prev) => (prev?.id === p.id ? null : p))
+  }, [])
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Stats strip */}
+      {stats && (
+        <div className="grid grid-cols-4 gap-px bg-border border-b border-border shrink-0">
+          {(
+            [
+              { key: "disponivel", label: "Disponíveis", value: stats.disponivel, color: "text-emerald-600" },
+              { key: "ocupado",    label: "Ocupados",    value: stats.ocupado,    color: "text-amber-600"   },
+              { key: "online",     label: "Online",      value: stats.online,     color: "text-blue-600"    },
+              { key: "total",      label: "Total",       value: stats.total,      color: "text-foreground"  },
+            ] as const
+          ).map(({ key, label, value, color }) => (
+            <div key={key} className="bg-card p-3 text-center">
+              <p className={cn("text-lg font-bold tabular-nums", color)}>{value}</p>
+              <p className="text-[11px] text-muted-foreground">{label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Main area: map + list */}
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Map */}
+        <div className="flex-1 relative min-h-[280px]">
+          {loading && (
+            <div className="absolute inset-0 z-20 bg-background/70 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <RefreshCw className="h-5 w-5 text-primary animate-spin" />
+                <p className="text-xs text-muted-foreground">Carregando...</p>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="absolute inset-0 z-20 bg-destructive/5 flex items-center justify-center">
+              <div className="text-center">
+                <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
+                <p className="text-sm text-destructive">{error}</p>
+                <Button variant="outline" size="sm" onClick={refetch} className="mt-2 h-7 text-xs">
+                  Tentar novamente
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {useGoogleMaps ? (
+            <GoogleMapView providers={providers} onSelect={handleSelect} />
+          ) : (
+            <VisualMapFallback
+              providers={providers}
+              selected={selectedProvider}
+              onSelect={handleSelect}
+            />
+          )}
+        </div>
+
+        {/* Provider list sidebar */}
+        {providers.length > 0 && (
+          <div className="w-52 shrink-0 border-l border-border flex-col bg-card hidden lg:flex">
+            <div className="px-3 py-2 border-b border-border flex items-center justify-between">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Prestadores
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={refetch}
+                className="h-6 w-6 p-0 text-muted-foreground"
+                disabled={loading}
+              >
+                <RefreshCw className={cn("h-3 w-3", loading && "animate-spin")} />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {providers.map((p) => (
+                <ProviderListItem
+                  key={p.id}
+                  provider={p}
+                  selected={selectedProvider?.id === p.id}
+                  onClick={() => handleSelect(p)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Selected provider detail */}
+      {selectedProvider && (
+        <ProviderDetail
+          provider={selectedProvider}
+          onClose={() => setSelectedProvider(null)}
+        />
+      )}
+    </div>
+  )
+}

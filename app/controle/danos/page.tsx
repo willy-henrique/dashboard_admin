@@ -35,8 +35,8 @@ export default function DanosPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Danos</h1>
-          <p className="text-gray-600">autem.com.br › controle › danos</p>
+          <h1 className="text-2xl font-bold text-foreground">Danos</h1>
+          <p className="text-muted-foreground">autem.com.br › controle › danos</p>
         </div>
 
         {/* Action Bar */}
@@ -47,7 +47,7 @@ export default function DanosPage() {
               Registrar Dano
             </Button>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
               <Input placeholder="Buscar danos..." className="pl-20 w-64" />
             </div>
           </div>

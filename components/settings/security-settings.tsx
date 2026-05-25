@@ -22,7 +22,7 @@ export function SecuritySettings() {
             <Badge variant="outline">Dados reais obrigatorios</Badge>
           </div>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Ative um backend real de configuracao para expor politicas de senha, sessoes e recursos de seguranca.
         </CardContent>
       </Card>
@@ -36,7 +36,7 @@ export function SecuritySettings() {
             </CardTitle>
             <CardDescription>Nenhuma politica real carregada.</CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             Os valores padrao artificiais foram removidos para nao sugerir uma configuracao que nao existe.
           </CardContent>
         </Card>
@@ -49,7 +49,7 @@ export function SecuritySettings() {
             </CardTitle>
             <CardDescription>Nenhum agendamento real carregado.</CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             Acionar backup ou salvar politicas permanece bloqueado ate existir endpoint real.
           </CardContent>
         </Card>
@@ -62,7 +62,7 @@ export function SecuritySettings() {
             </CardTitle>
             <CardDescription>Sem logs simulados em runtime.</CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             Quando houver fonte real de auditoria, os eventos devem aparecer aqui com leitura direta do backend.
           </CardContent>
         </Card>

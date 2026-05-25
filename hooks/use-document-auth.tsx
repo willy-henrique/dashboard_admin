@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
-import { validateCredentials, generateSessionToken, isAuthenticated } from '@/lib/auth-documents'
+import { validateCredentials, generateSessionToken, isAuthenticated as checkTokenValid } from '@/lib/auth-documents'
 import { useToast } from '@/hooks/use-toast'
 
 interface DocumentUser {
@@ -53,7 +53,7 @@ export const DocumentAuthProvider = ({ children }: DocumentAuthProviderProps) =>
       const sessionToken = localStorage.getItem('document_session_token')
       const userData = localStorage.getItem('document_user_data')
       
-      if (sessionToken && userData && isAuthenticated(sessionToken)) {
+      if (sessionToken && userData && checkTokenValid(sessionToken)) {
         const parsedUser = JSON.parse(userData)
         setUser(parsedUser)
         setIsAuthenticated(true)

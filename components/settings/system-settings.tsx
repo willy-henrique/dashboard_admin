@@ -24,7 +24,7 @@ export function SystemSettings() {
             <Badge variant="outline">Somente dado real</Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-slate-600">
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>
             <strong>Ambiente atual:</strong> {environment}
           </p>
@@ -45,7 +45,7 @@ export function SystemSettings() {
             Nenhuma acao administrativa fica disponivel sem um endpoint real de execucao e monitoramento.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Os botoes locais de reinicio, teste, atualizacao e limpeza de cache foram removidos para nao simular sucesso.
         </CardContent>
       </Card>

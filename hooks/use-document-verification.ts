@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { getProviderDocuments, getAllPendingProviders, hasProviderDocuments } from '@/lib/storage'
+import { getProviderDocuments, getAllPendingProviders, hasProviderDocuments, invalidatePendingProvidersCache } from '@/lib/storage'
 import { useToast } from '@/hooks/use-toast'
 import {
   DocumentVerification,
@@ -10,12 +10,9 @@ import {
   type ProviderDocuments,
 } from '@/types/verification'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, getDocs, collection, query, where, updateDoc, addDoc, serverTimestamp, documentId } from 'firebase/firestore'
+import { doc, getDoc, getDocs, collection, query, where, updateDoc, addDoc, serverTimestamp, documentId, limit, orderBy } from 'firebase/firestore'
 import { extractServiceCategories } from '@/lib/services/firebase-providers'
-import {
-  resolveQueueVerificationStatus,
-  PENDING_VERIFICATION_STATUS_IN_QUERY,
-} from '@/lib/verification-status'
+import { resolveQueueVerificationStatus } from '@/lib/verification-status'
 
 export const useDocumentVerification = () => {
   const [verifications, setVerifications] = useState<DocumentVerification[]>([])
@@ -78,23 +75,29 @@ export const useDocumentVerification = () => {
 
       if (db) {
         try {
-          const pendingQuery = query(
-            collection(db, 'providers'),
-            where('verificationStatus', 'in', PENDING_VERIFICATION_STATUS_IN_QUERY)
-          )
-          const pendingSnap = await getDocs(pendingQuery)
-          pendingSnap.forEach((d) => {
-            if (storageIds.has(d.id)) return
-            mergedFromFirestore.push({
-              providerId: d.id,
-              documents: {},
-              uploadedAt: new Date(),
-              firstUploadedAt: new Date(),
-              status: 'pending',
-            })
-          })
+          // Busca TODOS os prestadores — where('verificationStatus', 'in', [...]) não retorna
+          // documentos sem o campo definido (novos cadastros), por isso usamos a coleção inteira.
+          const [providersSnap, usersSnap] = await Promise.all([
+            getDocs(query(collection(db, 'providers'), limit(500))),
+            getDocs(query(collection(db, 'users'), where('userType', 'in', ['provider', 'prestador']), limit(500))).catch(() => null),
+          ])
+
+          const addIfMissing = (id: string) => {
+            if (!storageIds.has(id) && !mergedFromFirestore.some(p => p.providerId === id)) {
+              mergedFromFirestore.push({
+                providerId: id,
+                documents: {},
+                uploadedAt: new Date(),
+                firstUploadedAt: new Date(),
+                status: 'pending',
+              })
+            }
+          }
+
+          providersSnap.forEach(d => addIfMissing(d.id))
+          usersSnap?.forEach(d => addIfMissing(d.id))
         } catch (mergeErr) {
-          console.warn('Não foi possível mesclar prestadores pendentes do Firestore:', mergeErr)
+          console.warn('Não foi possível mesclar prestadores do Firestore:', mergeErr)
         }
       }
 
@@ -118,20 +121,22 @@ export const useDocumentVerification = () => {
       // Buscar providers e verifications em batch (Firestore limita 'in' a 30 itens)
       const BATCH_SIZE = 30
       const providersMap: Record<string, any> = {}
-      const verificationsMap: Record<string, { status: string; submittedAt?: Date }> = {}
+      const verificationsMap: Record<string, { status: string; submittedAt?: Date; reviewedAt?: Date; createdAt?: Date }> = {}
 
       for (let i = 0; i < providerIds.length; i += BATCH_SIZE) {
         const batchIds = providerIds.slice(i, i + BATCH_SIZE)
         const [providersSnap, verifSnap] = await Promise.all([
           getDocs(query(collection(db, 'providers'), where(documentId(), 'in', batchIds))).catch(() => null),
-          getDocs(query(collection(db, 'provider_verifications'), where('providerId', 'in', batchIds)))
+          getDocs(query(collection(db, 'provider_verifications'), where('providerId', 'in', batchIds))).catch(() => null),
         ])
         providersSnap?.forEach(d => { providersMap[d.id] = d.data() })
         verifSnap?.forEach(d => {
           const data = d.data() as any
           verificationsMap[data.providerId] = {
             status: data.status,
-            submittedAt: data.submittedAt?.toDate?.()
+            submittedAt: data.submittedAt?.toDate?.() ?? data.createdAt?.toDate?.(),
+            reviewedAt: data.reviewedAt?.toDate?.(),
+            createdAt: data.createdAt?.toDate?.(),
           }
         })
       }
@@ -171,7 +176,13 @@ export const useDocumentVerification = () => {
           providerServiceCategories: userData ? extractServiceCategories(userData as Record<string, unknown>) : [],
           status: currentStatus,
           documents: provider.documents,
-          submittedAt: verifData?.submittedAt || provider.firstUploadedAt || provider.uploadedAt,
+          submittedAt: verifData?.submittedAt
+            ?? verifData?.createdAt
+            ?? (userData?.createdAt?.toDate?.() instanceof Date ? userData.createdAt.toDate() : undefined)
+            ?? (userData?.updatedAt?.toDate?.() instanceof Date ? userData.updatedAt.toDate() : undefined)
+            ?? provider.firstUploadedAt,
+          reviewedAt: verifData?.reviewedAt
+            ?? (userData?.updatedAt?.toDate?.() instanceof Date && currentStatus !== 'pending' ? userData.updatedAt.toDate() : undefined),
         }
       })
 
@@ -333,6 +344,7 @@ export const useDocumentVerification = () => {
           : v
       ))
 
+      invalidatePendingProvidersCache()
       toast({
         title: "Verificação aprovada",
         description: `${verification.providerName} foi aprovado como prestador e está habilitado para prestar serviços.`,
@@ -417,6 +429,7 @@ export const useDocumentVerification = () => {
           : v
       ))
 
+      invalidatePendingProvidersCache()
       toast({
         title: "Verificação rejeitada",
         description: `${verification.providerName} foi rejeitado como prestador. O motivo foi registrado.`,
@@ -455,7 +468,7 @@ export const useDocumentVerification = () => {
 
     if (filters.documentType) {
       filtered = filtered.filter(v => 
-        v.documents[filters.documentType as keyof typeof v.documents]?.length > 0
+        (v.documents[filters.documentType as keyof typeof v.documents]?.length ?? 0) > 0
       )
     }
 

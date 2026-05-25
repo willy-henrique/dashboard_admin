@@ -47,53 +47,40 @@ export default function ProvidersPage() {
       <PageWithBack backButtonLabel="Voltar para Dashboard">
         <div className="space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Gestao de Prestadores</h1>
-              <p className="mt-1 text-gray-600">A listagem agora usa a colecao real `providers`, sem fallback de `users` ou debug.</p>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <UserCheck className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Gestão de Prestadores</h1>
+                <p className="text-sm text-muted-foreground">Lista em tempo real da coleção <code className="text-xs bg-muted px-1 py-0.5 rounded">providers</code></p>
+              </div>
             </div>
-            <Button variant="outline" onClick={() => setRefreshKey((value) => value + 1)} disabled={loading}>
-              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            <Button variant="outline" size="sm" onClick={() => setRefreshKey((v) => v + 1)} disabled={loading}>
+              <RefreshCw className={`mr-1.5 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               Atualizar
             </Button>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardContent className="flex items-center justify-between p-6">
-                <div>
-                  <p className="text-sm text-gray-500">Total</p>
-                  <p className="text-3xl font-bold">{stats.total}</p>
-                </div>
-                <Users className="h-8 w-8 text-orange-500" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center justify-between p-6">
-                <div>
-                  <p className="text-sm text-gray-500">Ativos</p>
-                  <p className="text-3xl font-bold text-green-600">{stats.active}</p>
-                </div>
-                <UserCheck className="h-8 w-8 text-green-600" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center justify-between p-6">
-                <div>
-                  <p className="text-sm text-gray-500">Verificados</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.verified}</p>
-                </div>
-                <Shield className="h-8 w-8 text-blue-600" />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center justify-between p-6">
-                <div>
-                  <p className="text-sm text-gray-500">Offline</p>
-                  <p className="text-3xl font-bold text-gray-700">{stats.inactive}</p>
-                </div>
-                <RefreshCw className="h-8 w-8 text-gray-500" />
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: "Total",      value: stats.total,    icon: Users,     iconBg: "bg-primary/10",                         iconCl: "text-primary"     },
+              { label: "Ativos",     value: stats.active,   icon: UserCheck, iconBg: "bg-emerald-50 dark:bg-emerald-950/40",  iconCl: "text-emerald-600" },
+              { label: "Verificados",value: stats.verified, icon: Shield,    iconBg: "bg-blue-50 dark:bg-blue-950/40",        iconCl: "text-blue-600"    },
+              { label: "Offline",    value: stats.inactive, icon: RefreshCw, iconBg: "bg-muted",     iconCl: "text-muted-foreground"   },
+            ].map(({ label, value, icon: Icon, iconBg, iconCl }) => (
+              <Card key={label} className="shadow-card">
+                <CardContent className="p-5 flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                    <p className="text-2xl font-bold text-foreground tabular-nums mt-1">{value}</p>
+                  </div>
+                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+                    <Icon className={`h-4 w-4 ${iconCl}`} />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
           <ProvidersTable key={refreshKey} />

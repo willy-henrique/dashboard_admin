@@ -47,11 +47,11 @@ export const VerificationHistory = ({ verificationId, providerName }: Verificati
   const fetchHistory = async () => {
     setLoading(true)
     try {
-      const historyData = await getCollection('verification_history')
+      const historyData = (await getCollection('verification_history')) as VerificationHistoryItem[]
       const filteredHistory = historyData
         .filter(item => item.verificationId === verificationId)
         .sort((a, b) => new Date(b.reviewedAt).getTime() - new Date(a.reviewedAt).getTime())
-      
+
       setHistory(filteredHistory)
     } catch (error) {
       console.error('Erro ao buscar histórico:', error)
@@ -67,7 +67,7 @@ export const VerificationHistory = ({ verificationId, providerName }: Verificati
       case 'rejected':
         return <XCircle className="h-4 w-4 text-red-600" />
       default:
-        return <Clock className="h-4 w-4 text-gray-600" />
+        return <Clock className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -86,7 +86,7 @@ export const VerificationHistory = ({ verificationId, providerName }: Verificati
     return (
       <Card className="border-0 shadow-sm">
         <CardContent className="p-4">
-          <div className="h-20 bg-muted/50 rounded-lg animate-pulse" />
+          <div className="h-20 bg-muted/50 rounded-lg animate-skeleton" />
         </CardContent>
       </Card>
     )
@@ -120,7 +120,7 @@ export const VerificationHistory = ({ verificationId, providerName }: Verificati
           <div className="space-y-3">
             {history.map((item, index) => (
               <div key={item.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                <div className="flex-shrink-0 mt-1">
+                <div className="shrink-0 mt-1">
                   {getActionIcon(item.action)}
                 </div>
                 <div className="flex-1 space-y-2">
@@ -147,7 +147,7 @@ export const VerificationHistory = ({ verificationId, providerName }: Verificati
                     {item.rejectionReason && (
                       <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm">
                         <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                          <MessageSquare className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
                           <div>
                             <p className="font-medium text-red-800">Motivo da rejeição:</p>
                             <p className="text-red-700">{item.rejectionReason}</p>

@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     // Dados de usuário
     const userDoc = await db.collection('users').doc(userId).get()
-    if (userDoc.exists()) {
+    if (userDoc.exists) {
       const userData = userDoc.data()
       const { password, senhaHash, ...safeUserData } = userData || {}
       exportData.data.user = safeUserData

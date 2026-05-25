@@ -42,7 +42,7 @@ const getTipoColor = (tipo: string) => {
     case "manutencao":
       return "bg-yellow-100 text-yellow-800"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -51,8 +51,8 @@ export default function NotificacoesPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notificações</h1>
-          <p className="text-gray-600">autem.com.br › controle › notificações</p>
+          <h1 className="text-2xl font-bold text-foreground">Notificações</h1>
+          <p className="text-muted-foreground">autem.com.br › controle › notificações</p>
         </div>
 
         {/* Action Bar */}
@@ -64,7 +64,7 @@ export default function NotificacoesPage() {
             </Button>
             <Button variant="outline">Marcar todas como lidas</Button>
           </div>
-          <div className="text-sm text-gray-600">{notifications.filter((n) => !n.lida).length} não lida(s)</div>
+          <div className="text-sm text-muted-foreground">{notifications.filter((n) => !n.lida).length} não lida(s)</div>
         </div>
 
         {/* Notifications List */}
@@ -74,21 +74,21 @@ export default function NotificacoesPage() {
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-full ${notification.lida ? "bg-gray-100" : "bg-blue-100"}`}>
-                      <Bell className={`h-4 w-4 ${notification.lida ? "text-gray-500" : "text-blue-600"}`} />
+                    <div className={`p-2 rounded-full ${notification.lida ? "bg-muted" : "bg-blue-100"}`}>
+                      <Bell className={`h-4 w-4 ${notification.lida ? "text-muted-foreground" : "text-blue-600"}`} />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className={`font-medium ${notification.lida ? "text-gray-600" : "text-gray-900"}`}>
+                        <h3 className={`font-medium ${notification.lida ? "text-muted-foreground" : "text-foreground"}`}>
                           {notification.titulo}
                         </h3>
                         <Badge className={getTipoColor(notification.tipo)}>{notification.tipo}</Badge>
                         {!notification.lida && <div className="w-2 h-2 bg-blue-500 rounded-full" />}
                       </div>
-                      <p className={`text-sm ${notification.lida ? "text-gray-500" : "text-gray-700"}`}>
+                      <p className={`text-sm ${notification.lida ? "text-muted-foreground" : "text-foreground"}`}>
                         {notification.mensagem}
                       </p>
-                      <p className="text-xs text-gray-400 mt-2">{notification.createdAt}</p>
+                      <p className="text-xs text-muted-foreground/60 mt-2">{notification.createdAt}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

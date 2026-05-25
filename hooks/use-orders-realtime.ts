@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { collection, onSnapshot, query, orderBy, where, limit as firestoreLimit } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { useAuth } from '@/components/auth-provider'
 import type { OrderData } from '@/lib/services/firestore-analytics'
 
 export interface OrdersStats {
@@ -15,6 +16,7 @@ export interface OrdersStats {
 }
 
 export function useOrdersRealtime() {
+  const { user, loading: authLoading } = useAuth()
   const [orders, setOrders] = useState<OrderData[]>([])
   const [stats, setStats] = useState<OrdersStats>({
     total: 0,
@@ -28,8 +30,12 @@ export function useOrdersRealtime() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      setLoading(false)
+      return
+    }
     try {
-      // Query para buscar orders ordenados por data de criação
       const ordersQuery = query(
         collection(db, 'orders'),
         orderBy('createdAt', 'desc')
@@ -75,7 +81,7 @@ export function useOrdersRealtime() {
       setError('Erro ao configurar monitoramento')
       setLoading(false)
     }
-  }, [])
+  }, [user, authLoading])
 
   return {
     orders,
@@ -86,13 +92,18 @@ export function useOrdersRealtime() {
 }
 
 export function useActiveOrders() {
+  const { user, loading: authLoading } = useAuth()
   const [orders, setOrders] = useState<OrderData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      setLoading(false)
+      return
+    }
     try {
-      // Query para buscar apenas orders ativos (pending ou in_progress)
       const activeOrdersQuery = query(
         collection(db, 'orders'),
         orderBy('createdAt', 'desc')
@@ -131,7 +142,7 @@ export function useActiveOrders() {
       setError('Erro ao configurar monitoramento')
       setLoading(false)
     }
-  }, [])
+  }, [user, authLoading])
 
   return {
     orders,
@@ -141,11 +152,17 @@ export function useActiveOrders() {
 }
 
 export function useOrdersByStatus(status: string) {
+  const { user, loading: authLoading } = useAuth()
   const [orders, setOrders] = useState<OrderData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      setLoading(false)
+      return
+    }
     try {
       const ordersQuery = query(
         collection(db, 'orders'),
@@ -181,7 +198,7 @@ export function useOrdersByStatus(status: string) {
       setError('Erro ao configurar monitoramento')
       setLoading(false)
     }
-  }, [status])
+  }, [user, authLoading, status])
 
   return {
     orders,

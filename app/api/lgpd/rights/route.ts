@@ -113,7 +113,7 @@ export async function GET_ACCESS(req: NextRequest) {
 
     // Dados de usuário
     const userDoc = await db.collection('users').doc(userId).get()
-    if (userDoc.exists()) {
+    if (userDoc.exists) {
       const userData_raw = userDoc.data()
       // Remover senha e dados sensíveis antes de retornar
       const { password, senhaHash, ...safeUserData } = userData_raw || {}

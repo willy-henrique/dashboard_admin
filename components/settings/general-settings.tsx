@@ -22,7 +22,7 @@ export function GeneralSettings() {
             <Badge variant="outline">Sem persistencia</Badge>
           </div>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Os campos de empresa, contato e site foram removidos porque estavam preenchidos com valores ficticios.
         </CardContent>
       </Card>
@@ -37,7 +37,7 @@ export function GeneralSettings() {
             Nenhuma configuracao real de SMTP ou remetente foi carregada do backend.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Conecte uma fonte real antes de habilitar edicao ou exibir parametros de envio.
         </CardContent>
       </Card>
@@ -53,7 +53,7 @@ export function GeneralSettings() {
               Taxas por categoria nao foram exibidas para evitar valores artificiais em runtime.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             O cadastro de comissoes deve ser ligado a uma colecao real antes de voltar para esta tela.
           </CardContent>
         </Card>
@@ -68,7 +68,7 @@ export function GeneralSettings() {
               Listas locais de categorias e regioes foram removidas.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             Quando houver fonte real, esta aba pode voltar a listar apenas os registros persistidos.
           </CardContent>
         </Card>

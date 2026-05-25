@@ -101,10 +101,10 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
   if (!isOpen || !order) return null
 
   return (
-    <div className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 max-w-2xl w-full">
+    <div className="fixed inset-0 bg-background/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-card rounded-xl shadow-2xl border border-border max-w-2xl w-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-orange-100/50">
+        <div className="flex items-center justify-between p-6 border-b border-border bg-muted/30">
           <div>
             <h2 className="text-xl font-bold text-orange-900">Atualizar Status do Pedido</h2>
             <p className="text-sm text-orange-700 mt-1">
@@ -119,7 +119,7 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Status Atual */}
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-border shadow-card">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5" />
@@ -132,7 +132,7 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
                 <Badge className={currentStatus?.color}>
                   {currentStatus?.label}
                 </Badge>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-muted-foreground">
                   {currentStatus?.description}
                 </span>
               </div>
@@ -140,13 +140,13 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
           </Card>
 
           {/* Novo Status */}
-          <Card className="border-gray-200 shadow-sm">
+          <Card className="border-border shadow-card">
             <CardHeader>
               <CardTitle className="text-lg">Novo Status</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Selecione o novo status:
                 </label>
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
@@ -168,13 +168,13 @@ export function UpdateStatusModal({ order, isOpen, onClose, onStatusUpdated }: U
 
               {/* Preview do novo status */}
               {selectedStatus && (
-                <div className="p-3 bg-gray-50 rounded-lg border">
+                <div className="p-3 bg-muted/50 rounded-lg border">
                   <div className="flex items-center gap-3">
                     {statusOptions.find(s => s.value === selectedStatus)?.icon}
                     <Badge className={statusOptions.find(s => s.value === selectedStatus)?.color}>
                       {statusOptions.find(s => s.value === selectedStatus)?.label}
                     </Badge>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted-foreground">
                       {statusOptions.find(s => s.value === selectedStatus)?.description}
                     </span>
                   </div>

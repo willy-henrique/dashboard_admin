@@ -2,7 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Users, MapPin, Clock, Star, Skeleton } from "lucide-react"
+import { TrendingUp, Users, MapPin, Clock, Star } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   LineChart,
   Line,
@@ -112,16 +113,16 @@ export function ReportsOverview() {
   if (loading) {
     return (
       <div className="space-y-4 sm:space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="bg-card border border-gray-200 shadow-sm rounded-2xl">
+            <Card key={i} className="shadow-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-20 sm:w-24" />
-                <Skeleton className="h-4 w-4" />
+                <div className="h-4 w-24 animate-skeleton rounded bg-muted" />
+                <div className="h-4 w-4 animate-skeleton rounded bg-muted" />
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-6 sm:h-8 w-12 sm:w-16 mb-2" />
-                <Skeleton className="h-3 w-16 sm:w-20" />
+                <div className="h-8 w-16 animate-skeleton rounded bg-muted mb-2" />
+                <div className="h-3 w-20 animate-skeleton rounded bg-muted" />
               </CardContent>
             </Card>
           ))}
@@ -133,7 +134,7 @@ export function ReportsOverview() {
   if (error || !firestoreData) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Erro ao carregar dados de relatórios: {error}</p>
+        <p className="text-sm text-destructive">Erro ao carregar dados de relatórios: {error}</p>
       </div>
     )
   }
@@ -173,21 +174,21 @@ export function ReportsOverview() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {quickStats.map((stat) => (
-          <Card key={stat.title} className="bg-card border border-gray-200 shadow-sm rounded-2xl hover:shadow-md transition-shadow">
+          <Card key={stat.title} className="shadow-card hover:shadow-card-hover transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 truncate">{stat.title}</CardTitle>
-              <stat.icon className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+              <CardTitle className="text-xs font-medium text-muted-foreground truncate">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground/50 shrink-0" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">{stat.value}</div>
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 text-xs">
-                <Badge variant="outline" className={`w-fit ${stat.trend === "up" ? "text-green-600" : "text-blue-600"}`}>
+              <div className="text-2xl font-bold text-foreground tabular-nums">{stat.value}</div>
+              <div className="flex items-center gap-2 mt-1 text-xs">
+                <Badge variant="outline" className={`w-fit ${stat.trend === "up" ? "text-emerald-600" : "text-blue-600"}`}>
                   <TrendingUp className="h-3 w-3 mr-1" />
                   {stat.trend === "up" ? "Crescimento" : "Melhoria"}
                 </Badge>
-                <span className="text-gray-500 truncate">{stat.description}</span>
+                <span className="text-muted-foreground truncate">{stat.description}</span>
               </div>
             </CardContent>
           </Card>
@@ -268,7 +269,7 @@ export function ReportsOverview() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ cidade, percent }) => `${cidade} ${(percent * 100).toFixed(0)}%`}
+                    label={(props: any) => `${props.cidade ?? props.name} ${((props.percent ?? 0) * 100).toFixed(0)}%`}
                     outerRadius={60}
                     fill="#8884d8"
                     dataKey="pedidos"
@@ -323,17 +324,17 @@ export function ReportsOverview() {
           <CardContent>
             <div className="space-y-3 sm:space-y-4">
               {categoryData.map((category) => (
-                <div key={category.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={category.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm sm:text-base truncate">{category.name}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">{category.pedidos} pedidos</p>
+                    <p className="text-xs text-muted-foreground">{category.pedidos} pedidos</p>
                   </div>
                   <div className="text-right ml-2">
                     <div className="flex items-center gap-1">
                       <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-400 fill-current" />
                       <span className="font-medium text-sm sm:text-base">{category.satisfacao}</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-600">satisfação</p>
+                    <p className="text-xs text-muted-foreground">satisfação</p>
                   </div>
                 </div>
               ))}
@@ -350,14 +351,14 @@ export function ReportsOverview() {
           <CardContent>
             <div className="space-y-3 sm:space-y-4">
               {geographicData.map((city) => (
-                <div key={city.cidade} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={city.cidade} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm sm:text-base truncate">{city.cidade}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">{city.pedidos} pedidos</p>
+                    <p className="text-xs text-muted-foreground">{city.pedidos} pedidos</p>
                   </div>
                   <div className="text-right ml-2">
                     <p className="font-medium text-sm sm:text-base">R$ {city.receita.toLocaleString()}</p>
-                    <p className="text-xs sm:text-sm text-gray-600">receita</p>
+                    <p className="text-xs text-muted-foreground">receita</p>
                   </div>
                 </div>
               ))}

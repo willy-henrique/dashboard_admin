@@ -184,9 +184,9 @@ const getStatusColor = (status: string) => {
     case "ativo":
       return "bg-green-100 text-green-800"
     case "inativo":
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -300,7 +300,7 @@ export default function FiliaisPage() {
             <Upload className="h-4 w-4" />
           </Button>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder="PROCURAR" 
               className="pl-20 w-64" 
@@ -439,7 +439,7 @@ export default function FiliaisPage() {
           <CardContent>
             <div className="space-y-2">
               {Array.from(new Set(filiais.map(f => f.estado))).map((estado) => (
-                <div key={estado} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div key={estado} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                   <span style={{ color: 'var(--foreground)' }}>{estado}</span>
                   <Badge variant="secondary">
                     {filiais.filter(f => f.estado === estado).length}

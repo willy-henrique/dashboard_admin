@@ -7,8 +7,8 @@ export default function PainelLogisticoPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Painel Logistico</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold text-foreground">Painel Logistico</h1>
+        <p className="text-muted-foreground">
           A visualizacao logistica de exemplo foi removida do runtime.
         </p>
       </div>
@@ -23,7 +23,7 @@ export default function PainelLogisticoPage() {
             Esta tela exigiria dados reais de despacho, deslocamento ou localizacao para funcionar corretamente.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           A tabela de protocolos, bairros, tempos e quilometragem foi removida porque era composta por dados ficticios.
         </CardContent>
       </Card>

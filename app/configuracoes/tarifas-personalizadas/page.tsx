@@ -49,8 +49,8 @@ export default function TarifasPersonalizadasPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tarifas Personalizadas</h1>
-          <p className="text-gray-600">autem.com.br › configurações › tarifas personalizadas</p>
+          <h1 className="text-2xl font-bold text-foreground">Tarifas Personalizadas</h1>
+          <p className="text-muted-foreground">autem.com.br › configurações › tarifas personalizadas</p>
         </div>
 
         {/* Action Bar */}
@@ -61,7 +61,7 @@ export default function TarifasPersonalizadasPage() {
               Nova Tarifa
             </Button>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
               <Input placeholder="Buscar tarifas..." className="pl-20 w-64" />
             </div>
           </div>

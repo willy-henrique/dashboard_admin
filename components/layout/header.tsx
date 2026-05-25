@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
+import { useTheme } from "next-themes"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,8 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Bell, LogOut, User, Settings, Search, Menu, Moon, Sun } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { LogOut, User, Settings, Search, Menu, Moon, Sun } from "lucide-react"
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -23,124 +23,119 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const { user, logout } = useAuth()
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  const userInitial = user?.displayName?.charAt(0) || user?.email?.charAt(0) || "A"
+  const userName = user?.displayName || user?.email?.split("@")[0] || "Admin"
 
   return (
-    <>
-      {/* Payment Alert Banner */}
-      <div className="bg-orange-400 text-white px-4 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Bell className="h-4 w-4" />
-            <span className="text-sm font-medium">Pagamento em aberto!</span>
-          </div>
+    <header className="bg-card border-b border-border sticky top-0 z-20 h-16">
+      <div className="flex items-center justify-between h-full px-4 lg:px-6">
+
+        {/* Left — mobile menu + logo */}
+        <div className="flex items-center gap-3">
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="bg-white bg-opacity-20 border-white border-opacity-30 text-white hover:bg-white hover:bg-opacity-30 text-xs"
+            onClick={onMenuClick}
+            className="lg:hidden h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+            aria-label="Abrir menu"
           >
-            VISUALIZAR
+            <Menu className="h-5 w-5" />
           </Button>
+          <Link href="/dashboard" className="lg:hidden hover:opacity-80 transition-opacity">
+            <Logo className="h-7" showText />
+          </Link>
+        </div>
+
+        {/* Center — search */}
+        <div className="flex-1 max-w-sm mx-4 hidden md:block">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 pointer-events-none" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-9 h-9 bg-muted/50 border-transparent focus:border-border focus:bg-background text-sm transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Right — actions */}
+        <div className="flex items-center gap-1">
+          {/* Mobile search */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+            aria-label="Buscar"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+
+          {/* Dark mode toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="h-9 w-9 p-0 text-muted-foreground hover:text-foreground relative"
+            aria-label="Alternar tema"
+          >
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          </Button>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0 rounded-full ml-0.5"
+                aria-label="Menu do usuário"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.photoURL || undefined} alt={userName} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                    {userInitial}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="w-56 animate-scale-in">
+              <DropdownMenuLabel className="pb-2">
+                <p className="text-sm font-semibold text-foreground">{userName}</p>
+                <p className="text-xs text-muted-foreground font-normal mt-0.5 truncate">{user?.email}</p>
+              </DropdownMenuLabel>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/configuracoes" className="cursor-pointer">
+                  <User className="mr-2.5 h-4 w-4" />
+                  Perfil
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/configuracoes" className="cursor-pointer">
+                  <Settings className="mr-2.5 h-4 w-4" />
+                  Configurações
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={logout}
+                className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+              >
+                <LogOut className="mr-2.5 h-4 w-4" />
+                Sair
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-
-      {/* Main Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
-        <div className="px-2 sm:px-4 lg:px-6">
-          <div className="flex justify-between items-center h-12 sm:h-14 lg:h-16">
-            {/* Left side - Logo and Menu */}
-            <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onMenuClick}
-                className="lg:hidden p-1.5 sm:p-2"
-                aria-label="Abrir menu"
-              >
-                <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
-              </Button>
-
-              {/* Logo */}
-              <Link href="/dashboard" className="hover:opacity-80 transition-opacity">
-                <Logo className="h-6 sm:h-7 lg:h-8" showText={true} />
-              </Link>
-            </div>
-
-            {/* Center - Search (hidden on mobile) */}
-            <div className="flex-1 max-w-md mx-2 sm:mx-4 hidden md:block">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar..."
-                  className="pl-20 bg-gray-50 border-gray-200 focus:bg-white text-sm"
-                />
-              </div>
-            </div>
-
-            {/* Right side - Actions */}
-            <div className="flex items-center space-x-0.5 sm:space-x-1 lg:space-x-2">
-              {/* Mobile Search Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden p-1.5 sm:p-2"
-                aria-label="Buscar"
-              >
-                <Search className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
-              </Button>
-
-              {/* Dark mode toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsDarkMode(!isDarkMode)}
-                className="hidden lg:flex p-1.5 sm:p-2"
-                aria-label="Alternar tema"
-              >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </Button>
-
-              {/* User menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 rounded-full">
-                    <Avatar className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8">
-                      <AvatarFallback className="bg-orange-400 text-white text-xs sm:text-sm">
-                        {user?.name?.charAt(0) || "A"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{user?.name || "Admin"}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {user?.email || "admin@aquiresolve.com"}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Perfil</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Configurações</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sair</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </div>
-      </header>
-    </>
+    </header>
   )
 }

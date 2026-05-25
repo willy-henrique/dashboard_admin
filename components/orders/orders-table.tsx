@@ -29,10 +29,16 @@ import {
   XCircle,
   MapPin,
   ShieldAlert,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
 } from "lucide-react"
-import { useOrders } from "@/hooks/use-orders"
+import { useOperationalOrdersNotifications } from "@/hooks/use-operational-orders-notifications"
+import { useOrdersFilteredRealtime } from "@/hooks/use-orders-filtered-realtime"
+import { OperationalDashboardStrip, OperationalStatusMini } from "@/components/orders/operational-dashboard-strip"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { cn } from "@/lib/utils"
 
 type EmergencyFilter = "all" | "emergency" | "standard"
 
@@ -47,28 +53,23 @@ interface OrdersTableProps {
 }
 
 const STATUS_OPTIONS = [
-  { value: "all", label: "Todos os status" },
-  { value: "pending", label: "Pendentes" },
-  { value: "assigned", label: "Atribuidos" },
-  { value: "in_progress", label: "Em andamento" },
-  { value: "completed", label: "Concluidos" },
-  { value: "cancelled", label: "Cancelados" },
+  { value: "all",         label: "Todos os status"  },
+  { value: "pending",     label: "Pendentes"        },
+  { value: "assigned",    label: "Atribuídos"       },
+  { value: "in_progress", label: "Em andamento"     },
+  { value: "completed",   label: "Concluídos"       },
+  { value: "cancelled",   label: "Cancelados"       },
 ]
 
+const PAGE_SIZE = 15
+
 function toDate(value: any): Date | null {
-  if (!value) {
-    return null
-  }
-
-  if (value instanceof Date) {
-    return value
-  }
-
+  if (!value) return null
+  if (value instanceof Date) return value
   if (typeof value?.toDate === "function") {
-    const date = value.toDate()
-    return date instanceof Date ? date : null
+    const d = value.toDate()
+    return d instanceof Date ? d : null
   }
-
   const parsed = new Date(value)
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
@@ -76,42 +77,38 @@ function toDate(value: any): Date | null {
 function getStatusBadge(order: any) {
   if (order.cancelledAt || order.status === "cancelled") {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1">
+      <Badge variant="destructive" className="gap-1 text-xs">
         <XCircle className="h-3 w-3" />
         Cancelado
       </Badge>
     )
   }
-
   if (order.status === "completed") {
     return (
-      <Badge variant="default" className="flex items-center gap-1 bg-green-600">
+      <Badge className="gap-1 text-xs bg-emerald-500 hover:bg-emerald-600 text-white">
         <CheckCircle className="h-3 w-3" />
-        Concluido
+        Concluído
       </Badge>
     )
   }
-
   if (order.status === "assigned") {
     return (
-      <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-800">
+      <Badge className="gap-1 text-xs bg-blue-500 hover:bg-blue-600 text-white">
         <Clock className="h-3 w-3" />
-        Atribuido
+        Atribuído
       </Badge>
     )
   }
-
   if (order.isEmergency) {
     return (
-      <Badge variant="destructive" className="flex items-center gap-1 bg-red-600">
+      <Badge variant="destructive" className="gap-1 text-xs">
         <ShieldAlert className="h-3 w-3" />
-        Emergencia
+        Emergência
       </Badge>
     )
   }
-
   return (
-    <Badge variant="secondary" className="flex items-center gap-1">
+    <Badge variant="secondary" className="gap-1 text-xs">
       <Clock className="h-3 w-3" />
       Em andamento
     </Badge>
@@ -120,61 +117,74 @@ function getStatusBadge(order: any) {
 
 function formatRelativeDate(value: any) {
   const date = toDate(value)
-  if (!date) {
-    return "N/A"
-  }
-
-  return formatDistanceToNow(date, {
-    addSuffix: true,
-    locale: ptBR,
-  })
+  if (!date) return "—"
+  return formatDistanceToNow(date, { addSuffix: true, locale: ptBR })
 }
 
 function getOrderAmount(order: any): number | null {
   const candidates = [order.budget, order.valor, order.amount, order.total]
-  const amount = candidates.find((candidate) => typeof candidate === "number" && Number.isFinite(candidate))
+  const amount = candidates.find((c) => typeof c === "number" && Number.isFinite(c))
   return typeof amount === "number" ? amount : null
 }
 
 function getServiceLabel(order: any): string {
-  return order.serviceCategory || order.serviceName || order.serviceType || order.description || "Servico nao informado"
+  return order.serviceCategory || order.serviceName || order.serviceType || order.description || "Serviço não informado"
 }
 
 function getAddressLabel(order: any): string {
-  return order.location || order.address || order.serviceAddress || [order.city, order.state].filter(Boolean).join(" - ") || "Endereco nao informado"
+  return (
+    order.location ||
+    order.address ||
+    order.serviceAddress ||
+    [order.city, order.state].filter(Boolean).join(", ") ||
+    "Endereço não informado"
+  )
 }
 
 export function OrdersTable({ filters, onView }: OrdersTableProps) {
-  const [searchTerm, setSearchTerm] = useState(filters?.searchTerm || "")
+  const [searchTerm, setSearchTerm]     = useState(filters?.searchTerm || "")
   const [statusFilter, setStatusFilter] = useState(filters?.status || "all")
   const [emergencyFilter, setEmergencyFilter] = useState<EmergencyFilter>(
     filters?.isEmergency === true ? "emergency" : filters?.isEmergency === false ? "standard" : "all"
   )
+  const [page, setPage] = useState(1)
 
   const activeFilters = useMemo(
     () => ({
-      status: statusFilter === "all" ? undefined : statusFilter,
-      isEmergency:
-        emergencyFilter === "all"
-          ? undefined
-          : emergencyFilter === "emergency",
-      searchTerm: searchTerm.trim() || undefined,
+      status:      statusFilter === "all" ? undefined : statusFilter,
+      isEmergency: emergencyFilter === "all" ? undefined : emergencyFilter === "emergency",
+      searchTerm:  searchTerm.trim() || undefined,
     }),
     [emergencyFilter, searchTerm, statusFilter]
   )
 
-  const { orders, loading, error, refetch } = useOrders(activeFilters)
+  const { orders, allOrders, loading, error, reconnect } = useOrdersFilteredRealtime(activeFilters)
 
+  useOperationalOrdersNotifications(allOrders as unknown as Record<string, unknown>[], {
+    enabled: !loading && !error,
+  })
+
+  // Reset page when filters change
+  useMemo(() => setPage(1), [activeFilters])
+
+  const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE))
+  const paginated  = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  // ─── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Pedidos</CardTitle>
+      <Card className="shadow-card">
+        <CardHeader className="border-b border-border">
+          <div className="h-5 w-32 rounded bg-muted animate-skeleton" />
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 rounded bg-gray-100 animate-pulse" />
+        <CardContent className="p-0">
+          <div className="divide-y divide-border">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-6 py-4">
+                <div className="h-4 w-24 rounded bg-muted animate-skeleton" />
+                <div className="h-4 w-36 rounded bg-muted animate-skeleton" />
+                <div className="h-4 w-28 rounded bg-muted animate-skeleton ml-auto" />
+              </div>
             ))}
           </div>
         </CardContent>
@@ -182,217 +192,277 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
     )
   }
 
+  // ─── Error ─────────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Pedidos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="py-8 text-center">
-            <AlertCircle className="mx-auto mb-2 h-8 w-8 text-red-500" />
-            <p className="text-red-600">Erro ao carregar pedidos: {error}</p>
-            <Button onClick={refetch} className="mt-4">
-              Tentar novamente
-            </Button>
+      <Card className="shadow-card">
+        <CardContent className="py-16 text-center">
+          <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+            <AlertCircle className="h-5 w-5 text-destructive" />
           </div>
+          <p className="text-sm font-medium text-foreground mb-1">Erro ao carregar pedidos</p>
+          <p className="text-xs text-muted-foreground mb-4">{error}</p>
+          <Button size="sm" onClick={reconnect}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Tentar novamente
+          </Button>
         </CardContent>
       </Card>
     )
   }
 
+  // ─── Main ──────────────────────────────────────────────────────────────────
   return (
-    <Card className="border border-gray-200 shadow-sm">
-      <CardHeader className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <CardTitle className="text-xl font-bold text-gray-900">Todos os pedidos</CardTitle>
-            <p className="mt-1 text-sm text-gray-600">{orders.length} pedido(s) encontrados com os filtros atuais</p>
-          </div>
+    <div className="space-y-4">
+      <OperationalDashboardStrip orders={allOrders as unknown as Record<string, unknown>[]} />
 
-          <div className="grid w-full gap-3 lg:w-auto lg:grid-cols-[minmax(280px,1fr)_220px_220px]">
-            <div className="relative min-w-0">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Buscar por cliente, email, endereco ou servico"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                className="bg-white pl-10"
-              />
+      <Card className="shadow-card">
+        {/* Filters */}
+        <CardHeader className="border-b border-border">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold">Todos os pedidos</CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {orders.length} pedido{orders.length !== 1 ? "s" : ""} encontrado{orders.length !== 1 ? "s" : ""}
+              </p>
             </div>
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="grid gap-2 lg:grid-cols-[minmax(240px,1fr)_180px_180px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Buscar cliente, email, endereço..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
 
-            <Select value={emergencyFilter} onValueChange={(value) => setEmergencyFilter(value as EmergencyFilter)}>
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                <SelectItem value="emergency">Apenas emergencias</SelectItem>
-                <SelectItem value="standard">Apenas comuns</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </CardHeader>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-      <CardContent className="p-0">
-        {orders.length === 0 ? (
-          <div className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-              <Clock className="h-8 w-8 text-gray-400" />
+              <Select value={emergencyFilter} onValueChange={(v) => setEmergencyFilter(v as EmergencyFilter)}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os tipos</SelectItem>
+                  <SelectItem value="emergency">Emergências</SelectItem>
+                  <SelectItem value="standard">Comuns</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <h3 className="mb-2 text-lg font-medium text-gray-900">Nenhum pedido encontrado</h3>
-            <p className="text-gray-500">Ajuste os filtros para ampliar a busca</p>
           </div>
-        ) : (
-          <>
-            <div className="hidden overflow-x-auto lg:block">
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow>
-                    <TableHead className="font-semibold text-gray-700">ID</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Cliente</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Servico</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Endereco</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Status</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Data</TableHead>
-                    <TableHead className="font-semibold text-gray-700">Valor</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-700">Acao</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {orders.map((order: any, index) => {
-                    const amount = getOrderAmount(order)
+        </CardHeader>
 
-                    return (
-                      <TableRow
-                        key={order.id}
-                        className={`transition-colors hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-25"}`}
-                      >
-                        <TableCell className="font-mono text-sm font-medium text-gray-700">
-                          #{String(order.id).slice(-8)}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-semibold text-gray-900">{order.clientName || "Cliente nao informado"}</div>
-                            <div className="text-sm text-gray-500">{order.clientEmail || "Sem email"}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-w-xs">
-                            <div className="truncate font-medium text-gray-900">{getServiceLabel(order)}</div>
-                            {order.description && order.description !== getServiceLabel(order) ? (
-                              <div className="truncate text-sm text-gray-500">{order.description}</div>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="max-w-xs text-sm text-gray-700">
-                            <div className="flex items-start gap-2">
-                              <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
-                              <span className="truncate">{getAddressLabel(order)}</span>
+        <CardContent className="p-0">
+          {orders.length === 0 ? (
+            <div className="py-16 text-center">
+              <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+                <Clock className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium text-foreground">Nenhum pedido encontrado</p>
+              <p className="text-xs text-muted-foreground mt-1">Ajuste os filtros para ampliar a busca</p>
+            </div>
+          ) : (
+            <>
+              {/* Desktop Table */}
+              <div className="hidden lg:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/30 hover:bg-muted/30">
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">ID</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cliente</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Serviço</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Endereço</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Operação</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Data</TableHead>
+                      <TableHead className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Valor</TableHead>
+                      <TableHead className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ação</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginated.map((order: any) => {
+                      const amount = getOrderAmount(order)
+                      return (
+                        <TableRow key={order.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="font-mono text-xs text-muted-foreground">
+                            #{String(order.id).slice(-8)}
+                          </TableCell>
+                          <TableCell>
+                            <p className="text-sm font-medium text-foreground leading-tight">
+                              {order.clientName || "Não informado"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{order.clientEmail || "—"}</p>
+                          </TableCell>
+                          <TableCell>
+                            <p className="text-sm text-foreground truncate max-w-[180px]">{getServiceLabel(order)}</p>
+                            {order.description && order.description !== getServiceLabel(order) && (
+                              <p className="text-xs text-muted-foreground truncate max-w-[180px]">{order.description}</p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-start gap-1.5 max-w-40">
+                              <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                              <span className="text-xs text-muted-foreground truncate">{getAddressLabel(order)}</span>
                             </div>
-                            {order.complement ? <div className="truncate pl-6 text-gray-500">{order.complement}</div> : null}
-                          </div>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(order)}</TableCell>
-                        <TableCell>
-                          <div className="text-sm">
-                            <div className="font-medium">{formatRelativeDate(order.createdAt)}</div>
-                            {order.cancelledAt ? (
-                              <div className="text-xs text-red-600">Cancelado {formatRelativeDate(order.cancelledAt)}</div>
-                            ) : null}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-semibold text-green-600">
-                            {amount === null
-                              ? "N/A"
-                              : `R$ ${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onView?.(order)}
-                            className="h-8 gap-2 px-3 hover:bg-gray-100"
-                          >
-                            <Eye className="h-4 w-4 text-gray-600" />
-                            Ver
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                          </TableCell>
 
-            <div className="space-y-4 p-4 lg:hidden">
-              {orders.map((order: any) => {
-                const amount = getOrderAmount(order)
+                          <TableCell>
+                            <OperationalStatusMini order={order as Record<string, unknown>} />
+                          </TableCell>
+                          <TableCell>{getStatusBadge(order)}</TableCell>
+                          <TableCell>
+                            <p className="text-xs text-foreground">{formatRelativeDate(order.createdAt)}</p>
+                            {order.cancelledAt && (
+                              <p className="text-xs text-destructive">Cancelado {formatRelativeDate(order.cancelledAt)}</p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className={cn(
+                              "text-sm font-semibold tabular-nums",
+                              amount !== null ? "text-emerald-600" : "text-muted-foreground"
+                            )}>
+                              {amount === null
+                                ? "—"
+                                : `R$ ${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onView?.(order)}
+                              className="h-7 gap-1.5 px-2.5 text-xs"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                              Ver
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
 
-                return (
-                  <Card key={order.id} className="p-4">
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 font-mono text-sm text-gray-500">#{String(order.id).slice(-8)}</div>
-                        <div className="truncate text-lg font-medium">{order.clientName || "Cliente nao informado"}</div>
-                        <div className="truncate text-sm text-gray-500">{order.clientEmail || "Sem email"}</div>
-                      </div>
-                      {getStatusBadge(order)}
-                    </div>
-
-                    <div className="mb-4 space-y-3">
-                      <div>
-                        <div className="text-sm font-medium text-gray-700">Servico</div>
-                        <div className="text-sm text-gray-600">{getServiceLabel(order)}</div>
-                      </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-700">Endereco</div>
-                        <div className="text-sm text-gray-600">{getAddressLabel(order)}</div>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div>
-                          <div className="font-medium text-gray-700">Criado</div>
-                          <div className="text-gray-600">{formatRelativeDate(order.createdAt)}</div>
+              {/* Mobile Cards */}
+              <div className="space-y-3 p-4 lg:hidden">
+                {paginated.map((order: any) => {
+                  const amount = getOrderAmount(order)
+                  return (
+                    <div
+                      key={order.id}
+                      className="rounded-lg border border-border bg-card p-4 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-mono text-xs text-muted-foreground">#{String(order.id).slice(-8)}</p>
+                          <p className="text-sm font-medium text-foreground truncate mt-0.5">
+                            {order.clientName || "Não informado"}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">{order.clientEmail || "—"}</p>
                         </div>
-                        <div className="text-right">
-                          <div className="font-medium text-gray-700">Valor</div>
-                          <div className="text-green-600">
-                            {amount === null
-                              ? "N/A"
-                              : `R$ ${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                          </div>
+                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                          {getStatusBadge(order)}
+                          <OperationalStatusMini order={order as Record<string, unknown>} />
                         </div>
                       </div>
-                    </div>
 
-                    <Button variant="outline" size="sm" className="w-full" onClick={() => onView?.(order)}>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Ver detalhes
+                      <div className="space-y-1.5 border-t border-border pt-2.5">
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">Serviço: </span>
+                          {getServiceLabel(order)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-medium text-foreground">Local: </span>
+                          {getAddressLabel(order)}
+                        </p>
+                        <div className="flex items-center justify-between pt-1">
+                          <p className="text-xs text-muted-foreground">{formatRelativeDate(order.createdAt)}</p>
+                          <span className={cn(
+                            "text-sm font-bold tabular-nums",
+                            amount !== null ? "text-emerald-600" : "text-muted-foreground"
+                          )}>
+                            {amount === null
+                              ? "—"
+                              : `R$ ${amount.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                          </span>
+                        </div>
+                      </div>
+
+                      <Button variant="outline" size="sm" className="w-full h-8 text-xs" onClick={() => onView?.(order)}>
+                        <Eye className="h-3.5 w-3.5 mr-1.5" />
+                        Ver detalhes
+                      </Button>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-6 py-3 border-t border-border">
+                  <p className="text-xs text-muted-foreground">
+                    {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orders.length)} de {orders.length}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="h-7 w-7 p-0"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
                     </Button>
-                  </Card>
-                )
-              })}
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                      .reduce<(number | "...")[]>((acc, p, i, arr) => {
+                        if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("...")
+                        acc.push(p)
+                        return acc
+                      }, [])
+                      .map((item, i) =>
+                        item === "..." ? (
+                          <span key={`ellipsis-${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                        ) : (
+                          <Button
+                            key={item}
+                            variant={page === item ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPage(item as number)}
+                            className="h-7 w-7 p-0 text-xs"
+                          >
+                            {item}
+                          </Button>
+                        )
+                      )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="h-7 w-7 p-0"
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

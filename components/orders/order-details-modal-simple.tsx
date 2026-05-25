@@ -28,14 +28,13 @@ interface OrderDetailsModalProps {
 }
 
 export function OrderDetailsModalSimple({ order, isOpen, onClose }: OrderDetailsModalProps) {
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A'
-    
+  const formatDate = (timestamp: any): { relative: string; absolute: string } => {
+    if (!timestamp) return { relative: 'N/A', absolute: 'N/A' }
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
       return {
         relative: formatDistanceToNow(date, { addSuffix: true, locale: ptBR }),
-        absolute: date.toLocaleString('pt-BR')
+        absolute: date.toLocaleString('pt-BR'),
       }
     } catch {
       return { relative: 'N/A', absolute: 'N/A' }
@@ -67,7 +66,7 @@ export function OrderDetailsModalSimple({ order, isOpen, onClose }: OrderDetails
       default:
         return { 
           label: 'Pendente', 
-          color: 'bg-gray-50 text-gray-700 border-gray-200'
+          color: 'bg-muted/50 text-foreground border-border'
         }
     }
   }
@@ -120,7 +119,7 @@ export function OrderDetailsModalSimple({ order, isOpen, onClose }: OrderDetails
 
                 <div>
                   <span className="font-medium">Descrição:</span>
-                  <p className="text-sm text-muted-foreground mt-1 p-2 bg-gray-50 rounded">
+                  <p className="text-sm text-muted-foreground mt-1 p-2 bg-muted/50 rounded">
                     {order.description || 'Descrição não disponível'}
                   </p>
                 </div>
@@ -133,17 +132,17 @@ export function OrderDetailsModalSimple({ order, isOpen, onClose }: OrderDetails
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-500" />
+                  <User className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{order.clientName}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-500" />
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{order.clientEmail}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-500" />
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <span className="text-sm">{order.address}</span>
                     {order.complement && (
@@ -153,7 +152,7 @@ export function OrderDetailsModalSimple({ order, isOpen, onClose }: OrderDetails
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm">{formatDate(order.createdAt).absolute}</p>
                     <p className="text-xs text-muted-foreground">

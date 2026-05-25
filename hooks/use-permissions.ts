@@ -63,10 +63,13 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         }
 
         // Buscar nas subcoleções de usuários
-        const userPermissions = await AdminMasterService.getUsuarioByEmail(user.email)
+        const userPermissions = await AdminMasterService.getUsuarioByEmail(user.email ?? "")
         setPermissions(userPermissions?.permissoes || null)
-      } catch (error) {
-        console.error('Erro ao carregar permissões:', error)
+      } catch (error: unknown) {
+        const code = (error as { code?: string })?.code ?? ''
+        if (!String(code).includes('permission-denied')) {
+          console.error('Erro ao carregar permissões:', error)
+        }
         setPermissions(null)
       } finally {
         setLoading(false)

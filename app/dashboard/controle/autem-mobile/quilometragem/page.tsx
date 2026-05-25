@@ -91,7 +91,7 @@ export default function QuilometragemPage() {
 
   const getSortIcon = (field: string) => {
     if (sortField !== field) {
-      return <ChevronUp className="h-4 w-4 text-gray-400" />
+      return <ChevronUp className="h-4 w-4 text-muted-foreground/60" />
     }
     return sortDirection === "asc" ? 
       <ChevronUp className="h-4 w-4 text-blue-600" /> : 
@@ -105,7 +105,7 @@ export default function QuilometragemPage() {
       case 'lte':
         return <div className="w-4 h-4 bg-green-500 rounded-full"></div>
       default:
-        return <div className="w-4 h-4 bg-gray-400 rounded-full"></div>
+        return <div className="w-4 h-4 bg-muted-foreground rounded-full"></div>
     }
   }
 
@@ -138,8 +138,8 @@ export default function QuilometragemPage() {
             <Route className="h-6 w-6 text-green-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Quilometragem</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <h1 className="text-2xl font-bold text-foreground">Quilometragem</h1>
+            <p className="text-sm text-muted-foreground">
               autem.com.br &gt; controle &gt; autem mobile &gt; quilometragem
             </p>
           </div>
@@ -202,14 +202,14 @@ export default function QuilometragemPage() {
                   {columns.map((column) => (
                     <th
                       key={column.key}
-                      className={`px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300 ${
-                        column.sortable ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800' : ''
+                      className={`px-4 py-3 text-left text-sm font-medium text-foreground ${
+                        column.sortable ? 'cursor-pointer hover:bg-muted/50' : ''
                       }`}
                       onClick={() => column.sortable && handleSort(column.key)}
                     >
                       <div className="flex items-center space-x-1">
                         <span>{column.label}</span>
-                        {column.key === 'profissional' && <Info className="h-4 w-4 text-gray-400" />}
+                        {column.key === 'profissional' && <Info className="h-4 w-4 text-muted-foreground/60" />}
                         {column.sortable && getSortIcon(column.key)}
                       </div>
                     </th>
@@ -220,18 +220,18 @@ export default function QuilometragemPage() {
                 {filteredQuilometragens.map((quilometragem, index) => (
                   <tr
                     key={quilometragem.id}
-                    className={`border-b hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
-                      index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'
+                    className={`border-b hover:bg-muted/50/50 ${
+                      index % 2 === 0 ? 'bg-background' : 'bg-muted/50'
                     }`}
                     style={{ borderColor: 'var(--border)' }}
                   >
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.data}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.profissional}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       <div className="flex items-center space-x-2">
                         {getSinalIcon(quilometragem.sinal)}
                         <span>{quilometragem.sinal}</span>
@@ -243,50 +243,50 @@ export default function QuilometragemPage() {
                         <span className={getBateriaColor(quilometragem.bateria)}>{quilometragem.bateria}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.distancia}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.precisao}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.velocidade}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.pontos}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {quilometragem.servicos}
                     </td>
                   </tr>
                 ))}
                 {/* Linha de Totais */}
-                <tr className="bg-slate-100 dark:bg-slate-800 font-medium" style={{ borderColor: 'var(--border)' }}>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                <tr className="bg-muted font-medium" style={{ borderColor: 'var(--border)' }}>
+                  <td className="px-4 py-3 text-sm text-foreground">
                     Total
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     -
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     -
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     -
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     {totalDistancia}km
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     {Math.round(mediaPrecisao)}m
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     {Math.round(mediaVelocidade)}km/h
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     {Math.round(mediaPontos)}
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                  <td className="px-4 py-3 text-sm text-foreground">
                     {totalServicos}
                   </td>
                 </tr>
@@ -307,7 +307,7 @@ export default function QuilometragemPage() {
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-slate-500 dark:text-slate-400 mt-8">
+      <div className="text-center text-sm text-muted-foreground mt-8">
         Copyright © 2025 AutEM v2.2.1 Todos os direitos reservados
       </div>
     </main>

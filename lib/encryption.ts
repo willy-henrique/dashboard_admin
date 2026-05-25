@@ -18,11 +18,11 @@ export class EncryptionService {
   encrypt(text: string): string {
     try {
       const iv = crypto.randomBytes(this.ivLength);
-      const cipher = crypto.createCipher(this.algorithm, this.key);
-      
+      const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
+
       let encrypted = cipher.update(text, 'utf8', 'hex');
       encrypted += cipher.final('hex');
-      
+
       return iv.toString('hex') + ':' + encrypted;
     } catch (error) {
       throw new Error(`Erro ao criptografar: ${error}`);
@@ -37,12 +37,12 @@ export class EncryptionService {
       const parts = encryptedText.split(':');
       const iv = Buffer.from(parts[0], 'hex');
       const encrypted = parts[1];
-      
-      const decipher = crypto.createDecipher(this.algorithm, this.key);
-      
+
+      const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
+
       let decrypted = decipher.update(encrypted, 'hex', 'utf8');
       decrypted += decipher.final('utf8');
-      
+
       return decrypted;
     } catch (error) {
       throw new Error(`Erro ao descriptografar: ${error}`);

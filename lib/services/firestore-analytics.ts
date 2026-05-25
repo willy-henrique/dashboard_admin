@@ -11,11 +11,34 @@ export interface OrderData {
   description: string
   isEmergency: boolean
   status: string
+  serviceType?: string
+  clientPhone?: string
+  protocol?: string
+  phone?: string
+  providerId?: string
+  providerName?: string
+  providerEmail?: string
+  providerPhone?: string
+  prestador?: Record<string, unknown>
+  technicianName?: string
+  technicianPhone?: string
   createdAt: Timestamp
   cancelledAt?: Timestamp
   cancelledBy?: string
   cancellationReason?: string
   distributionStartedAt?: Timestamp
+  /** Rastreamento operacional (campo canônico em português técnico). */
+  serviceOperationalStatus?: string
+  serviceTimestamps?: Record<string, unknown>
+  assignedTechnician?: Record<string, unknown>
+  technicianHistory?: unknown[]
+  slaDueAt?: Timestamp
+  slaTargetMinutes?: number
+  /** Geo quando existir no documento. */
+  latitude?: number
+  longitude?: number
+  locationLat?: number
+  locationLng?: number
 }
 
 export interface UserData {
@@ -33,6 +56,15 @@ export interface UserData {
   phone?: string
   profileImageUrl?: string
   uid?: string
+  /** Campos frequentes em documentos de usuário para operação. */
+  city?: string
+  state?: string
+  cidade?: string
+  estado?: string
+  address?: string
+  approvalStatus?: string
+  internalNotes?: string
+  documentStatus?: string
 }
 
 export interface ProviderVerificationData {

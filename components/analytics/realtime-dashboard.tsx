@@ -140,7 +140,7 @@ export function RealtimeDashboard() {
                       <span className="text-sm text-muted-foreground">
                         {event.count} vezes
                       </span>
-                      <div className="w-16 bg-gray-200 rounded-full h-2">
+                      <div className="w-16 bg-muted rounded-full h-2">
                         <div 
                           className="bg-blue-600 h-2 rounded-full" 
                           style={{ 
@@ -169,8 +169,8 @@ export function RealtimeDashboard() {
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {stats.recentEvents.length > 0 ? (
                 stats.recentEvents.map((event) => (
-                  <div key={event.id} className="flex items-start space-x-3 p-2 rounded-lg bg-gray-50">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0" />
+                  <div key={event.id} className="flex items-start space-x-3 p-2 rounded-lg bg-muted/50">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
                         {event.eventName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}

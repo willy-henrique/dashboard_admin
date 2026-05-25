@@ -154,7 +154,7 @@ export function ConsentModal({
                 className={`p-4 border rounded-lg ${
                   consent.required
                     ? "bg-orange-50 border-orange-200"
-                    : "bg-white border-gray-200"
+                    : "bg-card border-border"
                 }`}
               >
                 <div className="flex items-start space-x-3">
@@ -181,7 +181,7 @@ export function ConsentModal({
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       {consent.description}
                     </p>
                   </div>
@@ -189,14 +189,14 @@ export function ConsentModal({
               </div>
             ))}
 
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600">
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">
                 <strong>Base Legal:</strong> Conforme art. 7º da LGPD, o
                 tratamento de dados pessoais pode ser realizado mediante
                 consentimento do titular, execução de contrato, cumprimento de
                 obrigação legal, entre outras bases legais.
               </p>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 <strong>Versão da Política:</strong> {privacyPolicyVersion}
               </p>
             </div>

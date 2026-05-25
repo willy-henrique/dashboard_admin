@@ -30,9 +30,9 @@ const getStatusColor = (status: string) => {
     case "failed":
       return "bg-red-100 text-red-800"
     case "canceled":
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -150,8 +150,8 @@ export default function ContasPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Gestao de Contas</h1>
-          <p className="text-gray-600">Saldos e movimentacoes retornados pelo Pagar.me</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Gestao de Contas</h1>
+          <p className="text-muted-foreground">Saldos e movimentacoes retornados pelo Pagar.me</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh}>
@@ -176,45 +176,45 @@ export default function ContasPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Saldo Total</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Total</CardTitle>
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{PagarmeService.formatCurrency(stats.saldoTotal)}</div>
-            <p className="text-xs text-gray-500">Disponivel: {PagarmeService.formatCurrency(stats.saldoDisponivel)}</p>
+            <p className="text-xs text-muted-foreground">Disponivel: {PagarmeService.formatCurrency(stats.saldoDisponivel)}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Receitas (Mes)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Receitas (Mes)</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{PagarmeService.formatCurrency(stats.receitasMes)}</div>
-            <p className="text-xs text-gray-500">Pagamentos confirmados</p>
+            <p className="text-xs text-muted-foreground">Pagamentos confirmados</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Taxas (Mes)</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Taxas (Mes)</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{PagarmeService.formatCurrency(stats.despesasMes)}</div>
-            <p className="text-xs text-gray-500">Estimativa baseada nas cobrancas pagas</p>
+            <p className="text-xs text-muted-foreground">Estimativa baseada nas cobrancas pagas</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total de Contas</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Contas</CardTitle>
             <DollarSign className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{contas.length}</div>
-            <p className="text-xs text-gray-500">{contas.length > 0 ? "Fonte financeira conectada" : "Nenhuma conta real conectada"}</p>
+            <p className="text-xs text-muted-foreground">{contas.length > 0 ? "Fonte financeira conectada" : "Nenhuma conta real conectada"}</p>
           </CardContent>
         </Card>
       </div>
@@ -222,7 +222,7 @@ export default function ContasPage() {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
             <Input
               placeholder="Buscar contas..."
               className="pl-10 w-64"
@@ -232,27 +232,27 @@ export default function ContasPage() {
             />
           </div>
         </div>
-        {loading ? <p className="text-sm text-gray-500">Atualizando dados financeiros...</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">Atualizando dados financeiros...</p> : null}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-gray-900">Contas Bancarias</CardTitle>
+          <CardTitle className="text-foreground">Contas Bancarias</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {contas.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-gray-900">Nome</TableHead>
-                  <TableHead className="text-gray-900">Banco</TableHead>
-                  <TableHead className="text-gray-900">Agencia</TableHead>
-                  <TableHead className="text-gray-900">Conta</TableHead>
-                  <TableHead className="text-gray-900">Tipo</TableHead>
-                  <TableHead className="text-gray-900">Saldo Disponivel</TableHead>
-                  <TableHead className="text-gray-900">A Receber</TableHead>
-                  <TableHead className="text-gray-900">Status</TableHead>
-                  <TableHead className="text-right text-gray-900">Acoes</TableHead>
+                  <TableHead className="text-foreground">Nome</TableHead>
+                  <TableHead className="text-foreground">Banco</TableHead>
+                  <TableHead className="text-foreground">Agencia</TableHead>
+                  <TableHead className="text-foreground">Conta</TableHead>
+                  <TableHead className="text-foreground">Tipo</TableHead>
+                  <TableHead className="text-foreground">Saldo Disponivel</TableHead>
+                  <TableHead className="text-foreground">A Receber</TableHead>
+                  <TableHead className="text-foreground">Status</TableHead>
+                  <TableHead className="text-right text-foreground">Acoes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -260,10 +260,10 @@ export default function ContasPage() {
                   .filter((account) => account.nome.toLowerCase().includes(search.toLowerCase()))
                   .map((account) => (
                     <TableRow key={account.id}>
-                      <TableCell className="font-medium text-gray-900">{account.nome}</TableCell>
-                      <TableCell className="text-gray-900">{account.banco}</TableCell>
-                      <TableCell className="text-gray-900">{account.agencia}</TableCell>
-                      <TableCell className="text-gray-900">{account.conta}</TableCell>
+                      <TableCell className="font-medium text-foreground">{account.nome}</TableCell>
+                      <TableCell className="text-foreground">{account.banco}</TableCell>
+                      <TableCell className="text-foreground">{account.agencia}</TableCell>
+                      <TableCell className="text-foreground">{account.conta}</TableCell>
                       <TableCell>
                         <Badge className="bg-blue-100 text-blue-800">{account.tipo}</Badge>
                       </TableCell>
@@ -282,8 +282,8 @@ export default function ContasPage() {
               </TableBody>
             </Table>
           ) : (
-            <div className="p-8 text-center text-gray-500">
-              <DollarSign className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <div className="p-8 text-center text-muted-foreground">
+              <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
               <p>Nenhuma conta real encontrada</p>
               <p className="text-sm">A tabela so exibe contas quando a integracao financeira retorna saldo real.</p>
             </div>
@@ -293,18 +293,18 @@ export default function ContasPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-gray-900">Movimentacoes Recentes</CardTitle>
+          <CardTitle className="text-foreground">Movimentacoes Recentes</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {movimentacoes.length > 0 ? (
               movimentacoes.map((transaction) => (
-                <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+                <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-border last:border-b-0">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-full">{getPaymentMethodIcon(transaction.metodo)}</div>
+                    <div className="p-2 bg-muted rounded-full">{getPaymentMethodIcon(transaction.metodo)}</div>
                     <div>
-                      <p className="font-medium text-gray-900">{transaction.descricao}</p>
-                      <p className="text-sm text-gray-500">{transaction.conta} - {transaction.data}</p>
+                      <p className="font-medium text-foreground">{transaction.descricao}</p>
+                      <p className="text-sm text-muted-foreground">{transaction.conta} - {transaction.data}</p>
                     </div>
                   </div>
                   <div className="text-right">
@@ -317,8 +317,8 @@ export default function ContasPage() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <DollarSign className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <div className="text-center py-8 text-muted-foreground">
+                <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
                 <p>Nenhuma movimentacao encontrada</p>
                 <p className="text-sm">{warningMessage || "As transacoes so aparecem aqui quando o provedor retorna dados reais."}</p>
               </div>

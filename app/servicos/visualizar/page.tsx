@@ -40,8 +40,8 @@ export default function VisualizarPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Serviços</h1>
-          <p className="text-gray-600">Lista completa de todos os serviços do sistema</p>
+          <h1 className="text-2xl font-bold text-foreground">Serviços</h1>
+          <p className="text-muted-foreground">Lista completa de todos os serviços do sistema</p>
         </div>
 
         <ServicesList

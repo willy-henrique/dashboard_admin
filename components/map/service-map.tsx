@@ -11,9 +11,9 @@ export function ServiceMap() {
     if (mapRef.current) {
       // Mock map with service locations
       mapRef.current.innerHTML = `
-        <div class="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-green-50"></div>
-          <div class="relative z-10 text-center text-gray-600">
+        <div class="w-full h-full bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
+          <div class="absolute inset-0 bg-linear-to-br from-blue-50 to-green-50"></div>
+          <div class="relative z-10 text-center text-muted-foreground">
             <div class="text-sm font-medium">Mapa Interativo</div>
             <div class="text-xs mt-1">Localização dos serviços ativos</div>
             <div class="mt-2 text-xs">

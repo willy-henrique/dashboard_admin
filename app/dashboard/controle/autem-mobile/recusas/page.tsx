@@ -97,7 +97,7 @@ export default function RecusasPage() {
 
   const getSortIcon = (field: string) => {
     if (sortField !== field) {
-      return <ChevronUp className="h-4 w-4 text-gray-400" />
+      return <ChevronUp className="h-4 w-4 text-muted-foreground/60" />
     }
     return sortDirection === "asc" ? 
       <ChevronUp className="h-4 w-4 text-blue-600" /> : 
@@ -132,8 +132,8 @@ export default function RecusasPage() {
             <XCircle className="h-6 w-6 text-red-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Recusas</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <h1 className="text-2xl font-bold text-foreground">Recusas</h1>
+            <p className="text-sm text-muted-foreground">
               autem.com.br &gt; controle &gt; autem mobile &gt; recusas
             </p>
           </div>
@@ -187,8 +187,8 @@ export default function RecusasPage() {
                   {columns.map((column) => (
                     <th
                       key={column.key}
-                      className={`px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300 ${
-                        column.sortable ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800' : ''
+                      className={`px-4 py-3 text-left text-sm font-medium text-foreground ${
+                        column.sortable ? 'cursor-pointer hover:bg-muted/50' : ''
                       }`}
                       onClick={() => column.sortable && handleSort(column.key)}
                     >
@@ -198,7 +198,7 @@ export default function RecusasPage() {
                       </div>
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <th className="px-4 py-3 text-left text-sm font-medium text-foreground">
                     Ações
                   </th>
                 </tr>
@@ -207,39 +207,39 @@ export default function RecusasPage() {
                 {filteredRecusas.map((recusa, index) => (
                   <tr
                     key={recusa.id}
-                    className={`border-b hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
-                      index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'
+                    className={`border-b hover:bg-muted/50/50 ${
+                      index % 2 === 0 ? 'bg-background' : 'bg-muted/50'
                     }`}
                     style={{ borderColor: 'var(--border)' }}
                   >
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       <div className="flex items-center space-x-2">
                         <AlertTriangle className="h-4 w-4 text-red-600" />
                         <span>{recusa.profissional}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {recusa.servico}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {recusa.motivo}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-slate-400" />
+                        <Clock className="h-4 w-4 text-muted-foreground/60" />
                         <span>{recusa.dataHora}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       <div className="flex items-center space-x-2">
-                        <MapPin className="h-4 w-4 text-slate-400" />
+                        <MapPin className="h-4 w-4 text-muted-foreground/60" />
                         <span>{recusa.localizacao}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {recusa.distancia}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {recusa.observacao}
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -274,7 +274,7 @@ export default function RecusasPage() {
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-slate-500 dark:text-slate-400 mt-8">
+      <div className="text-center text-sm text-muted-foreground mt-8">
         Copyright © 2025 AutEM v2.2.1 Todos os direitos reservados
       </div>
     </main>

@@ -23,7 +23,7 @@ export default function RelatoriosPage() {
             Use a central de relatorios alimentada por dados reais enquanto esta pagina nao tiver backend proprio.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Os cards de volume, listas de arquivos, periodos fixos e agendamentos automáticos foram removidos para evitar
           exibicao de dados artificiais em runtime.
         </CardContent>

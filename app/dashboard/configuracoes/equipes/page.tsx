@@ -49,9 +49,9 @@ const getStatusColor = (status: TeamStatus) => {
     case "ativo":
       return "bg-green-100 text-green-800"
     case "inativo":
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -83,14 +83,14 @@ const getEspecialidadeColor = (especialidade: string) => {
   }
 
   if (normalized.includes("indust")) {
-    return "bg-slate-200 text-slate-800"
+    return "bg-muted text-muted-foreground"
   }
 
   if (normalized.includes("espec")) {
     return "bg-pink-100 text-pink-800"
   }
 
-  return "bg-gray-100 text-gray-800"
+  return "bg-muted text-muted-foreground"
 }
 
 const pickString = (provider: RawProvider, keys: string[], fallback: string = ""): string => {
@@ -233,7 +233,7 @@ function buildTeams(providers: RawProvider[]): TeamRow[] {
         filial: group.branch,
         telefone: getProviderPhone(leader),
         email: getProviderEmail(leader),
-        status: activeMembers > 0 ? "ativo" : "inativo",
+        status: (activeMembers > 0 ? "ativo" : "inativo") as TeamStatus,
       }
     })
     .sort((a, b) => b.membros - a.membros)
@@ -266,6 +266,7 @@ export default function EquipesPage() {
         if (!user?.id) return
 
         const fallbackProviderShape: RawProvider = {
+          ...user,
           id: user.id,
           nome: (user.fullName || user.name || "").trim(),
           telefone: typeof user.phone === "string" ? user.phone : "",
@@ -280,7 +281,6 @@ export default function EquipesPage() {
           ativo: user.isActive !== false,
           createdAt: user.createdAt ?? null,
           updatedAt: user.createdAt ?? null,
-          ...user,
         }
 
         if (!mergedById.has(user.id)) {
@@ -632,7 +632,7 @@ export default function EquipesPage() {
                 </p>
               ) : (
                 distributionBySpecialty.map((item) => (
-                  <div key={item.especialidade} className="flex items-center justify-between rounded bg-gray-50 p-2">
+                  <div key={item.especialidade} className="flex items-center justify-between rounded bg-muted/50 p-2">
                     <span style={{ color: "var(--foreground)" }}>{item.especialidade}</span>
                     <Badge variant="secondary">{item.quantidade}</Badge>
                   </div>

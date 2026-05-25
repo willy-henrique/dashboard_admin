@@ -109,7 +109,7 @@ export default function AcessosPage() {
 
   const getSortIcon = (field: string) => {
     if (sortField !== field) {
-      return <ChevronUp className="h-4 w-4 text-gray-400" />
+      return <ChevronUp className="h-4 w-4 text-muted-foreground/60" />
     }
     return sortDirection === "asc" ? 
       <ChevronUp className="h-4 w-4 text-blue-600" /> : 
@@ -142,8 +142,8 @@ export default function AcessosPage() {
             <LogIn className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Acessos</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <h1 className="text-2xl font-bold text-foreground">Acessos</h1>
+            <p className="text-sm text-muted-foreground">
               autem.com.br &gt; controle &gt; autem mobile &gt; acessos
             </p>
           </div>
@@ -197,8 +197,8 @@ export default function AcessosPage() {
                   {columns.map((column) => (
                     <th
                       key={column.key}
-                      className={`px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300 ${
-                        column.sortable ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800' : ''
+                      className={`px-4 py-3 text-left text-sm font-medium text-foreground ${
+                        column.sortable ? 'cursor-pointer hover:bg-muted/50' : ''
                       }`}
                       onClick={() => column.sortable && handleSort(column.key)}
                     >
@@ -214,18 +214,18 @@ export default function AcessosPage() {
                 {filteredAcessos.map((acesso, index) => (
                   <tr
                     key={acesso.id}
-                    className={`border-b hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
-                      index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'
+                    className={`border-b hover:bg-muted/50/50 ${
+                      index % 2 === 0 ? 'bg-background' : 'bg-muted/50'
                     }`}
                     style={{ borderColor: 'var(--border)' }}
                   >
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {acesso.dataHora}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {acesso.usuario}
                     </td>
-                    <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    <td className="px-4 py-3 text-sm text-foreground">
                       {acesso.fonte}
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -241,7 +241,7 @@ export default function AcessosPage() {
 
       {/* Paginação */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-600 dark:text-slate-400">
+        <div className="text-sm text-muted-foreground">
           Mostrando de 1 até 25 de 25 resultado(s)
         </div>
         <div className="flex items-center space-x-2">
@@ -268,7 +268,7 @@ export default function AcessosPage() {
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-slate-500 dark:text-slate-400 mt-8">
+      <div className="text-center text-sm text-muted-foreground mt-8">
         Copyright © 2025 AutEM v2.2.1 Todos os direitos reservados
       </div>
     </main>

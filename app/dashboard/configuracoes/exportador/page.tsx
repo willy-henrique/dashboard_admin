@@ -98,9 +98,9 @@ const getStatusColor = (status: string) => {
     case "ativo":
       return "bg-green-100 text-green-800"
     case "inativo":
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -338,7 +338,7 @@ export default function ExportadorPage() {
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
                   <span style={{ color: 'var(--foreground)' }}>Inativos</span>
                 </div>
                 <Badge variant="secondary">
@@ -356,7 +356,7 @@ export default function ExportadorPage() {
           <CardContent>
             <div className="space-y-2">
               {Array.from(new Set(exportadores.map(e => e.fusoHorario))).map((fuso) => (
-                <div key={fuso} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div key={fuso} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
                     <span style={{ color: 'var(--foreground)' }}>{fuso}</span>

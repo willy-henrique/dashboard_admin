@@ -9,8 +9,8 @@ export default function FechamentoPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fechamento</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-foreground">Fechamento</h1>
+          <p className="text-muted-foreground">
             Os periodos de fechamento locais foram removidos desta tela.
           </p>
         </div>
@@ -25,7 +25,7 @@ export default function FechamentoPage() {
               Nenhum processo de fechamento real foi conectado a esta rota.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             Historico mensal, lucro e acao de fechamento foram ocultados para nao simular operacoes financeiras.
           </CardContent>
         </Card>

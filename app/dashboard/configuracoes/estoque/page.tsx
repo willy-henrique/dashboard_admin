@@ -87,7 +87,7 @@ const getCategoriaColor = (categoria: string) => {
     case "Equipamentos":
       return "bg-purple-100 text-purple-800"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -96,9 +96,9 @@ const getStatusColor = (status: string) => {
     case "ativo":
       return "bg-green-100 text-green-800"
     case "inativo":
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -136,7 +136,7 @@ export default function EstoquePage() {
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Info className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
             <p className="text-blue-800 text-sm">
               Nesta página você deve configurar os tipos de saída para retirada dos itens do estoque.
             </p>
@@ -334,7 +334,7 @@ export default function EstoquePage() {
           <CardContent>
             <div className="space-y-2">
               {Array.from(new Set(tiposSaida.map(t => t.categoria))).map((categoria) => (
-                <div key={categoria} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div key={categoria} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                   <span style={{ color: 'var(--foreground)' }}>{categoria}</span>
                   <Badge variant="secondary">
                     {tiposSaida.filter(t => t.categoria === categoria).length}

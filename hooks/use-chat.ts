@@ -1,10 +1,11 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { addDoc, collection, doc, getDoc, onSnapshot, orderBy, query, Timestamp, updateDoc, where, setDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { ChatConversation, ChatMessage, ChatStats, ChatFilter } from "@/types/chat"
 import { ChatService, LegacyChatConversation } from "@/lib/services/chat-service"
+import { messageMatchesThreadScope, normalizeMessageVisibility, normalizeThreadType, defaultVisibilityForThread, type OrderChatThreadType } from "@/lib/chat/order-chat-schema"
 
 const CHAT_REFRESH_INTERVAL_MS = 15000
 
@@ -38,6 +39,31 @@ function applyConversationFilter(
     filtered = filtered.filter((conversation) => conversation.unreadCount.admin > 0)
   }
 
+  if (filter?.providerSearch?.trim()) {
+    const needle = filter.providerSearch.trim().toLowerCase()
+    filtered = filtered.filter((conversation) => {
+      const name = conversation.providerName?.toLowerCase() || ""
+      const phone = conversation.providerPhone?.toLowerCase() || ""
+      return name.includes(needle) || phone.includes(needle)
+    })
+  }
+
+  if (filter?.protocolSearch?.trim()) {
+    const needle = filter.protocolSearch.trim().toLowerCase()
+    filtered = filtered.filter((conversation) => {
+      const protocol = String(conversation.orderProtocol || "").toLowerCase()
+      const id = String(conversation.orderId || "").toLowerCase()
+      return protocol.includes(needle) || id.includes(needle)
+    })
+  }
+
+  if (filter?.serviceOperationalStatus?.trim()) {
+    const needle = filter.serviceOperationalStatus.trim().toLowerCase()
+    filtered = filtered.filter((conversation) =>
+      String(conversation.serviceOperationalStatus || "").toLowerCase().includes(needle)
+    )
+  }
+
   return filtered
 }
 
@@ -66,13 +92,17 @@ function buildChatStats(conversations: LegacyChatConversation[]): ChatStats {
   }
 }
 
-export function useChatConversations(filter?: ChatFilter) {
+export function useChatConversations(filter?: ChatFilter, options?: { disabled?: boolean }) {
   const [conversations, setConversations] = useState<LegacyChatConversation[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const filterSnapshot = JSON.stringify(filter ?? {})
+  const disabled = options?.disabled === true
 
   const fetchConversations = useCallback(async (silent = false) => {
+    if (disabled) {
+      return
+    }
     try {
       if (!silent) {
         setLoading(true)
@@ -88,9 +118,16 @@ export function useChatConversations(filter?: ChatFilter) {
         setLoading(false)
       }
     }
-  }, [filterSnapshot])
+  }, [filterSnapshot, disabled])
 
   useEffect(() => {
+    if (disabled) {
+      setConversations([])
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     let isActive = true
 
     const run = async () => {
@@ -122,20 +159,28 @@ export function useChatConversations(filter?: ChatFilter) {
       isActive = false
       window.clearInterval(intervalId)
     }
-  }, [fetchConversations])
+  }, [fetchConversations, disabled])
 
   return { conversations, loading, error, refresh: () => fetchConversations() }
 }
 
-export function useChatMessages(chatId: string) {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+export function useChatMessages(chatId: string, options?: { threadScope?: OrderChatThreadType | "all" }) {
+  const [rawMessages, setRawMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const threadScope = options?.threadScope ?? "all"
+
+  const messages = useMemo(() => {
+    if (threadScope === "all") {
+      return rawMessages
+    }
+    return rawMessages.filter((message) => messageMatchesThreadScope(message, threadScope))
+  }, [rawMessages, threadScope])
 
   useEffect(() => {
     const fetchMessages = async () => {
       if (!chatId) {
-        setMessages([])
+        setRawMessages([])
         setLoading(false)
         return
       }
@@ -144,7 +189,7 @@ export function useChatMessages(chatId: string) {
         setLoading(true)
         setError(null)
         const conversationMessages = await ChatService.getConversationMessages(chatId)
-        setMessages(conversationMessages)
+        setRawMessages(conversationMessages)
       } catch {
         setError("Erro ao carregar mensagens")
       } finally {
@@ -187,6 +232,8 @@ export function useChatMessages(chatId: string) {
 
               const imageUrl = message.imageUrl ?? message.image_url ?? message.mediaUrl ?? message.attachmentUrl ?? message.photoUrl ?? message.metadata?.imageUrl
               const documentUrl = message.documentUrl ?? message.fileUrl ?? message.metadata?.documentUrl
+              const threadType = normalizeThreadType(message.threadType ?? message.channel)
+              const visibility = normalizeMessageVisibility(message.visibility, threadType)
 
               return {
                 id: snapshotDoc.id,
@@ -205,11 +252,13 @@ export function useChatMessages(chatId: string) {
                 isRead: message.isRead ?? false,
                 readBy: message.readBy || [],
                 metadata: { ...message.metadata, imageUrl, documentUrl },
+                threadType,
+                visibility,
               } as ChatMessage
             })
             .filter(Boolean) as ChatMessage[]
 
-          setMessages(data)
+          setRawMessages(data)
           setLoading(false)
         },
         () => setLoading(false)
@@ -219,7 +268,11 @@ export function useChatMessages(chatId: string) {
     }
 
     if (!chatId.startsWith("legacy_") && !chatId.startsWith("support_")) {
-      const messagesQuery = query(collection(db, "chatMessages"), where("chatId", "==", chatId), orderBy("timestamp", "asc"))
+      // Mensagens ficam em orders/{orderId}/messages — chatMessages não existe como coleção top-level
+      const messagesQuery = query(
+        collection(db, "orders", chatId, "messages"),
+        orderBy("timestamp", "asc")
+      )
 
       const unsubscribe = onSnapshot(
         messagesQuery,
@@ -241,7 +294,7 @@ export function useChatMessages(chatId: string) {
             })
             .filter(Boolean) as ChatMessage[]
 
-          setMessages(data)
+          setRawMessages(data)
           setLoading(false)
         },
         () => setLoading(false)
@@ -436,6 +489,102 @@ export function useChatActions() {
     }
   }, [logAdminAction, upsertConversationMonitoring])
 
+  const sendOrderThreadMessage = useCallback(
+    async (params: {
+      orderId: string
+      content: string
+      threadType: OrderChatThreadType
+      senderId: string
+      senderName: string
+    }) => {
+      if (!db || !params.content.trim()) {
+        return false
+      }
+
+      setLoading(true)
+      try {
+        const visibility = defaultVisibilityForThread(params.threadType)
+        await addDoc(collection(db, "orders", params.orderId, "messages"), {
+          message: params.content.trim(),
+          content: params.content.trim(),
+          timestamp: Timestamp.now(),
+          senderType: "admin",
+          senderId: params.senderId,
+          senderName: params.senderName,
+          threadType: params.threadType,
+          visibility,
+          messageType: "text",
+          isRead: true,
+          readBy: [params.senderId],
+        })
+
+        await logAdminAction({
+          chatId: `orders_${params.orderId}`,
+          adminId: params.senderId,
+          adminName: params.senderName,
+          action: "note_add",
+          details: `[canal:${params.threadType}] ${params.content.trim().slice(0, 240)}`,
+        })
+
+        return true
+      } catch {
+        return false
+      } finally {
+        setLoading(false)
+      }
+    },
+    [logAdminAction]
+  )
+
+  const createOperationalAlert = useCallback(
+    async (input: {
+      orderId: string
+      protocol?: string
+      clientName?: string
+      kind: string
+      severity: "low" | "medium" | "high" | "critical"
+      title: string
+      detail: string
+      sourceMessageId?: string
+      createdBy?: string
+    }) => {
+      if (!db) {
+        return null
+      }
+
+      try {
+        // operationalAlerts não existe como coleção — alertas são derivados dos pedidos pelo hook use-operational-alerts
+        const ref = await addDoc(collection(db, "adminActions"), {
+          type: "operational_alert",
+          ...input,
+          status: "open",
+          createdAt: Timestamp.now(),
+        })
+        return ref.id
+      } catch {
+        return null
+      }
+    },
+    []
+  )
+
+  const acknowledgeOperationalAlert = useCallback(async (alertId: string, adminId: string) => {
+    if (!db) {
+      return false
+    }
+
+    try {
+      await updateDoc(doc(db, "operationalAlerts", alertId), {
+        status: "acknowledged",
+        acknowledgedAt: Timestamp.now(),
+        acknowledgedBy: adminId,
+      })
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
   const deleteMessage = useCallback(async (message: Pick<ChatMessage, "id" | "chatId" | "content">, adminId: string, adminName: string) => {
     if (!db) return false
 
@@ -479,6 +628,9 @@ export function useChatActions() {
     updateConversationPriority,
     assignConversation,
     addConversationNote,
+    sendOrderThreadMessage,
+    createOperationalAlert,
+    acknowledgeOperationalAlert,
     deleteMessage,
   }
 }

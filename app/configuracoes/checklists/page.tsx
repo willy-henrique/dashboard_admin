@@ -43,8 +43,8 @@ export default function ChecklistsPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Checklists</h1>
-          <p className="text-gray-600">autem.com.br › configurações › checklists</p>
+          <h1 className="text-2xl font-bold text-foreground">Checklists</h1>
+          <p className="text-muted-foreground">autem.com.br › configurações › checklists</p>
         </div>
 
         {/* Action Bar */}
@@ -55,7 +55,7 @@ export default function ChecklistsPage() {
               Novo Checklist
             </Button>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
               <Input placeholder="Buscar checklists..." className="pl-20 w-64" />
             </div>
           </div>

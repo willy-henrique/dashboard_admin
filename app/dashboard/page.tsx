@@ -1,20 +1,11 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import dynamic from "next/dynamic"
+import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Eye,
-  Settings,
-  LayoutGrid,
-  BarChart3,
-  MapPin,
-  RefreshCw,
-  TrendingUp,
-  Calendar,
-} from "lucide-react"
-import { ProvidersMap } from "@/components/map/providers-map"
-import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { LayoutGrid, BarChart3, MapPin, RefreshCw, TrendingUp, FileText, Settings, Loader2 } from "lucide-react"
 import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { ServicesAnalytics } from "@/components/dashboard/services-analytics"
@@ -22,155 +13,144 @@ import { useAnalytics } from "@/hooks/use-analytics"
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 
+const ProvidersMap = dynamic(
+  () => import("@/components/map/providers-map").then(m => ({ default: m.ProvidersMap })),
+  { ssr: false, loading: () => <div className="h-full flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> }
+)
+
+const AnalyticsDashboard = dynamic(
+  () => import("@/components/analytics/analytics-dashboard").then(m => ({ default: m.AnalyticsDashboard })),
+  { ssr: false, loading: () => <div className="flex items-center justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div> }
+)
+
 export default function DashboardPage() {
   const { trackPageView, trackUserAction } = useAnalytics()
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    trackPageView('Dashboard Principal')
+    trackPageView("Dashboard Principal")
   }, [trackPageView])
 
-  const handleViewReports = useCallback(() => {
-    trackUserAction('ver_relatorios', 'dashboard')
-  }, [trackUserAction])
-
-  const handleSettings = useCallback(() => {
-    trackUserAction('abrir_configuracoes', 'dashboard')
-  }, [trackUserAction])
-
   const handleRefresh = useCallback(() => {
-    setRefreshKey(prev => prev + 1)
-  }, [])
+    setRefreshKey(k => k + 1)
+    trackUserAction("atualizar_metricas", "dashboard")
+  }, [trackUserAction])
 
-  // Data atual formatada
-  const currentDate = new Date().toLocaleDateString('pt-BR', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const currentDate = new Date().toLocaleDateString("pt-BR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   })
 
   return (
-    <div className="w-full animate-fade-in" role="main" aria-label="Dashboard principal">
-      {/* Header */}
-      <header className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2.5 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-lg shadow-orange-500/20">
-                <TrendingUp className="h-5 w-5 text-white" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-800">Dashboard</h1>
+    <div className="w-full space-y-6 animate-fade-in">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-primary" />
             </div>
-            <div className="flex items-center gap-2 text-slate-500">
-              <Calendar className="h-4 w-4" />
-              <p className="text-sm capitalize">{currentDate}</p>
-            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
           </div>
-          <div className="flex gap-3 flex-wrap">
-            <Link href="/reports">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 transition-all"
-                onClick={handleViewReports}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Relatórios
-              </Button>
-            </Link>
-            <Link href="/dashboard/configuracoes">
-              <Button 
-                size="sm" 
-                className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-500/20 transition-all"
-                onClick={handleSettings}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Configurações
-              </Button>
-            </Link>
-          </div>
+          <p className="text-sm text-muted-foreground mt-1 ml-12 capitalize">{currentDate}</p>
         </div>
-      </header>
 
-      {/* Tabs para diferentes visualizações */}
+        <div className="flex items-center gap-2 ml-12 sm:ml-0">
+          <Link href="/reports" onClick={() => trackUserAction("ver_relatorios", "dashboard")}>
+            <Button variant="outline" size="sm" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Relatórios
+            </Button>
+          </Link>
+          <Link href="/dashboard/configuracoes" onClick={() => trackUserAction("abrir_configuracoes", "dashboard")}>
+            <Button size="sm" className="gap-2 bg-primary hover:bg-primary-hover text-white shadow-primary">
+              <Settings className="h-4 w-4" />
+              Configurações
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="w-full sm:w-auto bg-white border border-slate-200 p-1.5 rounded-xl mb-6 overflow-x-auto flex gap-1 shadow-sm">
-          <TabsTrigger 
-            value="overview" 
-            className="flex items-center gap-2 font-medium px-4 py-2.5 rounded-lg whitespace-nowrap text-slate-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+        <TabsList className="h-10 bg-muted/50 border border-border p-1 rounded-lg w-full sm:w-auto">
+          <TabsTrigger
+            value="overview"
+            className="gap-2 rounded-md text-sm font-medium data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
           >
             <LayoutGrid className="h-4 w-4" />
             Visão Geral
           </TabsTrigger>
-          <TabsTrigger 
-            value="analytics" 
-            className="flex items-center gap-2 font-medium px-4 py-2.5 rounded-lg whitespace-nowrap text-slate-600 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+          <TabsTrigger
+            value="analytics"
+            className="gap-2 rounded-md text-sm font-medium data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm"
           >
             <BarChart3 className="h-4 w-4" />
             Analytics
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview" className="space-y-8 animate-slide-up">
-          {/* Métricas Principais */}
+        {/* ── Overview ───────────────────────────────────────── */}
+        <TabsContent value="overview" className="mt-6 space-y-8 animate-slide-up">
+
+          {/* KPIs */}
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-slate-800">Métricas Principais</h2>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Métricas Principais
+              </h2>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleRefresh}
-                className="text-slate-500 hover:text-orange-600 hover:bg-orange-50"
+                className="h-8 gap-1.5 text-muted-foreground hover:text-foreground text-xs"
               >
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <RefreshCw className="h-3.5 w-3.5" />
                 Atualizar
               </Button>
             </div>
             <DashboardMetrics key={refreshKey} />
           </section>
 
-          {/* Grid Principal */}
+          {/* Main grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Análise de Serviços - Ocupa 2 colunas */}
-            <div className="lg:col-span-2">
-              <h2 className="text-xl font-semibold text-slate-800 mb-6">Análise de Serviços</h2>
+            <div className="lg:col-span-2 space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Análise de Serviços
+              </h2>
               <ServicesAnalytics />
             </div>
 
-            {/* Atividades Recentes - Ocupa 1 coluna */}
-            <div className="lg:col-span-1">
-              <h2 className="text-xl font-semibold text-slate-800 mb-6">Atividades Recentes</h2>
-              <Card className="h-fit border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-5">
+            <div className="lg:col-span-1 space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Atividades Recentes
+              </h2>
+              <Card className="shadow-card">
+                <CardContent className="p-4">
                   <RecentActivity />
                 </CardContent>
               </Card>
             </div>
           </div>
 
-          {/* Mapa de Rastreamento */}
+          {/* Map */}
           <section>
-            <Card className="border-slate-200 shadow-sm overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-slate-50 to-orange-50/30 border-b border-slate-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20">
-                      <MapPin className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg font-semibold text-slate-800">
-                        Rastreamento em Tempo Real
-                      </CardTitle>
-                      <p className="text-sm text-slate-500 mt-0.5">
-                        Localização dos prestadores ativos
-                      </p>
-                    </div>
+            <Card className="shadow-card overflow-hidden">
+              <CardHeader className="border-b border-border bg-muted/20 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold">Rastreamento em Tempo Real</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">Localização dos prestadores ativos</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="h-[400px] sm:h-[450px]">
+                <div className="h-[400px] sm:h-[440px]">
                   <ProvidersMap />
                 </div>
               </CardContent>
@@ -178,7 +158,8 @@ export default function DashboardPage() {
           </section>
         </TabsContent>
 
-        <TabsContent value="analytics" className="animate-slide-up">
+        {/* ── Analytics ──────────────────────────────────────── */}
+        <TabsContent value="analytics" className="mt-6 animate-slide-up">
           <AnalyticsDashboard />
         </TabsContent>
       </Tabs>

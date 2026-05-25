@@ -1,190 +1,146 @@
 "use client"
 
+import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { useServicesAnalytics } from "@/hooks/use-services-analytics"
-import { 
-  ShoppingCart, 
-  CheckCircle, 
-  Clock, 
-  XCircle, 
-  AlertTriangle, 
-  Star, 
-  DollarSign,
-  TrendingUp,
-  Activity
+import {
+  ShoppingCart, CheckCircle, Clock, Activity,
+  AlertTriangle, Star, DollarSign, TrendingUp,
 } from "lucide-react"
+
+const STATUS_LABELS: Record<string, string> = {
+  completed:   "Concluído",
+  in_progress: "Em Andamento",
+  cancelled:   "Cancelado",
+  pending:     "Pendente",
+  accepted:    "Aceito",
+  assigned:    "Atribuído",
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  completed:   "bg-emerald-500",
+  in_progress: "bg-blue-500",
+  cancelled:   "bg-red-500",
+  pending:     "bg-amber-500",
+  accepted:    "bg-violet-500",
+  assigned:    "bg-teal-500",
+}
+
+interface StatCardProps {
+  label: string
+  value: number | string
+  icon: typeof ShoppingCart
+  iconClass: string
+  iconBg: string
+}
+
+function StatCard({ label, value, icon: Icon, iconClass, iconBg }: StatCardProps) {
+  return (
+    <Card className="shadow-card">
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className={cn("h-10 w-10 rounded-lg flex items-center justify-center shrink-0", iconBg)}>
+          <Icon className={cn("h-5 w-5", iconClass)} aria-hidden />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground font-medium">{label}</p>
+          <p className="text-xl font-bold text-foreground tabular-nums">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export function ServicesAnalytics() {
   const { analytics, loading, error } = useServicesAnalytics()
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="pb-2">
-              <div className="h-4 bg-gray-200 rounded animate-pulse" />
-            </CardHeader>
-            <CardContent>
-              <div className="h-8 bg-gray-200 rounded animate-pulse mb-2" />
-              <div className="h-3 bg-gray-100 rounded animate-pulse w-3/4" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="shadow-card">
+              <CardContent className="p-4">
+                <div className="h-10 w-10 rounded-lg bg-muted animate-skeleton mb-3" />
+                <div className="h-3 w-20 rounded bg-muted animate-skeleton mb-2" />
+                <div className="h-6 w-12 rounded bg-muted animate-skeleton" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="shadow-card">
+              <CardContent className="p-4">
+                <div className="h-16 w-full rounded bg-muted animate-skeleton" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
-        <p className="text-red-600 font-medium">Erro ao carregar analytics</p>
-        <p className="text-sm text-gray-500 mt-1">{error}</p>
-      </div>
+      <Card className="shadow-card">
+        <CardContent className="p-8 text-center">
+          <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+            <AlertTriangle className="h-5 w-5 text-destructive" />
+          </div>
+          <p className="text-sm font-medium text-foreground">Erro ao carregar analytics</p>
+          <p className="text-xs text-muted-foreground mt-1">{error}</p>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <div className="space-y-6">
-      {/* Métricas Principais - Grid 4 colunas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{analytics.totalServices}</p>
-              </div>
-              <ShoppingCart className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Concluídos</p>
-                <p className="text-2xl font-bold text-green-600">{analytics.completedServices}</p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-orange-500">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Ativos</p>
-                <p className="text-2xl font-bold text-orange-600">{analytics.activeServices}</p>
-              </div>
-              <Activity className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-yellow-500">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pendentes</p>
-                <p className="text-2xl font-bold text-yellow-600">{analytics.pendingServices}</p>
-              </div>
-              <Clock className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-4">
+      {/* Status cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Total"      value={analytics.totalServices}     icon={ShoppingCart} iconClass="text-blue-600"    iconBg="bg-blue-50 dark:bg-blue-950/40"    />
+        <StatCard label="Concluídos" value={analytics.completedServices} icon={CheckCircle}  iconClass="text-emerald-600" iconBg="bg-emerald-50 dark:bg-emerald-950/40" />
+        <StatCard label="Ativos"     value={analytics.activeServices}    icon={Activity}     iconClass="text-primary"     iconBg="bg-primary/10"                      />
+        <StatCard label="Pendentes"  value={analytics.pendingServices}   icon={Clock}        iconClass="text-amber-600"   iconBg="bg-amber-50 dark:bg-amber-950/40"   />
       </div>
 
-      {/* Métricas Financeiras - Grid 3 colunas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-green-100">
-                <DollarSign className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Receita Total</p>
-                <p className="text-xl font-bold text-gray-900">
-                  R$ {analytics.totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-blue-100">
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Receita Mensal</p>
-                <p className="text-xl font-bold text-gray-900">
-                  R$ {analytics.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-yellow-100">
-                <Star className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">Avaliação Média</p>
-                <p className="text-xl font-bold text-gray-900">
-                  {Math.round(analytics.averageRating)} ⭐
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Financial row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <StatCard label="Receita Total"   value={`R$ ${analytics.totalRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}   icon={DollarSign}  iconClass="text-emerald-600" iconBg="bg-emerald-50 dark:bg-emerald-950/40" />
+        <StatCard label="Receita Mensal"  value={`R$ ${analytics.monthlyRevenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`}  icon={TrendingUp}  iconClass="text-blue-600"    iconBg="bg-blue-50 dark:bg-blue-950/40"      />
+        <StatCard label="Avaliação Média" value={`${Math.round(analytics.averageRating)} ★`}                                              icon={Star}        iconClass="text-amber-600"   iconBg="bg-amber-50 dark:bg-amber-950/40"    />
       </div>
 
-      {/* Status e Top Serviços - Grid 2 colunas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Activity className="h-5 w-5 text-blue-500" />
-              Status dos Serviços
+      {/* Status distribution + Top services */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="shadow-card">
+          <CardHeader className="pb-3 pt-4 px-4">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" aria-hidden />
+              Distribuição por Status
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             <div className="space-y-3">
-              {analytics.servicesByStatus.map((status) => (
-                <div key={status.status} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                  <div className="flex items-center gap-3">
-                    <Badge 
-                      variant={
-                        status.status === 'completed' ? 'default' :
-                        status.status === 'in_progress' ? 'secondary' :
-                        status.status === 'cancelled' ? 'destructive' :
-                        'outline'
-                      }
-                      className="text-xs"
-                    >
-                      {status.status === 'completed' ? 'Concluído' :
-                       status.status === 'in_progress' ? 'Em Andamento' :
-                       status.status === 'cancelled' ? 'Cancelado' :
-                       status.status === 'pending' ? 'Pendente' :
-                       status.status === 'accepted' ? 'Aceito' :
-                       status.status === 'assigned' ? 'Atribuído' :
-                       status.status}
-                    </Badge>
+              {analytics.servicesByStatus.map((s) => (
+                <div key={s.status}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("h-2 w-2 rounded-full shrink-0", STATUS_COLORS[s.status] ?? "bg-muted-foreground")} />
+                      <span className="text-xs font-medium text-foreground">
+                        {STATUS_LABELS[s.status] ?? s.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="font-semibold text-foreground tabular-nums">{s.count}</span>
+                      <span>{Math.round(s.percentage)}%</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-sm">{status.count}</div>
-                    <div className="text-xs text-gray-500">{Math.round(status.percentage)}%</div>
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full transition-all duration-500", STATUS_COLORS[s.status] ?? "bg-muted-foreground")}
+                      style={{ width: `${Math.min(s.percentage, 100)}%` }}
+                    />
                   </div>
                 </div>
               ))}
@@ -192,31 +148,27 @@ export function ServicesAnalytics() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-orange-500" />
+        <Card className="shadow-card">
+          <CardHeader className="pb-3 pt-4 px-4">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" aria-hidden />
               Top Serviços
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {analytics.topServices.slice(0, 5).map((service, index) => (
-                <div key={service.serviceType} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-bold">
-                      {index + 1}
-                    </div>
-                    <span className="font-medium text-sm capitalize">
-                      {service.serviceType.replace('_', ' ')}
-                    </span>
+          <CardContent className="px-4 pb-4">
+            <div className="space-y-2.5">
+              {analytics.topServices.slice(0, 5).map((svc, i) => (
+                <div key={svc.serviceType} className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-muted-foreground w-4 tabular-nums">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground capitalize truncate">
+                      {svc.serviceType.replace(/_/g, " ")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      R$ {svc.revenue.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-sm">{service.count}</div>
-                    <div className="text-xs text-gray-500">
-                      R$ {service.revenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </div>
-                  </div>
+                  <span className="text-sm font-bold text-foreground tabular-nums shrink-0">{svc.count}</span>
                 </div>
               ))}
             </div>
@@ -224,19 +176,18 @@ export function ServicesAnalytics() {
         </Card>
       </div>
 
-      {/* Serviços de Emergência */}
+      {/* Emergency alert */}
       {analytics.emergencyServices > 0 && (
-        <Card className="border-l-4 border-l-red-500 bg-red-50">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-red-100">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-red-700">Serviços de Emergência</p>
-                <p className="text-2xl font-bold text-red-600">{analytics.emergencyServices}</p>
-                <p className="text-xs text-red-600 mt-1">Requerem atenção imediata</p>
-              </div>
+        <Card className="shadow-card border-destructive/30 bg-destructive/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+              <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-destructive">
+                {analytics.emergencyServices} serviço{analytics.emergencyServices !== 1 ? "s" : ""} de emergência
+              </p>
+              <p className="text-xs text-destructive/70 mt-0.5">Requerem atenção imediata</p>
             </div>
           </CardContent>
         </Card>

@@ -7,13 +7,14 @@ import { pagarmeService } from '@/lib/services/pagarme-service'
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const body = await request.json()
     const amount = body.amount // Opcional: valor parcial do reembolso
 
-    const response = await pagarmeService.refundCharge(params.id, amount)
+    const response = await pagarmeService.refundCharge(id, amount)
 
     if (response.errors) {
       return NextResponse.json(

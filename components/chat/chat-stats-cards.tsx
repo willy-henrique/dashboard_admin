@@ -16,13 +16,13 @@ export function ChatStatsCards() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[...Array(8)].map((_, i) => (
-          <Card key={i} className="bg-white">
+          <Card key={i} className="bg-card">
             <CardHeader className="pb-2">
-              <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-4 bg-muted rounded animate-skeleton"></div>
             </CardHeader>
             <CardContent>
-              <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
+              <div className="h-8 bg-muted rounded animate-skeleton mb-2"></div>
+              <div className="h-3 bg-muted rounded animate-skeleton w-2/3"></div>
             </CardContent>
           </Card>
         ))}
@@ -40,46 +40,46 @@ export function ChatStatsCards() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {/* Métricas Essenciais */}
-      <Card className="bg-white border-orange-200 hover:shadow-lg transition-shadow">
+      <Card className="bg-card border-orange-200 hover:shadow-card-hover transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Conversas Ativas
           </CardTitle>
           <Users className="h-4 w-4 text-orange-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-900">{stats.activeConversations}</div>
+          <div className="text-2xl font-bold text-foreground">{stats.activeConversations}</div>
           <p className="text-xs text-blue-600 mt-1">
             {activePercentage}% do total
           </p>
         </CardContent>
       </Card>
 
-      <Card className="bg-white border-red-200 hover:shadow-lg transition-shadow">
+      <Card className="bg-card border-red-200 hover:shadow-card-hover transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Não Lidas
           </CardTitle>
           <AlertTriangle className="h-4 w-4 text-red-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-900">{stats.unreadMessages}</div>
+          <div className="text-2xl font-bold text-foreground">{stats.unreadMessages}</div>
           <p className="text-xs text-red-600 mt-1">
             Requerem atenção
           </p>
         </CardContent>
       </Card>
 
-      <Card className="bg-white border-orange-200 hover:shadow-lg transition-shadow">
+      <Card className="bg-card border-orange-200 hover:shadow-card-hover transition-shadow">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-gray-600">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Total de Mensagens
           </CardTitle>
           <MessageSquare className="h-4 w-4 text-orange-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-900">{stats.totalMessages}</div>
-          <p className="text-xs text-gray-600 mt-1">
+          <div className="text-2xl font-bold text-foreground">{stats.totalMessages}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Todas as mensagens
           </p>
         </CardContent>

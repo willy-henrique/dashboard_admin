@@ -39,7 +39,7 @@ export function DashboardCharts() {
   return (
     <div className="space-y-6">
       {/* Bar Chart */}
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
+      <div className="bg-card border border-border shadow-card rounded-xl p-6">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={serviceData}>
@@ -62,7 +62,7 @@ export function DashboardCharts() {
       </div>
 
       {/* Pie Chart */}
-      <div className="bg-white border border-gray-200 shadow-sm rounded-2xl p-6">
+      <div className="bg-card border border-border shadow-card rounded-xl p-6">
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -71,7 +71,7 @@ export function DashboardCharts() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={(props: any) => `${props.name} ${((props.percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

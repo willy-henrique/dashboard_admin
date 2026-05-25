@@ -99,8 +99,8 @@ export function DashboardMap() {
         .bindPopup(`
           <div class="p-2">
             <h3 class="font-bold text-sm">${service.title}</h3>
-            <p class="text-xs text-gray-600">Profissional: ${service.profissional}</p>
-            <p class="text-xs text-gray-600">Status: ${service.status}</p>
+            <p class="text-xs text-muted-foreground">Profissional: ${service.profissional}</p>
+            <p class="text-xs text-muted-foreground">Status: ${service.status}</p>
           </div>
         `)
 
@@ -131,7 +131,7 @@ export function DashboardMap() {
       {/* Legenda */}
       <div className="flex flex-wrap gap-4 text-xs">
         <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+          <div className="w-3 h-3 bg-muted-foreground rounded-full"></div>
           <span>Agendado</span>
         </div>
         <div className="flex items-center space-x-2">

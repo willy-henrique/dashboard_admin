@@ -32,7 +32,6 @@ export function useAnalytics() {
 
   const trackEvent = ({ eventName, parameters = {} }: AnalyticsEvent) => {
     if (!analytics || !isReady) {
-      console.warn('Analytics não disponível')
       return
     }
 
@@ -59,13 +58,13 @@ export function useAnalytics() {
     })
   }
 
-  const trackUserAction = (action: string, category: string, value?: number) => {
+  const trackUserAction = (action: string, category: string, value?: number | Record<string, unknown>) => {
     trackEvent({
       eventName: 'user_action',
       parameters: {
         action,
         category,
-        value
+        ...(typeof value === 'number' ? { value } : value)
       }
     })
   }

@@ -15,9 +15,9 @@ import {
 import { db } from "./firebase"
 
 // Generic Firestore helpers
-export const getCollection = async (collectionName: string, ...constraints: QueryConstraint[]) => {
+export const getCollection = async (collectionName: string, ...constraints: QueryConstraint[]): Promise<Array<{ id: string } & Record<string, any>>> => {
   if (!db) return []
-  
+
   try {
     const q = query(collection(db, collectionName), ...constraints)
     const snapshot = await getDocs(q)
@@ -33,9 +33,9 @@ export const getSubcollection = async (
   parentId: string,
   subcollectionName: string,
   ...constraints: QueryConstraint[]
-) => {
+): Promise<Array<{ id: string } & Record<string, any>>> => {
   if (!db) return []
-  
+
   try {
     const ref = collection(db, parentCollection, parentId, subcollectionName)
     const q = constraints.length > 0 ? query(ref, ...constraints) : ref
@@ -46,9 +46,9 @@ export const getSubcollection = async (
   }
 }
 
-export const getDocument = async (collectionName: string, docId: string) => {
+export const getDocument = async (collectionName: string, docId: string): Promise<({ id: string } & Record<string, any>) | null> => {
   if (!db) return null
-  
+
   try {
     const docRef = doc(db, collectionName, docId)
     const docSnap = await getDoc(docRef)

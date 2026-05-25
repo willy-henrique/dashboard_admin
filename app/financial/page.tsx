@@ -8,8 +8,8 @@ export default function FinancialPage() {
     <AdminLayout>
       <PageWithBack backButtonLabel="Voltar para Dashboard">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">💰 Controle Financeiro</h1>
-          <p className="text-gray-600">Acompanhe valores recebidos, saldo disponível e todos os pagamentos</p>
+          <h1 className="text-3xl font-bold text-foreground">💰 Controle Financeiro</h1>
+          <p className="text-muted-foreground">Acompanhe valores recebidos, saldo disponível e todos os pagamentos</p>
         </div>
 
         <RevenueControlDashboard />

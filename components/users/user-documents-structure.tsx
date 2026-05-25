@@ -33,7 +33,7 @@ const DOCUMENT_TYPES = {
   cnh: { label: 'CNH', icon: FileText, color: 'bg-green-100 text-green-800' },
   comprovante_residencia: { label: 'Comprovante de Residência', icon: FileText, color: 'bg-orange-100 text-orange-800' },
   certificado: { label: 'Certificados', icon: FileText, color: 'bg-purple-100 text-purple-800' },
-  outros: { label: 'Outros', icon: File, color: 'bg-gray-100 text-gray-800' }
+  outros: { label: 'Outros', icon: File, color: 'bg-muted text-muted-foreground' }
 }
 
 export const UserDocumentsStructure = ({ 

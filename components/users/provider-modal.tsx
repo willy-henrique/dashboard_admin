@@ -59,7 +59,7 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
       case "active":
         return <Badge className="bg-green-100 text-green-800">Ativo</Badge>
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800">Inativo</Badge>
+        return <Badge className="bg-muted text-muted-foreground">Inativo</Badge>
       case "pending":
         return <Badge className="bg-orange-100 text-orange-800">Pendente</Badge>
       case "blocked":
@@ -92,11 +92,11 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Nome Completo</label>
+                  <label className="text-sm font-medium text-muted-foreground">Nome Completo</label>
                   <p className="text-sm">{toDisplayText(provider.name)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">CPF</label>
+                  <label className="text-sm font-medium text-muted-foreground">CPF</label>
                   <p className="text-sm">{toDisplayText(provider.cpf)}</p>
                 </div>
               </div>
@@ -105,15 +105,15 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-400" />
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{toDisplayText(provider.email)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-gray-400" />
+                  <Phone className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{toDisplayText(provider.phone)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{toDisplayText(provider.address)}</span>
                 </div>
               </div>
@@ -128,14 +128,14 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Experiência</label>
+                  <label className="text-sm font-medium text-muted-foreground">Experiência</label>
                   <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-gray-400" />
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{toDisplayText(provider.experience)}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Avaliação</label>
+                  <label className="text-sm font-medium text-muted-foreground">Avaliação</label>
                   <div className="flex items-center gap-2">
                     <Star className="h-4 w-4 text-yellow-400 fill-current" />
                     <span className="text-sm">{provider.rating} de 5</span>
@@ -144,7 +144,7 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">Categorias de Serviço</label>
+                <label className="text-sm font-medium text-muted-foreground">Categorias de Serviço</label>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {Array.isArray(provider.serviceCategories) && provider.serviceCategories.length > 0 ? (
                     provider.serviceCategories.map((category) => (
@@ -153,13 +153,13 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
                       </Badge>
                     ))
                   ) : (
-                    <span className="text-sm text-gray-500">Nao informado</span>
+                    <span className="text-sm text-muted-foreground">Nao informado</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-500">Status de Verificação</label>
+                <label className="text-sm font-medium text-muted-foreground">Status de Verificação</label>
                 <div className="flex items-center gap-2 mt-1">
                   {provider.isVerified ? (
                     <>
@@ -168,8 +168,8 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
                     </>
                   ) : (
                     <>
-                      <Shield className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">Não verificado</span>
+                      <Shield className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Não verificado</span>
                     </>
                   )}
                 </div>
@@ -186,36 +186,36 @@ export function ProviderModal({ provider, isOpen, onClose }: ProviderModalProps)
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Cadastrado em</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {formatDateSafe(provider.createdAt)}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <ShoppingBag className="h-4 w-4 text-gray-400" />
+                    <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Pedidos Concluídos</p>
-                      <p className="text-sm text-gray-600">{provider.totalOrders} pedidos</p>
+                      <p className="text-sm text-muted-foreground">{provider.totalOrders} pedidos</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Total de Ganhos</p>
-                      <p className="text-sm text-gray-600">R$ {provider.totalEarnings.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">R$ {provider.totalEarnings.toFixed(2)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-gray-400" />
+                    <Star className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Avaliação Média</p>
-                      <p className="text-sm text-gray-600">{provider.rating} estrelas</p>
+                      <p className="text-sm text-muted-foreground">{provider.rating} estrelas</p>
                     </div>
                   </div>
                 </div>

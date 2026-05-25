@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -24,11 +25,11 @@ import {
   LogOut,
   X,
   ChevronRight,
-  ChevronDown,
   ClipboardList,
   MousePointer,
   BadgeCheck,
   Layers,
+  Radio,
 } from "lucide-react"
 
 const navigation = [
@@ -37,6 +38,7 @@ const navigation = [
     href: "/dashboard",
     icon: LayoutDashboard,
     permission: "dashboard",
+    exact: true,
   },
   {
     name: "Serviços",
@@ -50,11 +52,8 @@ const navigation = [
     permission: "controle",
     children: [
       { name: "Monitoramento de Chat", href: "/dashboard/controle/chat", icon: MessageSquare },
-      {
-        name: "Aceitação de Prestadores",
-        href: "/dashboard/controle/aceitacao-prestadores",
-        icon: BadgeCheck,
-      },
+      { name: "Central Operacional", href: "/dashboard/controle/chat-operacional", icon: Radio },
+      { name: "Aceitação de Prestadores", href: "/dashboard/controle/aceitacao-prestadores", icon: BadgeCheck },
     ],
   },
   {
@@ -64,11 +63,7 @@ const navigation = [
     children: [
       { name: "Pessoas cadastradas", href: "/users/clients", icon: Users },
       { name: "Prestadores", href: "/users/providers", icon: UserCheck },
-      {
-        name: "Classificação de Prestadores",
-        href: "/users/classificacao-prestadores",
-        icon: Layers,
-      },
+      { name: "Classificação", href: "/users/classificacao-prestadores", icon: Layers },
     ],
   },
   {
@@ -85,7 +80,7 @@ const navigation = [
     permission: "financeiro",
     children: [
       { name: "Painel Financeiro", href: "/dashboard/financeiro", icon: BarChart3 },
-      { name: "Pagamentos Prestadores", href: "/dashboard/financeiro/faturamento", icon: FileText },
+      { name: "Pagamentos", href: "/dashboard/financeiro/faturamento", icon: FileText },
     ],
   },
   {
@@ -109,8 +104,8 @@ const navigation = [
     name: "Área Master",
     href: "/master",
     icon: Shield,
-    permission: "gestaoUsuarios", // Apenas quem pode gerenciar usuários pode acessar master
-    isMaster: true, // Flag especial para área master
+    permission: "gestaoUsuarios",
+    isMaster: true,
   },
 ]
 
@@ -126,210 +121,173 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
   const { user, logout } = useAuth()
   const router = useRouter()
 
-  // Expandir automaticamente os menus que contêm a página atual
   useEffect(() => {
-    const shouldExpand: string[] = []
-
+    const toExpand: string[] = []
     navigation.forEach(item => {
-      if (item.children) {
-        const hasActiveChild = item.children.some(child =>
-          pathname === child.href || pathname.startsWith(child.href + '/')
-        )
-        if (hasActiveChild) {
-          shouldExpand.push(item.name)
-        }
+      if (item.children?.some(c => pathname === c.href || pathname.startsWith(c.href + "/"))) {
+        toExpand.push(item.name)
       }
     })
-
-    setExpandedItems(shouldExpand)
+    setExpandedItems(toExpand)
   }, [pathname])
 
-  const toggleExpanded = (name: string) => {
+  const toggleExpanded = (name: string) =>
     setExpandedItems(prev =>
-      prev.includes(name)
-        ? prev.filter(item => item !== name)
-        : [...prev, name]
+      prev.includes(name) ? prev.filter(i => i !== name) : [...prev, name]
     )
-  }
 
-  const isActive = (href: string) => {
-    if (pathname === href) return true
-    // Para rotas que começam com o href (ex: /dashboard/servicos/orcamento)
-    if (href !== '/' && pathname.startsWith(href + '/')) return true
-    return false
-  }
+  const isActive = (href: string, exact = false) =>
+    pathname === href || (!exact && href !== "/" && pathname.startsWith(href + "/"))
 
-  // Filtrar navegação baseada nas permissões
-  const filteredNavigation = navigation.filter(item => {
-    if (!item.permission) return true
-    return hasPermission(item.permission as keyof import("@/hooks/use-permissions").UserPermissions)
-  })
+  const filteredNavigation = navigation.filter(item =>
+    !item.permission || hasPermission(item.permission as keyof import("@/hooks/use-permissions").UserPermissions)
+  )
+
+  const userInitial = user?.displayName?.charAt(0) || user?.email?.charAt(0) || "A"
+  const userName = user?.displayName || user?.email?.split("@")[0] || "Usuário"
 
   const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gradient-to-b from-orange-50 via-amber-50 to-orange-100 text-slate-800">
-      {/* Header fixo */}
-      <div className="flex h-16 items-center justify-between px-5 flex-shrink-0 border-b border-orange-200/50">
+    <div className="flex h-full flex-col bg-sidebar border-r border-sidebar-border">
+      {/* Logo */}
+      <div className="flex h-16 items-center px-5 shrink-0">
         <button
-          onClick={() => {
-            router.push('/dashboard')
-            setOpen(false)
-          }}
-          className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
+          onClick={() => { router.push("/dashboard"); setOpen(false) }}
+          className="flex items-center hover:opacity-75 transition-opacity"
           aria-label="Ir para o dashboard"
         >
-          <Logo className="h-8" showText={true} />
+          <Logo className="h-8" showText />
         </button>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => setOpen(false)}
-          className="lg:hidden text-slate-700 hover:bg-orange-200/50"
-          aria-label="Fechar menu lateral"
+          className="lg:hidden ml-auto h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          aria-label="Fechar menu"
         >
           <X className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Área rolável para navegação */}
-      <ScrollArea className="flex-1 px-3 py-4 overflow-hidden">
-        <nav className="space-y-1.5 pb-4" role="navigation" aria-label="Navegação principal">
-          {filteredNavigation.map((item) => (
+      {/* Nav */}
+      <ScrollArea className="flex-1 px-3 py-2">
+        <nav className="space-y-0.5 pb-4" aria-label="Navegação principal">
+          {filteredNavigation.map(item => (
             <div key={item.name}>
               {item.children ? (
                 <div>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "w-full justify-between transition-all text-slate-700 hover:bg-white/60 hover:text-orange-700 rounded-xl h-11",
-                      expandedItems.includes(item.name) && "bg-white/80 text-orange-700 shadow-sm"
-                    )}
+                  <button
                     onClick={() => toggleExpanded(item.name)}
                     aria-expanded={expandedItems.includes(item.name)}
-                    aria-controls={`submenu-${item.name}`}
-                    aria-label={`${item.name}, ${expandedItems.includes(item.name) ? 'recolher' : 'expandir'} submenu`}
+                    className={cn(
+                      "w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
+                      expandedItems.includes(item.name)
+                        ? "text-foreground bg-muted"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                    )}
                   >
                     <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "p-1.5 rounded-lg transition-colors",
-                        expandedItems.includes(item.name) ? "bg-orange-100 text-orange-600" : "bg-white/50 text-slate-500"
-                      )}>
-                        <item.icon className="h-4 w-4" aria-hidden="true" />
-                      </div>
-                      <span className="font-medium text-sm">{item.name}</span>
+                      <item.icon className="h-4 w-4 shrink-0" aria-hidden />
+                      <span>{item.name}</span>
                     </div>
-                    {expandedItems.includes(item.name) ? (
-                      <ChevronDown className="h-4 w-4 text-orange-500" aria-hidden="true" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </Button>
+                    <ChevronRight
+                      className={cn(
+                        "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
+                        expandedItems.includes(item.name) && "rotate-90"
+                      )}
+                      aria-hidden
+                    />
+                  </button>
+
                   {expandedItems.includes(item.name) && (
-                    <div
-                      className="ml-4 mt-1.5 space-y-1 border-l-2 border-orange-200 pl-3"
-                      id={`submenu-${item.name}`}
-                      role="region"
-                      aria-label={`Submenu de ${item.name}`}
-                    >
-                      {item.children.map((child) => (
-                        <a
+                    <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border pl-3 animate-slide-down">
+                      {item.children.map(child => (
+                        <Link
                           key={child.href}
                           href={child.href}
-                          className={cn(
-                            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all text-slate-600 hover:bg-white/60 hover:text-orange-700",
-                            isActive(child.href) && "bg-white text-orange-700 font-semibold shadow-sm"
-                          )}
                           onClick={() => setOpen(false)}
-                          aria-current={isActive(child.href) ? 'page' : undefined}
+                          aria-current={isActive(child.href) ? "page" : undefined}
+                          className={cn(
+                            "flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors duration-150",
+                            isActive(child.href)
+                              ? "bg-primary text-primary-foreground font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                          )}
                         >
-                          <child.icon className="h-3.5 w-3.5" aria-hidden="true" />
-                          <span>{child.name}</span>
-                        </a>
+                          <child.icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                          {child.name}
+                        </Link>
                       ))}
                     </div>
                   )}
                 </div>
               ) : (
-                <a
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all text-slate-700 hover:bg-white/60 hover:text-orange-700",
-                    isActive(item.href) && "bg-white text-orange-700 font-semibold shadow-sm"
-                  )}
+                <Link
+                  href={item.href!}
                   onClick={() => setOpen(false)}
-                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  aria-current={isActive(item.href!) ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150",
+                    isActive(item.href!, item.exact)
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                    item.isMaster && !isActive(item.href!, item.exact) && "text-muted-foreground/70"
+                  )}
                 >
-                  <div className={cn(
-                    "p-1.5 rounded-lg transition-colors",
-                    isActive(item.href) ? "bg-orange-100 text-orange-600" : "bg-white/50 text-slate-500"
-                  )}>
-                    <item.icon className="h-4 w-4" aria-hidden="true" />
-                  </div>
-                  <span className="font-medium">{item.name}</span>
-                </a>
+                  <item.icon className="h-4 w-4 shrink-0" aria-hidden />
+                  {item.name}
+                </Link>
               )}
             </div>
           ))}
         </nav>
       </ScrollArea>
 
-      {/* Footer fixo da Sidebar */}
-      <div className="border-t border-orange-200/50 p-4 flex-shrink-0 bg-white/30">
-        <div className="flex flex-col gap-3 text-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20">
-              {user?.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt="Avatar"
-                  className="w-10 h-10 rounded-xl object-cover"
-                />
-              ) : (
-                <span className="text-white font-semibold text-sm">
-                  {user?.displayName?.charAt(0) || user?.email?.charAt(0) || 'A'}
-                </span>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800 truncate">
-                {user?.displayName || user?.email?.split('@')[0] || 'Usuário'}
-              </p>
-              <p className="text-xs text-slate-500 truncate">
-                {user?.email || 'admin@aquiresolve.com'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg"
-              aria-label="Sair do sistema"
-            >
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-            </Button>
+      {/* User footer */}
+      <div className="border-t border-sidebar-border p-3 shrink-0">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors group">
+          <div className="h-8 w-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground text-xs font-semibold shrink-0 overflow-hidden">
+            {user?.photoURL ? (
+              <img src={user.photoURL} alt="" className="h-8 w-8 object-cover" />
+            ) : (
+              userInitial
+            )}
           </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-500">
-            <span>Sistema Admin • v3.0</span>
-            <span className="hidden sm:inline">AquiResolve</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-foreground truncate">{userName}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+            aria-label="Sair do sistema"
+          >
+            <LogOut className="h-3.5 w-3.5" aria-hidden />
+          </Button>
         </div>
+        <p className="text-[11px] text-muted-foreground/60 text-center mt-2">
+          AquiResolve Admin · v3.0
+        </p>
       </div>
     </div>
   )
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-30" role="complementary" aria-label="Menu lateral">
+      <aside
+        className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 lg:z-30"
+        role="complementary"
+        aria-label="Menu lateral"
+      >
         <SidebarContent />
       </aside>
 
-      {/* Mobile Sidebar */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="p-0 w-80 sm:w-96" role="dialog" aria-label="Menu lateral móvel">
+        <SheetContent side="left" className="p-0 w-72" role="dialog" aria-label="Menu lateral">
           <SidebarContent />
         </SheetContent>
       </Sheet>
     </>
   )
 }
-

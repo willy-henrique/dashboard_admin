@@ -1,7 +1,7 @@
 // components/performance-optimizer.tsx
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface PerformanceOptimizerProps {
   children: React.ReactNode
@@ -10,31 +10,30 @@ interface PerformanceOptimizerProps {
 export function PerformanceOptimizer({ children }: PerformanceOptimizerProps) {
   const [isVisible, setIsVisible] = useState(true)
   const [isThrottled, setIsThrottled] = useState(false)
+  const throttledRef = useRef(false)
 
   useEffect(() => {
     // Detectar quando a aba está visível/invisível
     const handleVisibilityChange = () => {
       const visible = !document.hidden
       setIsVisible(visible)
-      
-      if (visible) {
-        console.log('🔄 Dashboard reativado - otimizações aplicadas')
-      } else {
-        console.log('⏸️ Dashboard pausado - reduzindo consumo de recursos')
-      }
     }
 
     // Detectar quando a aba está sendo usada ativamente
     let lastActivity = Date.now()
     const handleActivity = () => {
       lastActivity = Date.now()
-      setIsThrottled(false)
+      if (throttledRef.current) {
+        throttledRef.current = false
+        setIsThrottled(false)
+      }
     }
 
-    // Throttle quando não há atividade
+    // Throttle quando não há atividade — loga apenas na entrada do estado
     const throttleInterval = setInterval(() => {
       const now = Date.now()
-      if (now - lastActivity > 30000) { // 30 segundos sem atividade
+      if (now - lastActivity > 30000 && !throttledRef.current) {
+        throttledRef.current = true
         setIsThrottled(true)
         console.log('🐌 Modo economia de energia ativado')
       }

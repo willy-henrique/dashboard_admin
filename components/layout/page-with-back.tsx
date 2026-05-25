@@ -60,7 +60,7 @@ export function PageWithBack({
             label={getBackButtonLabel()}
             variant={backButtonVariant}
           />
-          <div className="h-6 w-px bg-gray-300" />
+          <div className="h-6 w-px bg-border" />
         </div>
       )}
       {children}

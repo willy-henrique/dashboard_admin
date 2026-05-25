@@ -49,24 +49,24 @@ export default function LoginPage() {
   // Loading state enquanto verifica autenticação
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-muted/40 via-orange-50 to-amber-50">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
+          <div className="w-16 h-16 bg-linear-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Carregando...</p>
+          <p className="mt-4 text-muted-foreground">Carregando...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 via-orange-50 to-amber-50">
+    <div className="min-h-screen flex bg-linear-to-br from-muted/40 via-orange-50 to-amber-50">
       {/* Lado esquerdo - Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-amber-500 to-orange-600">
+        <div className="absolute inset-0 bg-linear-to-br from-orange-500 via-amber-500 to-orange-600">
           <div className="absolute inset-0 opacity-10">
             <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
               <defs>
@@ -136,24 +136,24 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/30">
+            <div className="w-16 h-16 bg-linear-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-500/30">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-slate-800">AquiResolve</h1>
-            <p className="text-slate-500">Painel Administrativo</p>
+            <h1 className="text-2xl font-bold text-foreground">AquiResolve</h1>
+            <p className="text-muted-foreground">Painel Administrativo</p>
           </div>
 
           {/* Card do formulário */}
-          <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8">
+          <div className="bg-card rounded-2xl shadow-card border border-border p-8">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">Bem-vindo de volta</h2>
-              <p className="text-slate-500">Entre com suas credenciais para acessar o sistema</p>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Bem-vindo de volta</h2>
+              <p className="text-muted-foreground">Entre com suas credenciais para acessar o sistema</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-5">
               {/* Campo Email */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-foreground">
                   Email
                 </label>
                 <input
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                  className="w-full h-12 px-4 bg-muted/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                   required
                   autoComplete="email"
                 />
@@ -169,7 +169,7 @@ export default function LoginPage() {
 
               {/* Campo Senha */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-foreground">
                   Senha
                 </label>
                 <div className="relative">
@@ -178,14 +178,14 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full h-12 px-4 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+                    className="w-full h-12 px-4 pr-12 bg-muted/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
                     required
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-muted-foreground transition-colors"
                     aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -200,9 +200,9 @@ export default function LoginPage() {
                     type="checkbox" 
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500/20 cursor-pointer" 
+                    className="w-4 h-4 rounded border-border text-orange-500 focus:ring-orange-500/20 cursor-pointer" 
                   />
-                  <span className="text-sm text-slate-600">Lembrar-me</span>
+                  <span className="text-sm text-muted-foreground">Lembrar-me</span>
                 </label>
               </div>
 
@@ -217,7 +217,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading || !email || !password}
-                className="w-full h-12 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40"
+                className="w-full h-12 bg-linear-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40"
               >
                 {isLoading ? (
                   <>
@@ -234,11 +234,11 @@ export default function LoginPage() {
             </form>
 
             {/* Footer */}
-            <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-              <p className="text-sm text-slate-500">
+            <div className="mt-8 pt-6 border-t border-border text-center">
+              <p className="text-sm text-muted-foreground">
                 Sistema de Administração - AquiResolve
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-muted-foreground/60 mt-1">
                 Versão 1.0.0
               </p>
             </div>

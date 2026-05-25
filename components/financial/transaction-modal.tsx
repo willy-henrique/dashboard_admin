@@ -87,11 +87,11 @@ export function TransactionModal({ transaction, isOpen, onClose }: TransactionMo
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">ID da Transação</label>
+                  <label className="text-sm font-medium text-muted-foreground">ID da Transação</label>
                   <p className="text-sm font-mono">{transaction.id}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Pedido Relacionado</label>
+                  <label className="text-sm font-medium text-muted-foreground">Pedido Relacionado</label>
                   <p className="text-sm font-mono">{transaction.orderId}</p>
                 </div>
               </div>
@@ -143,10 +143,10 @@ export function TransactionModal({ transaction, isOpen, onClose }: TransactionMo
               <Separator />
 
               <div className="flex items-center gap-2">
-                <CreditCard className="h-4 w-4 text-gray-400" />
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <span className="text-sm font-medium">Método de Pagamento</span>
-                  <p className="text-sm text-gray-600">{transaction.paymentMethod}</p>
+                  <p className="text-sm text-muted-foreground">{transaction.paymentMethod}</p>
                 </div>
               </div>
             </CardContent>
@@ -160,10 +160,10 @@ export function TransactionModal({ transaction, isOpen, onClose }: TransactionMo
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-400" />
+                  <User className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{transaction.clientName}</p>
-                    <p className="text-sm text-gray-500">ID: {transaction.clientId}</p>
+                    <p className="text-sm text-muted-foreground">ID: {transaction.clientId}</p>
                   </div>
                 </div>
               </CardContent>
@@ -175,10 +175,10 @@ export function TransactionModal({ transaction, isOpen, onClose }: TransactionMo
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-gray-400" />
+                  <User className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{transaction.providerName}</p>
-                    <p className="text-sm text-gray-500">ID: {transaction.providerId}</p>
+                    <p className="text-sm text-muted-foreground">ID: {transaction.providerId}</p>
                   </div>
                 </div>
               </CardContent>
@@ -196,7 +196,7 @@ export function TransactionModal({ transaction, isOpen, onClose }: TransactionMo
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                   <div>
                     <p className="text-sm font-medium">Transação iniciada</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Calendar className="h-3 w-3" />
                       {new Date(transaction.createdAt).toLocaleDateString("pt-BR")} às{" "}
                       {new Date(transaction.createdAt).toLocaleTimeString("pt-BR")}
@@ -211,7 +211,7 @@ export function TransactionModal({ transaction, isOpen, onClose }: TransactionMo
                       <p className="text-sm font-medium">
                         {transaction.status === "completed" ? "Transação concluída" : "Transação processada"}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
                         {new Date(transaction.completedAt).toLocaleDateString("pt-BR")} às{" "}
                         {new Date(transaction.completedAt).toLocaleTimeString("pt-BR")}

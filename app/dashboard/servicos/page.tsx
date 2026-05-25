@@ -58,7 +58,7 @@ export default function ServicosPage() {
       case 'cancelled':
         return <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Cancelado</Badge>
       default:
-        return <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">Pendente</Badge>
+        return <Badge variant="outline" className="bg-muted/50 text-muted-foreground border-border">Pendente</Badge>
     }
   }
 
@@ -100,19 +100,19 @@ export default function ServicosPage() {
 
       {/* Estatísticas Principais */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bg-white hover:shadow-md transition-shadow">
+        <Card className="bg-card hover:shadow-card-hover transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
               </div>
-              <Package className="h-8 w-8 text-gray-500" />
+              <Package className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white hover:shadow-md transition-shadow">
+        <Card className="bg-card hover:shadow-card-hover transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -124,7 +124,7 @@ export default function ServicosPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white hover:shadow-md transition-shadow">
+        <Card className="bg-card hover:shadow-card-hover transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -136,7 +136,7 @@ export default function ServicosPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white hover:shadow-md transition-shadow">
+        <Card className="bg-card hover:shadow-card-hover transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -148,7 +148,7 @@ export default function ServicosPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white hover:shadow-md transition-shadow">
+        <Card className="bg-card hover:shadow-card-hover transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -160,7 +160,7 @@ export default function ServicosPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-white hover:shadow-md transition-shadow">
+        <Card className="bg-card hover:shadow-card-hover transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -205,20 +205,27 @@ export default function ServicosPage() {
             <CardContent>
               <div className="space-y-4">
                 {allOrders.slice(0, 5).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div key={order.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         {getPriorityIcon(order)}
-                        <p className="font-medium text-sm truncate">{order.clientName}</p>
+                        <p className="font-medium text-sm">{order.clientName || "—"}</p>
                         {getStatusBadge(order)}
                       </div>
-                      <p className="text-xs text-muted-foreground truncate">{order.address}</p>
+                      {order.serviceType && (
+                        <p className="text-xs font-medium text-primary mt-0.5">{order.serviceType}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{order.address || "Endereço não informado"}</p>
                       <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewOrder(order)}>
-                        <Eye className="h-4 w-4" />
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Button variant="outline" size="sm" onClick={() => handleViewOrder(order)} className="h-8 px-3 gap-1.5">
+                        <Eye className="h-3.5 w-3.5" />
+                        <span className="text-xs">Ver</span>
                       </Button>
+                      {order.clientPhone && (
+                        <p className="text-xs text-muted-foreground">{order.clientPhone}</p>
+                      )}
                     </div>
                   </div>
                 ))}

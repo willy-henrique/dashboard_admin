@@ -82,7 +82,7 @@ export default function ServicesViewPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Serviços</h1>
-          <p className="text-gray-600">autem.com.br › serviços › visualizar</p>
+          <p className="text-muted-foreground">autem.com.br › serviços › visualizar</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ export default function ServicesViewPage() {
         </Button>
         <div className="flex-1 max-w-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
             <Input placeholder="PROCURAR" className="pl-20" />
           </div>
         </div>
@@ -116,28 +116,28 @@ export default function ServicesViewPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-muted/50 border-b">
                 <tr>
-                  <th className="text-left p-3 font-medium text-gray-600">Data e Hora</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Empresa</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Protocolo</th>
-                  <th className="text-left p-3 font-medium text-gray-600">CNPJ</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Veículo / Objeto</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Placa</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Renavam</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Beneficiário</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Senha</th>
-                  <th className="text-left p-3 font-medium text-gray-600">Telefone</th>
-                  <th className="text-left p-3 font-medium text-gray-600">O. Cidade</th>
-                  <th className="text-left p-3 font-medium text-gray-600">D. Cidade</th>
-                  <th className="text-left p-3 font-medium text-gray-600">D. Logradouro</th>
-                  <th className="text-left p-3 font-medium text-gray-600">D. Bairro</th>
-                  <th className="text-left p-3 font-medium text-gray-600">D. Endereço</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Data e Hora</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Empresa</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Protocolo</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">CNPJ</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Veículo / Objeto</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Placa</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Renavam</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Beneficiário</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Senha</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">Telefone</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">O. Cidade</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">D. Cidade</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">D. Logradouro</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">D. Bairro</th>
+                  <th className="text-left p-3 font-medium text-muted-foreground">D. Endereço</th>
                 </tr>
               </thead>
               <tbody>
                 {services.map((service, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
+                  <tr key={index} className="border-b hover:bg-muted/50">
                     <td className="p-3 text-sm">{service.date}</td>
                     <td className="p-3 text-sm">{service.company}</td>
                     <td className="p-3 text-sm text-blue-600">{service.protocol}</td>
@@ -158,7 +158,7 @@ export default function ServicesViewPage() {
               </tbody>
             </table>
           </div>
-          <div className="p-4 text-sm text-gray-600 border-t">Mostrando de 1 até 5 de 5 resultado(s)</div>
+          <div className="p-4 text-sm text-muted-foreground border-t">Mostrando de 1 até 5 de 5 resultado(s)</div>
         </CardContent>
       </Card>
     </div>

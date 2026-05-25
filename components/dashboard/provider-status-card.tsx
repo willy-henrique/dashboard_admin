@@ -54,7 +54,7 @@ export function ProviderStatusCard() {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-        <span className="ml-3 text-gray-500">Carregando prestadores...</span>
+        <span className="ml-3 text-muted-foreground">Carregando prestadores...</span>
       </div>
     )
   }
@@ -195,8 +195,8 @@ export function ProviderStatusCard() {
         <CardContent>
           {rawProviders.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500">Nenhum prestador encontrado</p>
-              <p className="text-sm text-gray-400 mt-1">Os prestadores aparecerão aqui conforme forem cadastrados</p>
+              <p className="text-muted-foreground">Nenhum prestador encontrado</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Os prestadores aparecerão aqui conforme forem cadastrados</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -208,7 +208,7 @@ export function ProviderStatusCard() {
                 >
                   <div className="flex items-center space-x-4">
                     {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
                       <User className="w-6 h-6" style={{ color: 'var(--muted-foreground)' }} />
                     </div>
 

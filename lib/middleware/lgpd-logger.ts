@@ -75,14 +75,14 @@ export function getLegalBasisForActivity(
   activity: ProcessingActivity
 ): LegalBasis {
   const basisMap: Record<ProcessingActivity, LegalBasis> = {
-    criacao_usuario: 'contrato',
-    atualizacao_usuario: 'contrato',
+    criacao_usuario: 'execucao_contrato',
+    atualizacao_usuario: 'execucao_contrato',
     exclusao_usuario: 'obrigacao_legal',
-    login: 'necessario',
+    login: 'legitimo_interesse',
     acesso_dados: 'obrigacao_legal',
     exportacao_dados: 'obrigacao_legal',
-    compartilhamento_dados: 'contrato',
-    processamento_pedido: 'contrato',
+    compartilhamento_dados: 'execucao_contrato',
+    processamento_pedido: 'execucao_contrato',
     analise_comportamental: 'consentimento',
   }
 

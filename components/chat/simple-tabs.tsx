@@ -18,7 +18,7 @@ export function SimpleTabs({ activeTab, onTabChange }: SimpleTabsProps) {
   ]
 
   return (
-    <div className="flex space-x-2 bg-white border rounded-lg p-1">
+    <div className="flex space-x-2 bg-card border border-border rounded-lg p-1">
       {tabs.map((tab) => {
         const Icon = tab.icon
         return (
@@ -29,7 +29,7 @@ export function SimpleTabs({ activeTab, onTabChange }: SimpleTabsProps) {
             className={`flex-1 ${
               activeTab === tab.id 
                 ? 'bg-orange-500 text-white hover:bg-orange-600' 
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Icon className="h-4 w-4 mr-2" />

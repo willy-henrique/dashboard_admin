@@ -106,7 +106,7 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
         <div className="space-y-4">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar prestadores..."
               value={searchTerm}
@@ -116,19 +116,19 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
           </div>
 
           {/* Order Info */}
-          <div className="bg-gray-50 p-4 rounded-lg">
+          <div className="bg-muted/50 p-4 rounded-lg">
             <h4 className="font-medium mb-2">Detalhes do Pedido</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="text-gray-500">Categoria:</span>
+                <span className="text-muted-foreground">Categoria:</span>
                 <p className="font-medium">{order.serviceCategory}</p>
               </div>
               <div>
-                <span className="text-gray-500">Orçamento:</span>
+                <span className="text-muted-foreground">Orçamento:</span>
                 <p className="font-medium">R$ {order.budget.toFixed(2)}</p>
               </div>
               <div>
-                <span className="text-gray-500">Local:</span>
+                <span className="text-muted-foreground">Local:</span>
                 <p className="font-medium">{order.location}</p>
               </div>
             </div>
@@ -138,7 +138,7 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
           {loading && (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
-              <span className="ml-2 text-gray-500">Carregando prestadores...</span>
+              <span className="ml-2 text-muted-foreground">Carregando prestadores...</span>
             </div>
           )}
 
@@ -165,7 +165,7 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
                 <TableBody>
                   {filteredProviders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Nenhum prestador disponível encontrado
                       </TableCell>
                     </TableRow>
@@ -193,7 +193,7 @@ export function AssignProviderModal({ order, isOpen, onClose, onProviderAssigned
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-gray-400" />
+                            <MapPin className="h-3 w-3 text-muted-foreground" />
                             <span className="text-sm">{provider.location || '—'}</span>
                           </div>
                         </TableCell>

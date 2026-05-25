@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
           <Shield className="h-8 w-8 text-orange-600" />
           <h1 className="text-3xl font-bold">Política de Privacidade</h1>
         </div>
-        <div className="flex items-center space-x-4 text-sm text-gray-600">
+        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
           <div className="flex items-center space-x-1">
             <FileText className="h-4 w-4" />
             <span>Versão {version}</span>

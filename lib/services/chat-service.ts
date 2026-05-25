@@ -2,6 +2,7 @@ import { getCollection, getDocument, getSubcollection } from "../firestore"
 import { orderBy, where } from "firebase/firestore"
 import type { OrderData } from "./firestore-analytics"
 import type { ChatConversation, ChatMessage } from "@/types/chat"
+import { normalizeMessageVisibility, normalizeThreadType } from "@/lib/chat/order-chat-schema"
 
 export interface LegacyChatMessage {
   id: string
@@ -24,6 +25,10 @@ export interface LegacyChatConversation {
   clientName: string
   clientEmail: string
   clientPhone?: string
+  providerId?: string
+  providerName?: string
+  providerPhone?: string
+  serviceOperationalStatus?: string
   status: "active" | "closed" | "archived" | "blocked"
   priority: "low" | "medium" | "high" | "urgent"
   createdAt: Date
@@ -43,7 +48,7 @@ export interface LegacyChatConversation {
   notes?: string
   messageCount?: number
   source: "legacy" | "new"
-  orderData?: OrderData | null
+  orderData?: OrderData | Record<string, any> | null
 }
 
 interface ConversationMonitoringRecord {
@@ -118,6 +123,32 @@ const normalizeStatus = (value: unknown): LegacyChatConversation["status"] => {
   }
 }
 
+function extractOrderProviderContext(order: Record<string, unknown>) {
+  const prestador =
+    typeof order.prestador === "object" && order.prestador !== null ? (order.prestador as Record<string, unknown>) : {}
+  const technician =
+    typeof order.assignedTechnician === "object" && order.assignedTechnician !== null
+      ? (order.assignedTechnician as Record<string, unknown>)
+      : {}
+
+  const providerIdRaw =
+    order.providerId ?? order.assignedProviderId ?? prestador.uid ?? prestador.id ?? technician.id ?? technician.uid
+  const providerId = typeof providerIdRaw === "string" && providerIdRaw.trim() ? providerIdRaw.trim() : undefined
+
+  const providerNameRaw =
+    order.providerName ?? prestador.nome ?? order.technicianName ?? technician.name ?? technician.nome
+  const providerName = typeof providerNameRaw === "string" && providerNameRaw.trim() ? providerNameRaw.trim() : undefined
+
+  const providerPhoneRaw =
+    order.providerPhone ?? prestador.telefone ?? order.technicianPhone ?? technician.phone ?? prestador.phone
+  const providerPhone = typeof providerPhoneRaw === "string" && providerPhoneRaw.trim() ? providerPhoneRaw.trim() : undefined
+
+  const serviceOperationalStatus =
+    typeof order.serviceOperationalStatus === "string" ? order.serviceOperationalStatus : undefined
+
+  return { providerId, providerName, providerPhone, serviceOperationalStatus }
+}
+
 const normalizeMonitoringRecord = (raw: Record<string, unknown>): ConversationMonitoringRecord => ({
   id: String(raw.id || ""),
   status: raw.status ? normalizeStatus(raw.status) : undefined,
@@ -150,10 +181,9 @@ export class ChatService {
     try {
       const conversations = await getCollection("chatConversations")
 
-      return conversations
+      return (conversations
         .filter((doc) => doc.clienteId || doc.clienteName || doc.orderId)
         .map((doc) => ({
-          id: doc.id,
           ...doc,
           createdAt: toDate(doc.createdAt, new Date()),
           updatedAt: toDate(doc.updatedAt, new Date()),
@@ -166,7 +196,7 @@ export class ChatService {
             : undefined,
           unreadCount: doc.unreadCount || { cliente: 0, prestador: 0, admin: 0 },
           source: "new" as const,
-        })) as ChatConversation[]
+        })) as unknown as ChatConversation[])
     } catch (error) {
       console.error("Erro ao buscar conversas do novo sistema:", error)
       return []
@@ -238,6 +268,8 @@ export class ChatService {
           const messages = await getSubcollection("orders", order.id, "messages", orderBy("timestamp", "asc"))
           const visibleMessages = messages.filter((message) => !message.isDeleted)
           const lastMessage = visibleMessages[visibleMessages.length - 1]
+          const orderRecord = order as Record<string, unknown>
+          const providerCtx = extractOrderProviderContext(orderRecord)
 
           conversations.push({
             id: `orders_${order.id}`,
@@ -247,6 +279,7 @@ export class ChatService {
             clientName: order.clientName || "Cliente",
             clientEmail: order.clientEmail || "",
             clientPhone: order.phone || "",
+            ...providerCtx,
             status: this.mapOrderStatusToChatStatus(order.status || "active"),
             priority: order.isEmergency ? "urgent" : "medium",
             createdAt: toDate(order.createdAt, new Date()),
@@ -278,6 +311,9 @@ export class ChatService {
             orderData: order,
           })
         } catch {
+          const orderRecord = order as Record<string, unknown>
+          const providerCtx = extractOrderProviderContext(orderRecord)
+
           conversations.push({
             id: `orders_${order.id}`,
             orderId: order.id,
@@ -286,6 +322,7 @@ export class ChatService {
             clientName: order.clientName || "Cliente",
             clientEmail: order.clientEmail || "",
             clientPhone: order.phone || "",
+            ...providerCtx,
             status: this.mapOrderStatusToChatStatus(order.status || "active"),
             priority: order.isEmergency ? "urgent" : "medium",
             createdAt: toDate(order.createdAt, new Date()),
@@ -455,7 +492,6 @@ export class ChatService {
         return newMessages
           .filter((doc) => !doc.isDeleted)
           .map((doc) => ({
-            id: doc.id,
             ...doc,
             timestamp: toDate(doc.timestamp, new Date()),
             readBy: doc.readBy || [],
@@ -522,6 +558,8 @@ export class ChatService {
           .map((doc) => {
             const imageUrl = doc.imageUrl ?? doc.image_url ?? doc.mediaUrl ?? doc.attachmentUrl ?? doc.photoUrl ?? doc.metadata?.imageUrl
             const documentUrl = doc.documentUrl ?? doc.fileUrl ?? doc.metadata?.documentUrl
+            const threadType = normalizeThreadType(doc.threadType ?? doc.channel)
+            const visibility = normalizeMessageVisibility(doc.visibility, threadType)
 
             return {
               id: doc.id,
@@ -534,7 +572,9 @@ export class ChatService {
               timestamp: toDate(doc.timestamp ?? doc.createdAt, new Date()),
               isRead: doc.isRead ?? false,
               readBy: doc.readBy || [],
-              metadata: { ...doc.metadata, imageUrl, documentUrl } || {},
+              metadata: { ...doc.metadata, imageUrl, documentUrl },
+              threadType,
+              visibility,
             }
           }) as ChatMessage[]
       }

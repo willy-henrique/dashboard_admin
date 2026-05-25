@@ -22,7 +22,7 @@ export function ProfileSettings() {
             <Badge variant="outline">Sem fonte real</Badge>
           </div>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Conecte a tela a um usuario autenticado real antes de exibir nome, email, funcao ou data de ingresso.
         </CardContent>
       </Card>
@@ -35,7 +35,7 @@ export function ProfileSettings() {
           </CardTitle>
           <CardDescription>Nenhum fluxo real de troca de senha esta ligado a esta aba.</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           O formulario local e os alertas de sucesso foram removidos para evitar falsa persistencia.
         </CardContent>
       </Card>
@@ -48,7 +48,7 @@ export function ProfileSettings() {
           </CardTitle>
           <CardDescription>Operacoes destrutivas permanecem bloqueadas sem backend real.</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           Exclusao de conta so deve ser habilitada quando existir confirmacao e persistencia reais.
         </CardContent>
       </Card>

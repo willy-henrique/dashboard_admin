@@ -7,8 +7,8 @@ export default function PainelLogisticoPage() {
   return (
     <main className="flex-1 space-y-6 p-6" style={{ backgroundColor: 'var(--background)', color: 'var(--foreground)' }}>
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Painel Logistico</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <h1 className="text-2xl font-bold text-foreground">Painel Logistico</h1>
+        <p className="text-sm text-muted-foreground">
           Os cards e agendamentos de exemplo foram removidos desta visao.
         </p>
       </div>
@@ -23,7 +23,7 @@ export default function PainelLogisticoPage() {
             Nenhuma fonte real de roteirizacao, despacho ou acompanhamento foi ligada a esta pagina.
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-slate-600">
+        <CardContent className="text-sm text-muted-foreground">
           A lista de agendamentos, enderecos, clientes e status locais foi removida para evitar exibicao de dados
           artificiais.
         </CardContent>

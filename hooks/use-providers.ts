@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { FirebaseProvidersService, FirebaseProvider } from '@/lib/services/firebase-providers'
 import { toIsoStringFromUnknown } from '@/lib/date-utils'
 import { isProviderRealtimeStatus } from '@/lib/providers/status'
+import { geocodeProviders } from '@/lib/geocoding'
 
 export interface Provider {
   id: string
@@ -49,6 +50,7 @@ export function useProviders(options?: {
   const [stats, setStats] = useState<ProvidersStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const geocodingRef = useRef(false)
 
   // Converter FirebaseProvider para Provider
   const convertFirebaseProvider = (fbProvider: FirebaseProvider): Provider => {
@@ -66,6 +68,29 @@ export function useProviders(options?: {
       especialidades: Array.isArray(fbProvider.especialidades) ? fbProvider.especialidades : [],
       avaliacao: Number(fbProvider.avaliacao || 0),
       totalServicos: Number(fbProvider.totalServicos || 0)
+    }
+  }
+
+  // Enriquece lista com coordenadas geocodificadas (background, sem bloquear render)
+  // Recebe FirebaseProvider[] porque só eles têm cep/cidade/logradouro
+  const enrichWithGeocode = async (fbList: FirebaseProvider[]) => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!apiKey || geocodingRef.current) return
+    const needsGeocode = fbList.some(p => p.localizacao.lat === 0 && p.localizacao.lng === 0)
+    if (!needsGeocode) return
+
+    geocodingRef.current = true
+    try {
+      const coords = await geocodeProviders(fbList, apiKey)
+      if (coords.size === 0) return
+      setProviders(prev => {
+        return prev.map(p => {
+          const c = coords.get(p.id)
+          return c ? { ...p, localizacao: c } : p
+        })
+      })
+    } finally {
+      geocodingRef.current = false
     }
   }
 
@@ -101,6 +126,7 @@ export function useProviders(options?: {
       const convertedProviders = firebaseProviders.map(convertFirebaseProvider)
       setProviders(convertedProviders)
       setStats(calculateStats(convertedProviders))
+      enrichWithGeocode(firebaseProviders)
     } catch (err) {
       setError('Erro ao carregar prestadores')
       console.error('Erro ao buscar prestadores:', err)
@@ -125,6 +151,7 @@ export function useProviders(options?: {
           setStats(calculateStats(convertedProviders))
           setLoading(false)
           setError(null)
+          enrichWithGeocode(filteredProviders)
         } catch (err) {
           setError('Erro ao carregar prestadores')
           console.error('Erro ao processar prestadores:', err)

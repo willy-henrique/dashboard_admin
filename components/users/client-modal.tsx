@@ -56,7 +56,7 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Ativo</Badge>
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800">Inativo</Badge>
+        return <Badge className="bg-muted text-muted-foreground">Inativo</Badge>
       case "blocked":
         return <Badge className="bg-red-100 text-red-800">Bloqueado</Badge>
       default:
@@ -84,11 +84,11 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Nome Completo</label>
+                  <label className="text-sm font-medium text-muted-foreground">Nome Completo</label>
                   <p className="text-sm">{toDisplayText(client.name)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">CPF</label>
+                  <label className="text-sm font-medium text-muted-foreground">CPF</label>
                   <p className="text-sm">{toDisplayText(client.cpf)}</p>
                 </div>
               </div>
@@ -97,15 +97,15 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
 
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-gray-400" />
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{toDisplayText(client.email)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-gray-400" />
+                  <Phone className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{toDisplayText(client.phone)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">{toDisplayText(client.address)}</span>
                 </div>
               </div>
@@ -121,34 +121,34 @@ export function ClientModal({ client, isOpen, onClose }: ClientModalProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Cadastrado em</p>
-                      <p className="text-sm text-gray-600">{formatDateSafe(client.createdAt)}</p>
+                      <p className="text-sm text-muted-foreground">{formatDateSafe(client.createdAt)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Último login</p>
-                      <p className="text-sm text-gray-600">{formatDateSafe(client.lastLogin)}</p>
+                      <p className="text-sm text-muted-foreground">{formatDateSafe(client.lastLogin)}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <ShoppingBag className="h-4 w-4 text-gray-400" />
+                    <ShoppingBag className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Total de Pedidos</p>
-                      <p className="text-sm text-gray-600">{client.totalOrders} pedidos</p>
+                      <p className="text-sm text-muted-foreground">{client.totalOrders} pedidos</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-400" />
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Total Gasto</p>
-                      <p className="text-sm text-gray-600">R$ {client.totalSpent.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">R$ {client.totalSpent.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>

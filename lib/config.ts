@@ -159,8 +159,8 @@ export const config: EnvironmentConfig = {
 
 // Função para verificar se uma integração está configurada
 export const isIntegrationConfigured = (integration: keyof EnvironmentConfig['integrations']): boolean => {
-  const integrationConfig = config.integrations[integration];
-  
+  const integrationConfig = config.integrations[integration] as unknown as Record<string, unknown>;
+
   switch (integration) {
     case 'bank':
       return !!(integrationConfig.apiKey || integrationConfig.clientId);
@@ -175,7 +175,7 @@ export const isIntegrationConfigured = (integration: keyof EnvironmentConfig['in
     case 'storage':
       return !!(integrationConfig.accessKey && integrationConfig.secretKey);
     case 'oauth':
-      return !!(integrationConfig.google.clientId || integrationConfig.microsoft.clientId);
+      return !!(config.integrations.oauth.google.clientId || config.integrations.oauth.microsoft.clientId);
     default:
       return false;
   }

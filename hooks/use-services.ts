@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, limit, getDocs, where, Timestamp, onSnapshot, doc, updateDoc, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, query, orderBy, limit, where, Timestamp, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { Servico } from '@/types'
 
@@ -27,212 +27,119 @@ interface ServiceFilters {
   responsavel?: string
 }
 
+// Mapeia status de orders para status de Servico
+const mapOrderStatus = (status: string): Servico['status'] => {
+  switch (status) {
+    case 'pending': return 'aguardando'
+    case 'in_progress': return 'em_andamento'
+    case 'completed': return 'concluido'
+    case 'cancelled': return 'cancelado'
+    default: return 'aguardando'
+  }
+}
+
+// Converte documento de orders para Servico
+const orderToServico = (id: string, d: any): Servico => ({
+  id,
+  protocolo: id.slice(-8).toUpperCase(),
+  empresa: d.empresa || '',
+  cnpj: d.cnpj || '',
+  clienteNome: d.clientName || d.cliente?.nome || '',
+  beneficiario: d.beneficiario || d.clientName || '',
+  telefone: d.clientPhone || d.telefone || '',
+  cidade: d.city || d.cidade || '',
+  logradouro: d.address || d.endereco?.rua || '',
+  bairro: d.bairro || '',
+  dataHora: d.createdAt?.toDate ? d.createdAt.toDate() : new Date(d.createdAt || 0),
+  status: mapOrderStatus(d.status || 'pending'),
+  prioridade: d.isEmergency ? 'urgente' : (d.prioridade || 'media') as Servico['prioridade'],
+  responsavel: d.assignedProviderName || d.responsavel || '',
+  placa: d.placa || '',
+  createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : new Date(),
+  updatedAt: d.updatedAt?.toDate ? d.updatedAt.toDate() : new Date(),
+})
+
 export function useServices(filters?: ServiceFilters) {
   const [services, setServices] = useState<Servico[]>([])
   const [stats, setStats] = useState<ServiceStats>({
-    total: 0,
-    pendentes: 0,
-    emAndamento: 0,
-    concluidos: 0,
-    orcamentos: 0,
-    agendados: 0,
-    aceitos: 0,
-    aguardando: 0,
-    naoEnviados: 0,
-    cancelados: 0
+    total: 0, pendentes: 0, emAndamento: 0, concluidos: 0, orcamentos: 0,
+    agendados: 0, aceitos: 0, aguardando: 0, naoEnviados: 0, cancelados: 0,
   })
-  
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchServices = async () => {
+  const calculateStats = (data: Servico[]) => {
+    const s: ServiceStats = {
+      total: data.length, pendentes: 0, emAndamento: 0, concluidos: 0, orcamentos: 0,
+      agendados: 0, aceitos: 0, aguardando: 0, naoEnviados: 0, cancelados: 0,
+    }
+    data.forEach(sv => {
+      if (sv.status === 'agendado') s.agendados++
+      else if (sv.status === 'aceito') s.aceitos++
+      else if (sv.status === 'aguardando') s.aguardando++
+      else if (sv.status === 'nao_enviado') s.naoEnviados++
+      else if (sv.status === 'em_andamento') s.emAndamento++
+      else if (sv.status === 'concluido') s.concluidos++
+      else if (sv.status === 'cancelado') s.cancelados++
+    })
+    s.pendentes = s.agendados + s.aceitos + s.aguardando + s.naoEnviados
+    s.orcamentos = s.agendados
+    setStats(s)
+  }
+
+  useEffect(() => {
     if (!db) {
       setError('Firebase não inicializado')
       setLoading(false)
       return
     }
 
-    try {
-      setLoading(true)
-      setError(null)
+    let q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(500))
 
-      // Construir query base
-      let q = query(collection(db, 'servicos'), orderBy('createdAt', 'desc'))
-
-      // Aplicar filtros se fornecidos
-      if (filters?.status) {
-        q = query(q, where('status', '==', filters.status))
-      }
-      if (filters?.prioridade) {
-        q = query(q, where('prioridade', '==', filters.prioridade))
-      }
-      if (filters?.cidade) {
-        q = query(q, where('cidade', '==', filters.cidade))
-      }
-      if (filters?.dataInicio) {
-        q = query(q, where('dataHora', '>=', Timestamp.fromDate(filters.dataInicio)))
-      }
-      if (filters?.dataFim) {
-        q = query(q, where('dataHora', '<=', Timestamp.fromDate(filters.dataFim)))
-      }
-      if (filters?.responsavel) {
-        q = query(q, where('responsavel', '==', filters.responsavel))
-      }
-
-      const snapshot = await getDocs(q)
-      const servicesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-        dataHora: doc.data().dataHora?.toDate() || new Date(),
-      })) as Servico[]
-
-      setServices(servicesData)
-      calculateStats(servicesData)
-
-    } catch (err) {
-      console.error('Erro ao buscar serviços:', err)
-      setError('Erro ao carregar serviços')
-    } finally {
-      setLoading(false)
+    if (filters?.dataInicio) {
+      q = query(q, where('createdAt', '>=', Timestamp.fromDate(filters.dataInicio)))
     }
-  }
-
-  const calculateStats = (servicesData: Servico[]) => {
-    const newStats: ServiceStats = {
-      total: servicesData.length,
-      pendentes: 0,
-      emAndamento: 0,
-      concluidos: 0,
-      orcamentos: 0,
-      agendados: 0,
-      aceitos: 0,
-      aguardando: 0,
-      naoEnviados: 0,
-      cancelados: 0
+    if (filters?.dataFim) {
+      q = query(q, where('createdAt', '<=', Timestamp.fromDate(filters.dataFim)))
     }
 
-    servicesData.forEach(service => {
-      switch (service.status) {
-        case 'agendado':
-          newStats.agendados++
-          break
-        case 'aceito':
-          newStats.aceitos++
-          break
-        case 'aguardando':
-          newStats.aguardando++
-          break
-        case 'nao_enviado':
-          newStats.naoEnviados++
-          break
-        case 'em_andamento':
-          newStats.emAndamento++
-          break
-        case 'concluido':
-          newStats.concluidos++
-          break
-        case 'cancelado':
-          newStats.cancelados++
-          break
-      }
-    })
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        let data = snap.docs.map(d => orderToServico(d.id, d.data()))
 
-    // Calcular pendentes (agendado + aceito + aguardando + nao_enviado)
-    newStats.pendentes = newStats.agendados + newStats.aceitos + newStats.aguardando + newStats.naoEnviados
+        // Filtros client-side (campos sem índice)
+        if (filters?.status) data = data.filter(s => s.status === filters.status)
+        if (filters?.cidade) data = data.filter(s => s.cidade?.toLowerCase().includes(filters.cidade!.toLowerCase()))
+        if (filters?.responsavel) data = data.filter(s => s.responsavel === filters.responsavel)
 
-    // Orçamentos são serviços com status específico ou campo separado
-    // Por enquanto, vamos considerar como serviços agendados
-    newStats.orcamentos = newStats.agendados
-
-    setStats(newStats)
-  }
-
-  const subscribeToServices = () => {
-    if (!db) return
-
-    const q = query(collection(db, 'servicos'), orderBy('createdAt', 'desc'))
-    
-    return onSnapshot(q, 
-      (snapshot) => {
-        const servicesData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date(),
-          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-          dataHora: doc.data().dataHora?.toDate() || new Date(),
-        })) as Servico[]
-
-        setServices(servicesData)
-        calculateStats(servicesData)
+        setServices(data)
+        calculateStats(data)
         setLoading(false)
+        setError(null)
       },
-      (error) => {
-        console.error('Erro ao escutar serviços:', error)
-        setError('Erro ao carregar serviços em tempo real')
+      (err) => {
+        console.error('Erro ao escutar pedidos:', err)
+        setError('Erro ao carregar serviços')
         setLoading(false)
       }
     )
-  }
 
-  useEffect(() => {
-    const unsubscribe = subscribeToServices()
-    return () => {
-      if (unsubscribe) unsubscribe()
-    }
-  }, [filters])
+    return () => unsub()
+  }, [filters?.status, filters?.cidade, filters?.responsavel, filters?.dataInicio?.getTime(), filters?.dataFim?.getTime()])
 
   const updateServiceStatus = async (serviceId: string, newStatus: string) => {
     if (!db) return
-
-    try {
-      const serviceRef = doc(db, 'servicos', serviceId)
-      await updateDoc(serviceRef, {
-        status: newStatus,
-        updatedAt: serverTimestamp()
-      })
-    } catch (error) {
-      console.error('Erro ao atualizar status do serviço:', error)
-      throw error
-    }
+    const orderStatus = newStatus === 'em_andamento' ? 'in_progress'
+      : newStatus === 'concluido' ? 'completed'
+      : newStatus === 'cancelado' ? 'cancelled'
+      : 'pending'
+    await updateDoc(doc(db, 'orders', serviceId), { status: orderStatus, updatedAt: serverTimestamp() })
   }
 
-  const createService = async (serviceData: Omit<Servico, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (!db) return
+  // createService e deleteService não se aplicam a orders existentes — no-op seguro
+  const createService = async (_data: any) => undefined
+  const deleteService = async (_id: string) => undefined
 
-    try {
-      const docRef = await addDoc(collection(db, 'servicos'), {
-        ...serviceData,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      })
-      return docRef.id
-    } catch (error) {
-      console.error('Erro ao criar serviço:', error)
-      throw error
-    }
-  }
-
-  const deleteService = async (serviceId: string) => {
-    if (!db) return
-
-    try {
-      await deleteDoc(doc(db, 'servicos', serviceId))
-    } catch (error) {
-      console.error('Erro ao deletar serviço:', error)
-      throw error
-    }
-  }
-
-  return {
-    services,
-    stats,
-    loading,
-    error,
-    refetch: fetchServices,
-    updateServiceStatus,
-    createService,
-    deleteService
-  }
+  return { services, stats, loading, error, refetch: () => {}, updateServiceStatus, createService, deleteService }
 }

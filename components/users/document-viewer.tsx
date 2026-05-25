@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,11 +19,12 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCw,
-  Maximize2
+  Maximize2,
+  Loader2,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { downloadDocument } from "@/lib/storage"
+import { downloadDocument, resolveStorageDownloadUrl } from "@/lib/storage"
 import { StorageDocument } from "@/types/verification"
 import { cn } from "@/lib/utils"
 
@@ -42,10 +43,47 @@ interface DocumentModalProps {
   onDownload?: (document: StorageDocument) => void
 }
 
+function useResolvedDocumentUrl(document: StorageDocument | null) {
+  const [resolved, setResolved] = useState<string | null>(null)
+  const [resolving, setResolving] = useState(false)
+
+  useEffect(() => {
+    if (!document) {
+      setResolved(null)
+      return
+    }
+    if (document.url) {
+      setResolved(document.url)
+      return
+    }
+    if (!document.path) {
+      setResolved(null)
+      return
+    }
+    let cancelled = false
+    setResolving(true)
+    resolveStorageDownloadUrl(document.path)
+      .then((u) => {
+        if (!cancelled) setResolved(u)
+      })
+      .finally(() => {
+        if (!cancelled) setResolving(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [document?.id, document?.path, document?.url])
+
+  const displayUrl = useMemo(() => document?.url || resolved || null, [document?.url, resolved])
+
+  return { displayUrl, resolving }
+}
+
 const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalProps) => {
   const [zoom, setZoom] = useState(100)
   const [rotation, setRotation] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+  const { displayUrl, resolving } = useResolvedDocumentUrl(document)
 
   if (!document) return null
 
@@ -61,15 +99,14 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
           documentName: document.name
         })
         // Se a URL não funcionar, tenta abrir em nova aba
-        if (document.url) {
-          window.open(document.url, '_blank')
+        if (displayUrl) {
+          window.open(displayUrl, '_blank')
         }
       } finally {
         setIsLoading(false)
       }
-    } else if (document.url) {
-      // Fallback: abrir em nova aba se não houver handler
-      window.open(document.url, '_blank')
+    } else if (displayUrl) {
+      window.open(displayUrl, '_blank')
     }
   }
 
@@ -83,24 +120,24 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
       <DialogContent 
         overlayClassName="z-[10000]"
         className={cn(
-          "!left-[50%] !top-[50%] !translate-x-[-50%] !translate-y-[-50%]",
-          "!flex flex-col gap-0 p-0",
+          "left-[50%]! top-[50%]! translate-x-[-50%]! translate-y-[-50%]!",
+          "flex! flex-col gap-0 p-0",
           "w-[calc(100vw-1rem)] max-w-[calc(100vw-1rem)] sm:w-full sm:max-w-4xl",
           "max-h-[92dvh] sm:max-h-[88vh] overflow-hidden",
-          "z-[10001] rounded-xl sm:rounded-2xl border shadow-2xl bg-background",
+          "z-10001 rounded-xl sm:rounded-2xl border shadow-2xl bg-background",
           "mx-2 sm:mx-0"
         )}
       >
-        <DialogHeader className="flex-shrink-0 px-4 pt-4 sm:px-6 sm:pt-6 pb-2">
+        <DialogHeader className="shrink-0 px-4 pt-4 sm:px-6 sm:pt-6 pb-2">
           <DialogTitle className="flex items-center gap-2 text-sm sm:text-base truncate pr-12">
-            <FileText className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
             <span className="truncate">{document.name}</span>
           </DialogTitle>
         </DialogHeader>
         
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
           {/* Controles */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 bg-gray-50 p-2 sm:p-3 rounded-lg">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 bg-muted/50 p-2 sm:p-3 rounded-lg">
             <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
               <Button
                 variant="outline"
@@ -147,17 +184,18 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 disabled={isLoading}
                 className="flex-1 sm:flex-none text-xs sm:text-sm"
               >
-                <Download className="h-4 w-4 sm:mr-2 flex-shrink-0" />
+                <Download className="h-4 w-4 sm:mr-2 shrink-0" />
                 <span className="hidden sm:inline">{isLoading ? 'Baixando...' : 'Baixar'}</span>
                 <span className="sm:hidden">{isLoading ? '...' : 'Baixar'}</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(document.url, '_blank')}
+                disabled={!displayUrl}
+                onClick={() => displayUrl && window.open(displayUrl, '_blank')}
                 className="flex-1 sm:flex-none text-xs sm:text-sm"
               >
-                <Maximize2 className="h-4 w-4 sm:mr-2 flex-shrink-0" />
+                <Maximize2 className="h-4 w-4 sm:mr-2 shrink-0" />
                 <span className="hidden xs:inline">Abrir em Nova Aba</span>
                 <span className="xs:hidden">Abrir</span>
               </Button>
@@ -165,10 +203,15 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
           </div>
 
           {/* Visualização do documento */}
-          <div className="flex justify-center items-center bg-gray-100 rounded-lg overflow-auto min-h-[160px] sm:min-h-[250px] md:min-h-[350px] max-h-[50dvh] sm:max-h-[55dvh] w-full">
-            {document.type === 'image' && document.url ? (
+          <div className="flex justify-center items-center bg-muted rounded-lg overflow-auto min-h-40 sm:min-h-64 md:min-h-88 max-h-[50dvh] sm:max-h-[55dvh] w-full">
+            {resolving ? (
+              <div className="flex flex-col items-center gap-3 p-8">
+                <Loader2 className="h-10 w-10 animate-spin text-orange-500" />
+                <p className="text-sm text-muted-foreground">Obtendo link do Firebase Storage…</p>
+              </div>
+            ) : document.type === 'image' && displayUrl ? (
               <img
-                src={document.url}
+                src={displayUrl}
                 alt={document.name}
                 className="max-w-full max-h-full object-contain transition-transform duration-200"
                 style={{
@@ -179,7 +222,7 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                   const parent = target.parentElement
                   
                   console.error('❌ Erro ao carregar imagem:', {
-                    url: document.url,
+                    url: displayUrl,
                     name: document.name
                   })
                   
@@ -192,9 +235,9 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                           </svg>
                         </div>
                         <p class="text-orange-600 font-medium mb-2">Não foi possível carregar a imagem</p>
-                        <p class="text-sm text-gray-500 mb-4">O arquivo pode ter sido removido ou não está mais acessível</p>
+                        <p class="text-sm text-muted-foreground mb-4">O arquivo pode ter sido removido ou não está mais acessível</p>
                         <div class="flex gap-2 justify-center">
-                          <button onclick="window.open('${document.url}', '_blank')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                          <button onclick="window.open('${displayUrl}', '_blank')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
                             Tentar abrir em nova aba
                           </button>
                         </div>
@@ -204,24 +247,27 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
                 }}
                 onLoad={() => {}}
               />
-            ) : !document.url ? (
+            ) : !displayUrl ? (
               <div className="text-center p-8 w-full">
                 <AlertCircle className="h-16 w-16 mx-auto text-orange-400 mb-4" />
                 <p className="text-orange-600 font-medium mb-2">URL do documento não disponível</p>
-                <p className="text-sm text-gray-500">O documento pode ter sido removido ou não está mais acessível no Storage</p>
+                <p className="text-sm text-muted-foreground">
+                  Não foi possível gerar o link de download. Verifique permissões do Storage ou se o arquivo existe em{" "}
+                  <code className="text-xs break-all">{document.path || "—"}</code>
+                </p>
               </div>
             ) : (
               <div className="text-center p-8">
-                <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-4">Visualização não disponível para este tipo de arquivo</p>
-                <Button onClick={handleDownload} disabled={isLoading || !document.url}>
+                <FileText className="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground mb-4">Visualização não disponível para este tipo de arquivo</p>
+                <Button onClick={handleDownload} disabled={isLoading || !displayUrl}>
                   <Download className="h-4 w-4 mr-2" />
                   {isLoading ? 'Baixando...' : 'Baixar Arquivo'}
                 </Button>
-                {document.url && (
+                {displayUrl && (
                   <Button 
                     variant="outline" 
-                    onClick={() => window.open(document.url, '_blank')}
+                    onClick={() => window.open(displayUrl, '_blank')}
                     className="ml-2"
                   >
                     Abrir em Nova Aba
@@ -234,19 +280,19 @@ const DocumentModal = ({ document, isOpen, onClose, onDownload }: DocumentModalP
           {/* Informações do documento */}
           <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
             <div>
-              <p className="font-medium text-gray-500">Tamanho</p>
+              <p className="font-medium text-muted-foreground">Tamanho</p>
               <p>{formatFileSize(document.size)}</p>
             </div>
             <div>
-              <p className="font-medium text-gray-500">Tipo</p>
+              <p className="font-medium text-muted-foreground">Tipo</p>
               <p className="capitalize">{document.type}</p>
             </div>
             <div>
-              <p className="font-medium text-gray-500">Enviado</p>
+              <p className="font-medium text-muted-foreground">Enviado</p>
               <p>{formatDistanceToNow(document.uploadedAt, { addSuffix: true, locale: ptBR })}</p>
             </div>
             <div>
-              <p className="font-medium text-gray-500">Nome do arquivo</p>
+              <p className="font-medium text-muted-foreground">Nome do arquivo</p>
               <p className="truncate" title={document.name}>{document.name}</p>
             </div>
           </div>
@@ -282,8 +328,81 @@ const getDocumentTypeColor = (type: string) => {
     case 'pdf':
       return 'bg-red-100 text-red-800'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-muted text-muted-foreground'
   }
+}
+
+function DocumentGridPreview({
+  document,
+  onView,
+}: {
+  document: StorageDocument
+  onView: () => void
+}) {
+  const { displayUrl, resolving } = useResolvedDocumentUrl(document)
+
+  return (
+    <div className="relative">
+      {resolving ? (
+        <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+          <p className="text-[10px] text-muted-foreground px-2 text-center">Carregando prévia…</p>
+        </div>
+      ) : document.type === 'image' && displayUrl ? (
+        <div
+          className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer"
+          onClick={onView}
+        >
+          <img
+            src={displayUrl}
+            alt={document.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              const parent = target.parentElement
+              console.error('❌ Erro ao carregar preview da imagem:', {
+                url: displayUrl,
+                name: document.name,
+              })
+              if (parent) {
+                parent.innerHTML = `
+                  <div class="w-full h-full flex items-center justify-center bg-orange-50">
+                    <div class="text-center p-2">
+                      <p class="text-xs text-orange-600 font-medium">Imagem não disponível</p>
+                      <p class="text-xs text-muted-foreground">Clique para ver detalhes</p>
+                    </div>
+                  </div>
+                `
+              }
+            }}
+          />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center pointer-events-none">
+            <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          </div>
+        </div>
+      ) : !displayUrl ? (
+        <div
+          className="aspect-video bg-orange-50 rounded-lg flex items-center justify-center cursor-pointer"
+          onClick={onView}
+        >
+          <div className="text-center p-4">
+            <AlertCircle className="h-10 w-10 mx-auto text-orange-400 mb-2" />
+            <p className="text-xs text-orange-600 font-medium">Toque para tentar abrir</p>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="aspect-video bg-muted rounded-lg flex items-center justify-center cursor-pointer"
+          onClick={onView}
+        >
+          <div className="text-center">
+            {getDocumentTypeIcon(document.type)}
+            <p className="text-xs text-muted-foreground mt-2">Clique para visualizar</p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export const DocumentViewer = ({ 
@@ -302,24 +421,27 @@ export const DocumentViewer = ({
   }
 
   const handleDownloadDocument = async (document: StorageDocument) => {
-    if (!document.url) {
+    let url = document.url
+    if (!url && document.path) {
+      url = (await resolveStorageDownloadUrl(document.path)) || ''
+    }
+    if (!url) {
       console.error('❌ URL do documento não disponível:', document.name)
       return
     }
-    
+
     try {
-      await downloadDocument(document.url, document.name)
+      await downloadDocument(url, document.name)
     } catch (error: any) {
       console.error('❌ Erro ao baixar documento:', {
         code: error?.code,
         message: error?.message,
         documentName: document.name,
-        url: document.url
+        url,
       })
-      
-      // Fallback: tentar abrir em nova aba se o download falhar
-      if (document.url) {
-        window.open(document.url, '_blank')
+
+      if (url) {
+        window.open(url, '_blank')
       }
     }
   }
@@ -333,9 +455,9 @@ export const DocumentViewer = ({
     return (
       <Card className="border-dashed">
         <CardContent className="text-center py-8">
-          <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">Nenhum documento encontrado</p>
-          <p className="text-sm text-gray-500">Este tipo de documento ainda não foi enviado</p>
+          <FileText className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground">Nenhum documento encontrado</p>
+          <p className="text-sm text-muted-foreground">Este tipo de documento ainda não foi enviado</p>
         </CardContent>
       </Card>
     )
@@ -348,7 +470,7 @@ export const DocumentViewer = ({
           {getDocumentTypeIcon(documentType)}
           {documentType.replace('_', ' ')}
         </h3>
-        <Badge variant="outline" className="flex items-center gap-1 flex-shrink-0 w-fit">
+        <Badge variant="outline" className="flex items-center gap-1 shrink-0 w-fit">
           {documents.length} {documents.length === 1 ? 'documento' : 'documentos'}
         </Badge>
       </div>
@@ -358,60 +480,10 @@ export const DocumentViewer = ({
           <Card key={document.id} className="group hover:shadow-md transition-shadow min-w-0 overflow-hidden">
             <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
               {/* Preview do documento */}
-              <div className="relative">
-                {document.type === 'image' && document.url ? (
-                  <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
-                       onClick={() => handleViewDocument(document)}>
-                    <img
-                      src={document.url}
-                      alt={document.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        const parent = target.parentElement
-                        
-                        console.error('❌ Erro ao carregar preview da imagem:', {
-                          url: document.url,
-                          name: document.name
-                        })
-                        
-                        if (parent) {
-                          parent.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center bg-orange-50">
-                              <div class="text-center p-2">
-                                <svg class="w-8 h-8 mx-auto mb-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                                </svg>
-                                <p class="text-xs text-orange-600 font-medium">Imagem não disponível</p>
-                                <p class="text-xs text-gray-500">Clique para ver detalhes</p>
-                              </div>
-                            </div>
-                          `
-                        }
-                      }}
-                      onLoad={() => {}}
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                      <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                    </div>
-                  </div>
-                ) : !document.url ? (
-                  <div className="aspect-video bg-orange-50 rounded-lg flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <AlertCircle className="h-10 w-10 mx-auto text-orange-400 mb-2" />
-                      <p className="text-xs text-orange-600 font-medium">URL não disponível</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer"
-                       onClick={() => handleViewDocument(document)}>
-                    <div className="text-center">
-                      {getDocumentTypeIcon(document.type)}
-                      <p className="text-xs text-gray-600 mt-2">Clique para visualizar</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <DocumentGridPreview
+                document={document}
+                onView={() => handleViewDocument(document)}
+              />
 
               {/* Informações do documento */}
               <div className="space-y-2">
@@ -424,7 +496,7 @@ export const DocumentViewer = ({
                   </Badge>
                 </div>
                 
-                <div className="flex items-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {formatDistanceToNow(document.uploadedAt, { addSuffix: true, locale: ptBR })}

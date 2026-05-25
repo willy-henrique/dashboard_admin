@@ -72,8 +72,8 @@ export function RevenueControlDashboard() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          <span className="ml-3 text-gray-600">Carregando dados financeiros...</span>
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <span className="ml-3 text-muted-foreground">Carregando dados financeiros...</span>
         </div>
       </div>
     )
@@ -93,11 +93,11 @@ export function RevenueControlDashboard() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Controle de Recebimentos</h2>
-          <p className="text-sm text-gray-500">Dados reais do Pagar.me</p>
+          <h2 className="text-2xl font-bold text-foreground">Controle de Recebimentos</h2>
+          <p className="text-sm text-muted-foreground">Dados reais do Pagar.me</p>
         </div>
         <div className="flex gap-2">
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-muted rounded-lg p-1">
             <Button variant={period === "week" ? "default" : "ghost"} size="sm" onClick={() => setPeriod("week")}>
               7 dias
             </Button>
@@ -119,7 +119,7 @@ export function RevenueControlDashboard() {
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3 text-amber-900">
-              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <div className="space-y-1">
                 <p className="font-semibold">Aviso da integracao financeira</p>
                 {warnings.map((warning) => (
@@ -137,7 +137,7 @@ export function RevenueControlDashboard() {
         <Card className="border-l-4 border-l-green-500">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Saldo Disponivel</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo Disponivel</CardTitle>
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <Wallet className="h-5 w-5 text-green-600" />
               </div>
@@ -147,14 +147,14 @@ export function RevenueControlDashboard() {
             <div className="text-3xl font-bold text-green-700">
               {PagarmeService.formatCurrency(PagarmeService.fromCents(availableBalance))}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Pode sacar agora</p>
+            <p className="text-xs text-muted-foreground mt-1">Pode sacar agora</p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">A Receber</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">A Receber</CardTitle>
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-blue-600" />
               </div>
@@ -164,14 +164,14 @@ export function RevenueControlDashboard() {
             <div className="text-3xl font-bold text-blue-700">
               {PagarmeService.formatCurrency(PagarmeService.fromCents(nextReceivable))}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Proximos dias</p>
+            <p className="text-xs text-muted-foreground mt-1">Proximos dias</p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Recebido ({periodText})</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Recebido ({periodText})</CardTitle>
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                 <DollarSign className="h-5 w-5 text-purple-600" />
               </div>
@@ -181,24 +181,24 @@ export function RevenueControlDashboard() {
             <div className="text-3xl font-bold text-purple-700">
               {PagarmeService.formatCurrency(PagarmeService.fromCents(totalReceived))}
             </div>
-            <p className="text-xs text-gray-500 mt-1">{paidOrders} pagamentos aprovados</p>
+            <p className="text-xs text-muted-foreground mt-1">{paidOrders} pagamentos aprovados</p>
           </CardContent>
         </Card>
 
         <Card className="border-l-4 border-l-gray-500">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">Ja Transferido</CardTitle>
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <TrendingDown className="h-5 w-5 text-gray-600" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Ja Transferido</CardTitle>
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                <TrendingDown className="h-5 w-5 text-muted-foreground" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-700">
+            <div className="text-3xl font-bold text-foreground">
               {PagarmeService.formatCurrency(PagarmeService.fromCents(totalTransferred))}
             </div>
-            <p className="text-xs text-gray-500 mt-1">Total historico</p>
+            <p className="text-xs text-muted-foreground mt-1">Total historico</p>
           </CardContent>
         </Card>
       </div>
@@ -217,8 +217,8 @@ export function RevenueControlDashboard() {
                     <CreditCard className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">PIX</p>
-                    <p className="text-sm text-gray-500">{analytics?.payment_methods?.pix || 0} transacoes</p>
+                    <p className="font-medium text-foreground">PIX</p>
+                    <p className="text-sm text-muted-foreground">{analytics?.payment_methods?.pix || 0} transacoes</p>
                   </div>
                 </div>
                 <Badge className="bg-blue-100 text-blue-800">{analytics?.payment_methods?.pix || 0}</Badge>
@@ -230,8 +230,8 @@ export function RevenueControlDashboard() {
                     <CreditCard className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Cartao de Credito</p>
-                    <p className="text-sm text-gray-500">{analytics?.payment_methods?.credit_card || 0} transacoes</p>
+                    <p className="font-medium text-foreground">Cartao de Credito</p>
+                    <p className="text-sm text-muted-foreground">{analytics?.payment_methods?.credit_card || 0} transacoes</p>
                   </div>
                 </div>
                 <Badge className="bg-green-100 text-green-800">{analytics?.payment_methods?.credit_card || 0}</Badge>
@@ -243,8 +243,8 @@ export function RevenueControlDashboard() {
                     <CreditCard className="h-5 w-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Cartao de Debito</p>
-                    <p className="text-sm text-gray-500">{analytics?.payment_methods?.debit_card || 0} transacoes</p>
+                    <p className="font-medium text-foreground">Cartao de Debito</p>
+                    <p className="text-sm text-muted-foreground">{analytics?.payment_methods?.debit_card || 0} transacoes</p>
                   </div>
                 </div>
                 <Badge className="bg-orange-100 text-orange-800">{analytics?.payment_methods?.debit_card || 0}</Badge>
@@ -256,8 +256,8 @@ export function RevenueControlDashboard() {
                     <Calendar className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Boleto</p>
-                    <p className="text-sm text-gray-500">{analytics?.payment_methods?.boleto || 0} transacoes</p>
+                    <p className="font-medium text-foreground">Boleto</p>
+                    <p className="text-sm text-muted-foreground">{analytics?.payment_methods?.boleto || 0} transacoes</p>
                   </div>
                 </div>
                 <Badge className="bg-purple-100 text-purple-800">{analytics?.payment_methods?.boleto || 0}</Badge>
@@ -275,13 +275,13 @@ export function RevenueControlDashboard() {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Taxa de Aprovacao</span>
+                  <span className="text-sm font-medium text-foreground">Taxa de Aprovacao</span>
                   <span className="text-2xl font-bold text-green-600">{successRate.toFixed(1)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${successRate}%` }} />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{paidOrders} de {totalOrders} pagamentos aprovados</p>
+                <p className="text-xs text-muted-foreground mt-1">{paidOrders} de {totalOrders} pagamentos aprovados</p>
               </div>
 
               <div className="space-y-3">
@@ -320,7 +320,7 @@ export function RevenueControlDashboard() {
         </CardHeader>
         <CardContent>
           {charges.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-muted-foreground">
               <p>Nenhum recebimento real encontrado</p>
               <p className="text-sm">{warnings[0] || "Os pagamentos aprovados aparecerao aqui quando a fonte financeira retornar dados reais."}</p>
             </div>
@@ -329,15 +329,15 @@ export function RevenueControlDashboard() {
               {charges.slice(0, 5).map((charge) => (
                 <div
                   key={charge.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                       <DollarSign className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{charge.customer.name}</p>
-                      <p className="text-sm text-gray-500">
+                      <p className="font-medium text-foreground">{charge.customer.name}</p>
+                      <p className="text-sm text-muted-foreground">
                         {new Date(charge.created_at).toLocaleDateString("pt-BR")} as {new Date(charge.created_at).toLocaleTimeString("pt-BR")}
                       </p>
                     </div>

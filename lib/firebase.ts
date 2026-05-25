@@ -17,8 +17,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app: FirebaseApp;
-let db: Firestore;
+let app!: FirebaseApp;
+let db!: Firestore;
 let auth: Auth;
 let storage: FirebaseStorage | null = null;
 let analytics: Analytics | null = null;

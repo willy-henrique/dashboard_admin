@@ -19,6 +19,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useMasterAuth } from "@/hooks/use-master-auth"
+import type { MasterUser } from "@/lib/services/admin-master-service"
 import { Logo } from "@/components/logo"
 import {
   Users,
@@ -352,13 +353,13 @@ export function MasterDashboard() {
             <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
               <Logo className="h-6 sm:h-8" showText={true} />
               <div className="flex items-center space-x-1 sm:space-x-2">
-                <Shield className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" style={{ color: '#F7931E' }} />
+                <Shield className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" style={{ color: '#F7931E' }} />
                 <span className="text-sm sm:text-lg font-semibold truncate" style={{ color: '#203864' }}>
                   Área Master
                 </span>
               </div>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+            <div className="flex items-center space-x-2 sm:space-x-4 shrink-0">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium truncate max-w-32" style={{ color: '#1F2B3D' }}>
                   {masterUser?.nome}
@@ -402,7 +403,7 @@ export function MasterDashboard() {
                 Adicionar Usuário
               </Button>
             </DialogTrigger>
-            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden !bg-white shadow-2xl border-2 border-gray-200 rounded-xl">
+            <DialogContent className="w-[95vw] max-w-md sm:max-w-lg max-h-[90vh] overflow-hidden bg-card shadow-2xl border-2 border-border rounded-xl">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl" style={{ color: '#1F2B3D' }}>Adicionar Novo Usuário</DialogTitle>
               </DialogHeader>
@@ -472,7 +473,7 @@ export function MasterDashboard() {
                             permissoes: template.permissions
                           }))
                         }}
-                        className="flex flex-col items-start p-3 rounded-md border text-left focus:outline-none focus:ring-2 transition-colors hover:opacity-90 bg-white border-[#E5E7EB] hover:border-[#F7931E]"
+                        className="flex flex-col items-start p-3 rounded-md border text-left focus:outline-none focus:ring-2 transition-colors hover:opacity-90 bg-card border-border hover:border-primary"
                       >
                         <span className="font-medium text-sm" style={{ color: '#1F2B3D' }}>
                           {template.name}
@@ -527,7 +528,7 @@ export function MasterDashboard() {
                             }
                           }))
                         }}
-                        className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
+                        className="text-xs px-2 py-1 rounded border hover:bg-muted/50"
                         style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                       >
                         Todas
@@ -548,7 +549,7 @@ export function MasterDashboard() {
                             }
                           }))
                         }}
-                        className="text-xs px-2 py-1 rounded border hover:bg-gray-50"
+                        className="text-xs px-2 py-1 rounded border hover:bg-muted/50"
                         style={{ borderColor: '#E5E7EB', color: '#1F2B3D' }}
                       >
                         Nenhuma
@@ -571,7 +572,7 @@ export function MasterDashboard() {
                           <span className="text-sm font-medium" style={{ color: '#1F2B3D' }}>{label}</span>
                           <span
                             aria-hidden
-                            className={`inline-block h-5 w-9 rounded-full transition-colors flex-shrink-0 ${
+                            className={`inline-block h-5 w-9 rounded-full transition-colors shrink-0 ${
                               checked ? 'bg-[#F7931E]' : 'bg-[#E5E7EB]'
                             }`}
                           >
@@ -586,7 +587,7 @@ export function MasterDashboard() {
                     })}
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4 border-t border-border">
                   <Button 
                     variant="outline" 
                     onClick={() => {
@@ -623,13 +624,13 @@ export function MasterDashboard() {
               <CardHeader style={{ background: '#FFFFFF', borderBottom: '1px solid #E5E7EB' }}>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#FEECDC' }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#FEECDC' }}>
                       <User className="h-5 w-5" style={{ color: '#F7931E' }} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <CardTitle className="text-base sm:text-lg truncate" style={{ color: '#1F2B3D' }}>{user.nome}</CardTitle>
                       <div className="flex items-center space-x-1 text-xs sm:text-sm" style={{ color: '#6B7280' }}>
-                        <Mail className="h-3 w-3 flex-shrink-0" />
+                        <Mail className="h-3 w-3 shrink-0" />
                         <span className="truncate">{user.email}</span>
                       </div>
                     </div>
@@ -693,10 +694,10 @@ export function MasterDashboard() {
                               <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="!bg-white shadow-2xl border-2 border-gray-200 rounded-xl">
+                          <AlertDialogContent className="bg-card shadow-2xl border-2 border-border rounded-xl">
                             <AlertDialogHeader>
-                              <AlertDialogTitle className="text-gray-900">Remover usuário?</AlertDialogTitle>
-                              <AlertDialogDescription className="text-gray-600">
+                              <AlertDialogTitle className="text-foreground">Remover usuário?</AlertDialogTitle>
+                              <AlertDialogDescription className="text-muted-foreground">
                                 Esta ação não pode ser desfeita. O usuário será removido da lista de permissões da Área Master.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -757,12 +758,12 @@ export function MasterDashboard() {
                         aria-pressed={isChecked}
                       >
                         <div className="flex items-center space-x-2 min-w-0 flex-1">
-                          <Icon className="h-4 w-4 flex-shrink-0" style={{ color: '#6B7280' }} />
+                          <Icon className="h-4 w-4 shrink-0" style={{ color: '#6B7280' }} />
                           <span className="text-sm font-medium truncate" style={{ color: '#1F2B3D' }}>{label}</span>
                         </div>
                         <span
                           aria-hidden
-                          className={`inline-block h-5 w-9 rounded-full transition-colors flex-shrink-0 ${
+                          className={`inline-block h-5 w-9 rounded-full transition-colors shrink-0 ${
                             isChecked ? 'bg-[#F7931E]' : 'bg-[#E5E7EB]'
                           }`}
                         >
@@ -808,9 +809,9 @@ export function MasterDashboard() {
 
         {/* Modal de Alteração de Senha */}
         <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
-          <DialogContent className="!bg-white shadow-2xl border-2 border-gray-200 rounded-xl w-full max-w-md sm:max-w-md">
+          <DialogContent className="bg-card shadow-2xl border-2 border-border rounded-xl w-full max-w-md sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2 text-gray-900">
+              <DialogTitle className="flex items-center space-x-2 text-foreground">
                 <Key className="h-5 w-5" style={{ color: '#F7931E' }} />
                 <span>Alterar Senha</span>
               </DialogTitle>
@@ -818,40 +819,40 @@ export function MasterDashboard() {
             
             {selectedUser && (
               <div className="space-y-4">
-                <div className="p-4 rounded-lg border-2 bg-gray-50 border-gray-200">
+                <div className="p-4 rounded-lg border-2 bg-muted/50 border-border">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-amber-100">
                       <User className="h-5 w-5 text-amber-600" />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm text-gray-900">{selectedUser.nome}</p>
-                      <p className="text-xs font-medium text-gray-500">{selectedUser.email}</p>
+                      <p className="font-semibold text-sm text-foreground">{selectedUser.nome}</p>
+                      <p className="text-xs font-medium text-muted-foreground">{selectedUser.email}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="newPassword" className="font-semibold text-gray-900">Nova Senha</Label>
+                    <Label htmlFor="newPassword" className="font-semibold text-foreground">Nova Senha</Label>
                     <Input
                       id="newPassword"
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Digite a nova senha"
-                      className="mt-2 border-2 bg-white border-gray-200 text-gray-900"
+                      className="mt-2 border-2 bg-background border-border text-foreground"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="confirmPassword" className="font-semibold text-gray-900">Confirmar Senha</Label>
+                    <Label htmlFor="confirmPassword" className="font-semibold text-foreground">Confirmar Senha</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirme a nova senha"
-                      className="mt-2 border-2 bg-white border-gray-200 text-gray-900"
+                      className="mt-2 border-2 bg-background border-border text-foreground"
                     />
                   </div>
                 </div>
@@ -868,7 +869,7 @@ export function MasterDashboard() {
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-border">
                   <Button 
                     variant="outline" 
                     onClick={() => {
@@ -880,14 +881,14 @@ export function MasterDashboard() {
                       setSuccess(null)
                     }} 
                     disabled={isChangingPassword}
-                    className="w-full sm:w-auto min-h-[44px] border-gray-300 text-gray-700 hover:bg-gray-50"
+                    className="w-full sm:w-auto min-h-[44px] border-border text-foreground hover:bg-muted/50"
                   >
                     Cancelar
                   </Button>
                   <Button 
                     onClick={handleChangePassword} 
                     disabled={isChangingPassword}
-                    className="w-full sm:w-auto min-h-[44px] text-white bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400" 
+                    className="w-full sm:w-auto min-h-[44px] text-white bg-amber-500 hover:bg-amber-600 disabled:bg-muted" 
                   >
                     {isChangingPassword ? 'Alterando...' : 'Alterar Senha'}
                   </Button>

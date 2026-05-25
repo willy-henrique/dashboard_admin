@@ -58,7 +58,7 @@ export function FinancialChart() {
             <span>Balanço</span>
           </div>
         </div>
-        <div className="space-y-1 text-xs text-gray-600">
+        <div className="space-y-1 text-xs text-muted-foreground">
           <div>0.001k</div>
           <div>0.0005k</div>
           <div>0k</div>

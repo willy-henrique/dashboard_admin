@@ -91,7 +91,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   const breadcrumbs = generateBreadcrumbs()
   
   return (
-    <nav className={cn("flex items-center space-x-1 text-sm text-gray-500", className)} aria-label="Breadcrumb">
+    <nav className={cn("flex items-center space-x-1 text-sm text-muted-foreground", className)} aria-label="Breadcrumb">
       {breadcrumbs.map((item, index) => {
         const isLast = index === breadcrumbs.length - 1
         const Icon = item.icon
@@ -99,18 +99,18 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
         return (
           <div key={index} className="flex items-center">
             {index > 0 && (
-              <ChevronRight className="h-4 w-4 mx-1 text-gray-400" />
+              <ChevronRight className="h-4 w-4 mx-1 text-muted-foreground/60" />
             )}
             
             {isLast ? (
-              <span className="flex items-center gap-1 font-medium text-gray-900">
+              <span className="flex items-center gap-1 font-medium text-foreground">
                 {Icon && <Icon className="h-4 w-4" />}
                 {item.label}
               </span>
             ) : (
               <Link
                 href={item.href!}
-                className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                className="flex items-center gap-1 hover:text-foreground transition-colors"
               >
                 {Icon && <Icon className="h-4 w-4" />}
                 {item.label}

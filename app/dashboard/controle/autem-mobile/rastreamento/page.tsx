@@ -63,8 +63,8 @@ export default function RastreamentoPage() {
             <MapPin className="h-6 w-6 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Rastreamento</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">Localizacao em tempo real dos prestadores ativos</p>
+            <h1 className="text-2xl font-bold text-foreground">Rastreamento</h1>
+            <p className="text-sm text-muted-foreground">Localizacao em tempo real dos prestadores ativos</p>
           </div>
         </div>
         <Button variant="outline" onClick={refetch} disabled={loading}>
@@ -74,7 +74,7 @@ export default function RastreamentoPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-600 dark:text-slate-400">
+        <div className="text-sm text-muted-foreground">
           {filteredProviders.length} prestador(es) com localizacao disponivel
         </div>
         <div className="flex items-center space-x-2">
@@ -99,12 +99,12 @@ export default function RastreamentoPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b" style={{ borderColor: "var(--border)" }}>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Profissional</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Latitude</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Longitude</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Ultima atualizacao</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700 dark:text-slate-300">Acoes</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Profissional</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Latitude</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Longitude</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Ultima atualizacao</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Status</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Acoes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -114,25 +114,25 @@ export default function RastreamentoPage() {
                     return (
                       <tr
                         key={provider.id}
-                        className={`border-b hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
-                          index % 2 === 0 ? "bg-white dark:bg-slate-900" : "bg-slate-50 dark:bg-slate-800"
+                        className={`border-b hover:bg-muted/50 ${
+                          index % 2 === 0 ? "bg-background" : "bg-muted/50"
                         }`}
                         style={{ borderColor: "var(--border)" }}
                       >
-                        <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                        <td className="px-4 py-3 text-sm text-foreground">
                           <div className="flex items-center space-x-2">
                             <Activity className="h-4 w-4 text-green-600" />
                             <div>
                               <p className="font-medium">{provider.nome}</p>
-                              <p className="text-xs text-slate-500">{provider.telefone || provider.email || "Sem contato"}</p>
+                              <p className="text-xs text-muted-foreground">{provider.telefone || provider.email || "Sem contato"}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">{lat.toFixed(6)}</td>
-                        <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">{lng.toFixed(6)}</td>
-                        <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                        <td className="px-4 py-3 text-sm text-foreground">{lat.toFixed(6)}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">{lng.toFixed(6)}</td>
+                        <td className="px-4 py-3 text-sm text-foreground">
                           <div className="flex items-center space-x-2">
-                            <Clock className="h-4 w-4 text-slate-400" />
+                            <Clock className="h-4 w-4 text-muted-foreground/60" />
                             <span>{formatLastUpdate(provider.ultimaAtualizacao)}</span>
                           </div>
                         </td>
@@ -156,7 +156,7 @@ export default function RastreamentoPage() {
                   })}
                   {!loading && filteredProviders.length === 0 && (
                     <tr>
-                      <td className="px-4 py-6 text-sm text-slate-500" colSpan={6}>
+                      <td className="px-4 py-6 text-sm text-muted-foreground" colSpan={6}>
                         Nenhum prestador com localizacao encontrado.
                       </td>
                     </tr>
@@ -167,7 +167,7 @@ export default function RastreamentoPage() {
           )}
 
           {loading && (
-            <div className="p-6 flex items-center gap-2 text-sm text-slate-500">
+            <div className="p-6 flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Carregando localizacoes...
             </div>

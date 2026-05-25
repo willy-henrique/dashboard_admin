@@ -19,7 +19,7 @@ export interface LogEntry {
   userAgent?: string;
   data?: any;
   error?: Error;
-  duration?: number;
+  duration?: number | string;
   metadata?: Record<string, any>;
 }
 
@@ -161,8 +161,9 @@ export class Logger {
     data?: any;
     ip?: string;
     userAgent?: string;
-    duration?: number;
+    duration?: number | string;
     metadata?: Record<string, any>;
+    [key: string]: unknown;
   } = {}): void {
     const logEntry: LogEntry = {
       timestamp: new Date().toISOString(),

@@ -66,8 +66,8 @@ export default function ClientesFornecedoresPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clientes e Fornecedores</h1>
-          <p className="text-gray-600">autem.com.br › configurações › clientes e fornecedores</p>
+          <h1 className="text-2xl font-bold text-foreground">Clientes e Fornecedores</h1>
+          <p className="text-muted-foreground">autem.com.br › configurações › clientes e fornecedores</p>
         </div>
 
         <Tabs defaultValue="clientes" className="space-y-6">
@@ -91,7 +91,7 @@ export default function ClientesFornecedoresPage() {
                   Novo Cliente
                 </Button>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
                   <Input placeholder="Buscar clientes..." className="pl-20 w-64" />
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function ClientesFornecedoresPage() {
                   Novo Fornecedor
                 </Button>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
                   <Input placeholder="Buscar fornecedores..." className="pl-20 w-64" />
                 </div>
               </div>

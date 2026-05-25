@@ -53,9 +53,9 @@ export function TransactionsTable() {
       case "processing":
         return <Badge className="bg-blue-100 text-blue-800">Processando</Badge>
       case "canceled":
-        return <Badge className="bg-gray-100 text-gray-800">Cancelado</Badge>
+        return <Badge className="bg-muted text-muted-foreground">Cancelado</Badge>
       default:
-        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>
+        return <Badge className="bg-muted text-muted-foreground">{status}</Badge>
     }
   }
 
@@ -76,7 +76,7 @@ export function TransactionsTable() {
       voucher: "Voucher",
     }
 
-    return <Badge className={colors[method as keyof typeof colors] || "bg-gray-100 text-gray-800"}>{labels[method as keyof typeof labels] || method}</Badge>
+    return <Badge className={colors[method as keyof typeof colors] || "bg-muted text-muted-foreground"}>{labels[method as keyof typeof labels] || method}</Badge>
   }
 
   const handleRefund = async (chargeId: string) => {
@@ -127,7 +127,7 @@ export function TransactionsTable() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
@@ -161,7 +161,7 @@ export function TransactionsTable() {
 
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por ID, codigo ou cliente..."
               value={searchTerm}
@@ -218,7 +218,7 @@ export function TransactionsTable() {
             <TableBody>
               {filteredCharges.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     {warning || "Nenhuma transacao real encontrada"}
                   </TableCell>
                 </TableRow>
@@ -228,12 +228,12 @@ export function TransactionsTable() {
                     <TableCell>
                       <div>
                         <div className="font-medium font-mono text-xs">{charge.id.substring(0, 12)}...</div>
-                        {charge.code ? <div className="text-sm text-gray-500">{charge.code}</div> : null}
+                        {charge.code ? <div className="text-sm text-muted-foreground">{charge.code}</div> : null}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{charge.customer.name}</div>
-                      <div className="text-xs text-gray-500">{charge.customer.email}</div>
+                      <div className="text-xs text-muted-foreground">{charge.customer.email}</div>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">{PagarmeService.formatCurrency(PagarmeService.fromCents(charge.amount))}</div>
@@ -252,7 +252,7 @@ export function TransactionsTable() {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">{new Date(charge.created_at).toLocaleDateString("pt-BR")}</div>
-                      <div className="text-xs text-gray-500">{new Date(charge.created_at).toLocaleTimeString("pt-BR")}</div>
+                      <div className="text-xs text-muted-foreground">{new Date(charge.created_at).toLocaleTimeString("pt-BR")}</div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

@@ -46,7 +46,7 @@ export default function LGPDAdminPage() {
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Gestão LGPD</h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Gerencie conformidade, solicitações e políticas de proteção de dados
         </p>
       </div>
@@ -64,7 +64,7 @@ export default function LGPDAdminPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Solicitações Pendentes
                 </CardTitle>
               </CardHeader>
@@ -77,7 +77,7 @@ export default function LGPDAdminPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Usuários com Consentimento
                 </CardTitle>
               </CardHeader>
@@ -90,7 +90,7 @@ export default function LGPDAdminPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   Processamentos Hoje
                 </CardTitle>
               </CardHeader>
@@ -117,7 +117,7 @@ export default function LGPDAdminPage() {
             <CardContent>
               <div className="space-y-4">
                 {requests.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
+                  <p className="text-muted-foreground text-center py-8">
                     Nenhuma solicitação encontrada
                   </p>
                 ) : (
@@ -143,7 +143,7 @@ export default function LGPDAdminPage() {
                             {request.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           {request.userEmail} -{" "}
                           {new Date(request.requestedAt).toLocaleDateString(
                             "pt-BR"
@@ -175,14 +175,14 @@ export default function LGPDAdminPage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{log.activity}</span>
-                      <span className="text-gray-500 text-xs">
+                      <span className="text-muted-foreground text-xs">
                         {new Date(log.timestamp).toLocaleString("pt-BR")}
                       </span>
                     </div>
-                    <p className="text-gray-600 mt-1">{log.purpose}</p>
+                    <p className="text-muted-foreground mt-1">{log.purpose}</p>
                     <div className="flex items-center space-x-2 mt-2">
                       <Badge variant="outline">{log.legalBasis}</Badge>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {log.dataType.join(", ")}
                       </span>
                     </div>
@@ -199,7 +199,7 @@ export default function LGPDAdminPage() {
               <CardTitle>Consentimentos Registrados</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 Visualização de consentimentos em desenvolvimento
               </p>
             </CardContent>
@@ -215,13 +215,13 @@ export default function LGPDAdminPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="font-semibold mb-2">DPO (Data Protection Officer)</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Configure os dados do responsável pela proteção de dados
                   </p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-2">Políticas de Retenção</h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Configure períodos de retenção e anonimização de dados
                   </p>
                 </div>

@@ -65,8 +65,8 @@ export default function UsuariosPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestao de Usuarios</h1>
-            <p className="text-gray-600">Gerenciamento completo de usuarios do sistema</p>
+            <h1 className="text-2xl font-bold text-foreground">Gestao de Usuarios</h1>
+            <p className="text-muted-foreground">Gerenciamento completo de usuarios do sistema</p>
           </div>
           <Button onClick={handleNewUser} className="bg-orange-500 hover:bg-orange-600 text-white">
             <Plus className="h-4 w-4 mr-2" />
@@ -98,7 +98,7 @@ export default function UsuariosPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Clientes</CardTitle>
-                <p className="text-sm text-gray-600">Gerenciamento de clientes do sistema</p>
+                <p className="text-sm text-muted-foreground">Gerenciamento de clientes do sistema</p>
               </CardHeader>
             </Card>
             <UsersTable
@@ -117,7 +117,7 @@ export default function UsuariosPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Prestadores</CardTitle>
-                <p className="text-sm text-gray-600">Gerenciamento de prestadores de servico</p>
+                <p className="text-sm text-muted-foreground">Gerenciamento de prestadores de servico</p>
               </CardHeader>
             </Card>
             <UsersTable

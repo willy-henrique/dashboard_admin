@@ -37,7 +37,7 @@ const statusConfig = {
   agendado: { color: "bg-blue-100 text-blue-800", label: "Agendado" },
   aceito: { color: "bg-green-100 text-green-800", label: "Aceito" },
   aguardando: { color: "bg-yellow-100 text-yellow-800", label: "Aguardando" },
-  nao_enviado: { color: "bg-gray-100 text-gray-800", label: "Não Enviado" },
+  nao_enviado: { color: "bg-muted text-muted-foreground", label: "Não Enviado" },
   em_andamento: { color: "bg-orange-100 text-orange-800", label: "Em Andamento" },
   concluido: { color: "bg-green-100 text-green-800", label: "Concluído" },
   cancelado: { color: "bg-red-100 text-red-800", label: "Cancelado" }
@@ -81,14 +81,14 @@ export function ServicesList({
         {Array.from({ length: 5 }).map((_, i) => (
           <Card key={i}>
             <CardContent className="p-6">
-              <div className="animate-pulse space-y-4">
+              <div className="animate-skeleton space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                  <div className="h-6 bg-gray-200 rounded w-16"></div>
+                  <div className="h-4 bg-muted rounded w-1/4"></div>
+                  <div className="h-6 bg-muted rounded w-16"></div>
                 </div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
                 </div>
               </div>
             </CardContent>
@@ -111,7 +111,7 @@ export function ServicesList({
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Buscar serviços..."
                 value={searchTerm}
@@ -167,7 +167,7 @@ export function ServicesList({
         {filteredServices.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-gray-500">Nenhum serviço encontrado</p>
+              <p className="text-muted-foreground">Nenhum serviço encontrado</p>
             </CardContent>
           </Card>
         ) : (
@@ -179,7 +179,7 @@ export function ServicesList({
                     {/* Header com Protocolo e Status */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-lg font-semibold text-foreground">
                           {service.protocolo}
                         </h3>
                         <Badge className={statusConfig[service.status].color}>
@@ -219,36 +219,36 @@ export function ServicesList({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <User className="h-4 w-4 text-gray-400" />
+                          <User className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm font-medium">{service.clienteNome}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Building className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">{service.empresa}</span>
+                          <Building className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{service.empresa}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Phone className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">{service.telefone}</span>
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">{service.telefone}</span>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <MapPin className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
                             {service.cidade} - {service.bairro}
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Calendar className="h-4 w-4 text-gray-400" />
-                          <span className="text-sm text-gray-600">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
                             {format(service.dataHora, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                           </span>
                         </div>
                         {service.responsavel && (
                           <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm text-gray-600">{service.responsavel}</span>
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">{service.responsavel}</span>
                           </div>
                         )}
                       </div>
@@ -256,18 +256,18 @@ export function ServicesList({
 
                     {/* Informações Adicionais */}
                     {(service.veiculo || service.observacoes) && (
-                      <div className="pt-3 border-t border-gray-200">
+                      <div className="pt-3 border-t border-border">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {service.veiculo && (
                             <div>
-                              <span className="text-sm font-medium text-gray-700">Veículo:</span>
-                              <span className="text-sm text-gray-600 ml-2">{service.veiculo}</span>
+                              <span className="text-sm font-medium text-foreground">Veículo:</span>
+                              <span className="text-sm text-muted-foreground ml-2">{service.veiculo}</span>
                             </div>
                           )}
                           {service.observacoes && (
                             <div>
-                              <span className="text-sm font-medium text-gray-700">Observações:</span>
-                              <span className="text-sm text-gray-600 ml-2">{service.observacoes}</span>
+                              <span className="text-sm font-medium text-foreground">Observações:</span>
+                              <span className="text-sm text-muted-foreground ml-2">{service.observacoes}</span>
                             </div>
                           )}
                         </div>
@@ -284,7 +284,7 @@ export function ServicesList({
       {/* Paginação */}
       {filteredServices.length > 0 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Mostrando {filteredServices.length} de {services.length} serviços
           </p>
           <div className="flex items-center space-x-2">

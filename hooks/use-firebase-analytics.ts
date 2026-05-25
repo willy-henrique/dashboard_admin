@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { collection, query, orderBy, limit, getDocs, where, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { useAuth } from '@/components/auth-provider'
 
 interface AnalyticsData {
   activeUsers: number
@@ -33,7 +34,9 @@ interface UserActivity {
   category: string
 }
 
+// Deriva analytics dos pedidos e prestadores reais do banco
 export function useFirebaseAnalytics() {
+  const { user, loading: authLoading } = useAuth()
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     activeUsers: 0,
     pageViews: 0,
@@ -43,18 +46,16 @@ export function useFirebaseAnalytics() {
     orderActions: 0,
     providerActions: 0,
     reportsGenerated: 0,
-    errors: 0
+    errors: 0,
   })
-  
   const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesData[]>([])
   const [topPages, setTopPages] = useState<TopPages[]>([])
   const [userActivity, setUserActivity] = useState<UserActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchAnalyticsData = async () => {
-    if (!db) {
-      setError('Firebase não inicializado')
+  const fetchAnalyticsData = useCallback(async () => {
+    if (authLoading || !user || !db) {
       setLoading(false)
       return
     }
@@ -63,156 +64,97 @@ export function useFirebaseAnalytics() {
       setLoading(true)
       setError(null)
 
-      // Buscar eventos dos últimos 30 dias
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      
-      const eventsRef = collection(db, 'analytics_events')
-      const q = query(
-        eventsRef,
-        where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-        orderBy('timestamp', 'desc')
+
+      // Buscar pedidos dos últimos 30 dias
+      const [ordersSnap, providersSnap, usersSnap] = await Promise.all([
+        getDocs(query(
+          collection(db, 'orders'),
+          where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+          orderBy('createdAt', 'desc'),
+          limit(500)
+        )),
+        getDocs(query(collection(db, 'providers'), limit(200))),
+        getDocs(query(collection(db, 'users'), limit(200))),
+      ])
+
+      const orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() } as any))
+      const totalProviders = providersSnap.size
+      const totalUsers = usersSnap.size
+
+      // Métricas derivadas
+      const completed = orders.filter((o: any) => o.status === 'completed').length
+      const cancelled = orders.filter((o: any) => o.status === 'cancelled').length
+      const inProgress = orders.filter((o: any) => o.status === 'in_progress').length
+      const pending = orders.filter((o: any) => o.status === 'pending').length
+
+      setAnalyticsData({
+        activeUsers: totalUsers,
+        pageViews: orders.length,
+        userActions: orders.length,
+        businessEvents: completed,
+        financialActions: completed,
+        orderActions: orders.length,
+        providerActions: totalProviders,
+        reportsGenerated: 0,
+        errors: 0,
+      })
+
+      // Série temporal: pedidos por dia nos últimos 30 dias
+      const dayMap = new Map<string, { new_order: number; completed: number; cancelled: number }>()
+      orders.forEach((o: any) => {
+        const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt || 0)
+        const key = d.toISOString().split('T')[0]
+        if (!dayMap.has(key)) dayMap.set(key, { new_order: 0, completed: 0, cancelled: 0 })
+        const day = dayMap.get(key)!
+        day.new_order++
+        if (o.status === 'completed') day.completed++
+        if (o.status === 'cancelled') day.cancelled++
+      })
+
+      const ts: TimeSeriesData[] = []
+      dayMap.forEach((data, date) => {
+        ts.push({ date, value: data.new_order, category: 'Novos Pedidos' })
+        ts.push({ date, value: data.completed, category: 'Concluídos' })
+        ts.push({ date, value: data.cancelled, category: 'Cancelados' })
+      })
+      ts.sort((a, b) => a.date.localeCompare(b.date))
+      setTimeSeriesData(ts)
+
+      // Tipo de serviço mais solicitado (substitui top pages)
+      const serviceMap = new Map<string, number>()
+      orders.forEach((o: any) => {
+        const s = o.serviceType || o.tipoServico || 'Não especificado'
+        serviceMap.set(s, (serviceMap.get(s) || 0) + 1)
+      })
+      setTopPages(
+        Array.from(serviceMap.entries())
+          .map(([page, views]) => ({ page, views }))
+          .sort((a, b) => b.views - a.views)
+          .slice(0, 10)
       )
 
-      const snapshot = await getDocs(q)
-      const events = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }))
-
-      // Processar dados
-      const processedData = processAnalyticsEvents(events)
-      setAnalyticsData(processedData.analyticsData)
-      setTimeSeriesData(processedData.timeSeriesData)
-      setTopPages(processedData.topPages)
-      setUserActivity(processedData.userActivity)
-
+      // Atividade por status
+      setUserActivity([
+        { action: 'Novos', count: pending, category: 'Pedidos' },
+        { action: 'Em andamento', count: inProgress, category: 'Pedidos' },
+        { action: 'Concluídos', count: completed, category: 'Pedidos' },
+        { action: 'Cancelados', count: cancelled, category: 'Pedidos' },
+        { action: 'Prestadores', count: totalProviders, category: 'Usuários' },
+        { action: 'Clientes', count: totalUsers - totalProviders, category: 'Usuários' },
+      ])
     } catch (err) {
-      console.error('Erro ao buscar dados do analytics:', err)
+      console.error('Erro ao buscar analytics:', err)
       setError('Erro ao carregar dados do analytics')
     } finally {
       setLoading(false)
     }
-  }
-
-  const processAnalyticsEvents = (events: any[]) => {
-    const analyticsData: AnalyticsData = {
-      activeUsers: 0,
-      pageViews: 0,
-      userActions: 0,
-      businessEvents: 0,
-      financialActions: 0,
-      orderActions: 0,
-      providerActions: 0,
-      reportsGenerated: 0,
-      errors: 0
-    }
-
-    const timeSeriesMap = new Map<string, { [key: string]: number }>()
-    const pageViewsMap = new Map<string, number>()
-    const userActivityMap = new Map<string, { count: number, category: string }>()
-
-    // Processar cada evento
-    events.forEach(event => {
-      const eventName = event.eventName || event.event_name
-      const timestamp = event.timestamp?.toDate() || new Date()
-      const dateKey = timestamp.toISOString().split('T')[0]
-
-      // Contar eventos por tipo
-      switch (eventName) {
-        case 'page_view':
-          analyticsData.pageViews++
-          const page = event.page_name || event.page
-          if (page) {
-            pageViewsMap.set(page, (pageViewsMap.get(page) || 0) + 1)
-          }
-          break
-        case 'user_action':
-          analyticsData.userActions++
-          const action = event.action
-          if (action) {
-            const key = `${action}_${event.category || 'general'}`
-            const existing = userActivityMap.get(key) || { count: 0, category: event.category || 'general' }
-            userActivityMap.set(key, { ...existing, count: existing.count + 1 })
-          }
-          break
-        case 'business_event':
-          analyticsData.businessEvents++
-          break
-        case 'financial_action':
-          analyticsData.financialActions++
-          break
-        case 'order_action':
-          analyticsData.orderActions++
-          break
-        case 'provider_action':
-          analyticsData.providerActions++
-          break
-        case 'report_generated':
-          analyticsData.reportsGenerated++
-          break
-        case 'error_occurred':
-          analyticsData.errors++
-          break
-      }
-
-      // Dados de série temporal
-      if (!timeSeriesMap.has(dateKey)) {
-        timeSeriesMap.set(dateKey, { pageViews: 0, userActions: 0, businessEvents: 0 })
-      }
-      const dayData = timeSeriesMap.get(dateKey)!
-      
-      if (eventName === 'page_view') dayData.pageViews++
-      if (eventName === 'user_action') dayData.userActions++
-      if (eventName === 'business_event') dayData.businessEvents++
-    })
-
-    // Converter dados de série temporal
-    const timeSeriesData: TimeSeriesData[] = []
-    timeSeriesMap.forEach((data, date) => {
-      Object.entries(data).forEach(([category, value]) => {
-        timeSeriesData.push({ date, value, category })
-      })
-    })
-
-    // Converter páginas mais visitadas
-    const topPages: TopPages[] = Array.from(pageViewsMap.entries())
-      .map(([page, views]) => ({ page, views }))
-      .sort((a, b) => b.views - a.views)
-      .slice(0, 10)
-
-    // Converter atividade do usuário
-    const userActivity: UserActivity[] = Array.from(userActivityMap.entries())
-      .map(([key, data]) => ({
-        action: key.split('_')[0],
-        count: data.count,
-        category: data.category
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10)
-
-    // Calcular usuários únicos (simulação)
-    analyticsData.activeUsers = Math.min(analyticsData.pageViews, events.length)
-
-    return {
-      analyticsData,
-      timeSeriesData: timeSeriesData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()),
-      topPages,
-      userActivity
-    }
-  }
+  }, [user, authLoading])
 
   useEffect(() => {
     fetchAnalyticsData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchAnalyticsData])
 
-  return {
-    analyticsData,
-    timeSeriesData,
-    topPages,
-    userActivity,
-    loading,
-    error,
-    refetch: fetchAnalyticsData
-  }
+  return { analyticsData, timeSeriesData, topPages, userActivity, loading, error, refetch: fetchAnalyticsData }
 }

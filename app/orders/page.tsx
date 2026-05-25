@@ -1,6 +1,6 @@
-"use client"
-
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
+import { ShoppingCart } from "lucide-react"
+import { useOrderDocumentRealtime } from "@/hooks/use-order-document-realtime"
 import { AppShell } from "@/components/layout/app-shell"
 import { OrdersDashboard } from "@/components/orders/orders-dashboard"
 import { OrdersTable } from "@/components/orders/orders-table"
@@ -12,6 +12,19 @@ function OrdersPageContent() {
   const { trackPageView, trackUserAction } = useAnalytics()
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const liveOrderId = isModalOpen && selectedOrder?.id ? String(selectedOrder.id) : null
+  const { order: liveOrder } = useOrderDocumentRealtime(liveOrderId, Boolean(liveOrderId))
+
+  const mergedOrder = useMemo(() => {
+    if (!selectedOrder) {
+      return null
+    }
+    if (!liveOrder) {
+      return selectedOrder
+    }
+    return { ...selectedOrder, ...liveOrder }
+  }, [liveOrder, selectedOrder])
 
   useEffect(() => {
     trackPageView("Gestao de Pedidos")
@@ -31,9 +44,14 @@ function OrdersPageContent() {
     <AppShell>
       <PageWithBack backButtonLabel="Voltar para Dashboard">
         <div className="space-y-6">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-gray-900">Gestao de Pedidos</h1>
-            <p className="text-gray-600">Todos os pedidos ficam concentrados em uma unica lista com filtros reais.</p>
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+              <ShoppingCart className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Gestão de Pedidos</h1>
+              <p className="text-sm text-muted-foreground">Todos os pedidos em uma lista com filtros em tempo real</p>
+            </div>
           </div>
 
           <OrdersDashboard />
@@ -42,7 +60,7 @@ function OrdersPageContent() {
         </div>
 
         <OrderDetailModal
-          order={selectedOrder}
+          order={isModalOpen ? mergedOrder : null}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           mode="view"

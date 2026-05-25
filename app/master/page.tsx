@@ -115,7 +115,7 @@ export default function MasterPage() {
             <form onSubmit={handleMasterLogin} className="space-y-6">
               {error && (
                 <div className="flex items-center space-x-2 p-3 bg-red-50 rounded-md" style={{ border: '1px solid #FCA5A5' }}>
-                  <AlertTriangle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
@@ -124,8 +124,8 @@ export default function MasterPage() {
                 <Label htmlFor="email" className="font-medium" style={{ color: '#1F2B3D' }}>
                   Email Master
                 </Label>
-                <div className="flex items-center rounded-md bg-white focus-within:ring-2" style={{ border: '1px solid #E5E7EB', boxShadow: '0 0 0 0 rgba(0,0,0,0)' }}>
-                  <div className="pl-3 pr-2 flex-shrink-0">
+                <div className="flex items-center rounded-md bg-background border border-border focus-within:ring-2 focus-within:ring-orange-400">
+                  <div className="pl-3 pr-2 shrink-0">
                     <Mail className="h-4 w-4" style={{ color: '#6B7280' }} />
                   </div>
                   <Input
@@ -145,8 +145,8 @@ export default function MasterPage() {
                 <Label htmlFor="password" className="font-medium" style={{ color: '#1F2B3D' }}>
                   Senha Master
                 </Label>
-                <div className="flex items-center rounded-md bg-white focus-within:ring-2" style={{ border: '1px solid #E5E7EB' }}>
-                  <div className="pl-3 pr-2 flex-shrink-0">
+                <div className="flex items-center rounded-md bg-background border border-border focus-within:ring-2 focus-within:ring-orange-400">
+                  <div className="pl-3 pr-2 shrink-0">
                     <Lock className="h-4 w-4" style={{ color: '#6B7280' }} />
                   </div>
                   <Input

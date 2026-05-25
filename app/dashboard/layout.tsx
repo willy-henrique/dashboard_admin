@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/layout/sidebar"
-import { Topbar } from "@/components/layout/topbar"
+import { Header } from "@/components/layout/header"
 import { useAuth } from "@/components/auth-provider"
 import { Shield } from "lucide-react"
 
@@ -28,7 +28,7 @@ export default function DashboardLayout({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg shadow-primary/30">
+          <div className="w-16 h-16 bg-linear-to-br from-primary to-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse shadow-lg shadow-primary/30">
             <Shield className="w-8 h-8 text-primary-foreground" />
           </div>
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
@@ -50,8 +50,8 @@ export default function DashboardLayout({
       
       {/* Main Content */}
       <div className="lg:ml-64 min-h-screen flex flex-col">
-        {/* Topbar */}
-        <Topbar onMenuClick={() => setSidebarOpen(true)} />
+        {/* Header */}
+        <Header onMenuClick={() => setSidebarOpen(true)} />
         
         {/* Page Content */}
         <main className="flex-1">

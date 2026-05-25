@@ -8,6 +8,7 @@ import { AuthProvider } from "@/components/auth-provider"
 import { PermissionsProvider } from "@/hooks/use-permissions"
 import { MasterAuthProvider } from "@/hooks/use-master-auth"
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { PerformanceOptimizer } from "@/components/performance-optimizer"
 import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
 
@@ -18,6 +19,10 @@ export const metadata: Metadata = {
   description: "Sistema de administração para aplicativo de prestação de serviços",
   keywords: "administração, serviços, prestadores, clientes, dashboard",
   authors: [{ name: "AquiResolve Team" }],
+  icons: {
+    icon: "/logo-aquiresolve.svg",
+    shortcut: "/logo-aquiresolve.svg",
+  },
 }
 
 export const viewport: Viewport = {
@@ -31,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -48,6 +53,7 @@ export default function RootLayout({
                     <div className="min-h-screen bg-background overflow-x-hidden max-w-full">
                       {children}
                       <Toaster />
+                      <SonnerToaster />
                     </div>
                   </PerformanceOptimizer>
                 </PermissionsProvider>

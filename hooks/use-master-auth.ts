@@ -59,7 +59,7 @@ const MasterAuthContext = createContext<MasterAuthContextType>({
   addUsuario: async () => {},
   updateUsuario: async () => {},
   deleteUsuario: async () => {},
-  refreshUsuarios: () => {},
+  refreshUsuarios: async () => {},
   changeUserPassword: async () => {}
 })
 
@@ -92,7 +92,15 @@ export function MasterAuthProvider({ children }: { children: React.ReactNode }) 
           id: payload.userId,
           email: payload.email,
           nome: payload.nome ?? 'Master',
-          permissoes: payload.permissoes
+          permissoes: {
+            dashboard: Boolean(payload.permissoes?.dashboard),
+            controle: Boolean(payload.permissoes?.controle),
+            gestaoUsuarios: Boolean(payload.permissoes?.gestaoUsuarios),
+            gestaoPedidos: Boolean(payload.permissoes?.gestaoPedidos),
+            financeiro: Boolean(payload.permissoes?.financeiro),
+            relatorios: Boolean(payload.permissoes?.relatorios),
+            configuracoes: Boolean(payload.permissoes?.configuracoes),
+          },
         }
         setMasterUser(user)
         setIsMasterAuthenticated(true)

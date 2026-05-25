@@ -4,6 +4,10 @@ export interface ChatMessage {
   senderId: string
   senderName: string
   senderType: 'cliente' | 'prestador' | 'admin'
+  /** Canal dentro do pedido; omitido = tráfego legado cliente↔prestador. */
+  threadType?: "client_provider" | "client_base" | "provider_base" | "admin_internal"
+  /** Regras de leitura no app; admin vê todas no dashboard. */
+  visibility?: "public" | "admin_client" | "admin_provider" | "admin_only"
   content: string
   messageType: 'text' | 'image' | 'file' | 'location' | 'system'
   timestamp: Date
@@ -93,6 +97,12 @@ export interface ChatFilter {
     end: Date
   }
   searchTerm?: string
+  /** Busca por nome/telefone do prestador (quando houver no pedido). */
+  providerSearch?: string
+  /** Filtro por protocolo ou id curto do pedido. */
+  protocolSearch?: string
+  /** Filtro por status operacional do pedido (`serviceOperationalStatus`). */
+  serviceOperationalStatus?: string
   assignedAdmin?: string
   monitoringLevel?: 'normal' | 'high' | 'critical'
   hasUnread?: boolean

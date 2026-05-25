@@ -11,7 +11,35 @@ const getServiceAccount = () => {
     return null
   }
   try {
-    const parsed = JSON.parse(json)
+    console.log('🔍 FIREBASE_SERVICE_ACCOUNT length:', json.length, '| starts with:', JSON.stringify(json.slice(0, 20)))
+    // dotenv com aspas duplas converte \n em newlines reais em todo o valor.
+    // Newlines reais são whitespace JSON válido entre tokens, mas inválidos
+    // dentro de string literals. Percorremos char a char para escapar apenas
+    // os newlines que estão dentro de strings.
+    let fixed = ''
+    let inString = false
+    let escaped = false
+    for (const char of json) {
+      if (escaped) {
+        fixed += char
+        escaped = false
+      } else if (char === '\\' && inString) {
+        fixed += char
+        escaped = true
+      } else if (char === '"') {
+        inString = !inString
+        fixed += char
+      } else if (char === '\n' && inString) {
+        fixed += '\\n'
+      } else {
+        fixed += char
+      }
+    }
+    const parsed = JSON.parse(fixed)
+    // Firebase Admin exige newlines reais na private_key (formato PEM)
+    if (parsed.private_key) {
+      parsed.private_key = parsed.private_key.replace(/\\n/g, '\n')
+    }
     if (process.env.NODE_ENV !== 'production') {
       console.log('✅ Firebase Service Account carregado')
     }

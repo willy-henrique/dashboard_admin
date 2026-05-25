@@ -7,10 +7,11 @@ import { pagarmeService } from '@/lib/services/pagarme-service'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const response = await pagarmeService.getOrder(params.id)
+    const response = await pagarmeService.getOrder(id)
 
     if (response.errors) {
       return NextResponse.json(
@@ -44,10 +45,11 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const response = await pagarmeService.cancelOrder(params.id)
+    const response = await pagarmeService.cancelOrder(id)
 
     if (response.errors) {
       return NextResponse.json(

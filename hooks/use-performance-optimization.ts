@@ -1,5 +1,5 @@
 // hooks/use-performance-optimization.ts
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 
 // Hook para otimizar listeners em tempo real
 export function usePerformanceOptimization() {

@@ -4,11 +4,12 @@ import { adminApp, getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    console.log('🔐 Iniciando alteração de senha do usuário:', params.id)
-    
+    console.log('🔐 Iniciando alteração de senha do usuário:', id)
+
     if (!adminApp) {
       console.error('❌ Firebase Admin não inicializado')
       return NextResponse.json({ 
@@ -52,14 +53,14 @@ export async function PUT(
 
     // Verificar se o usuário existe
     try {
-      const userRecord = await auth.getUser(params.id)
+      const userRecord = await auth.getUser(id)
       console.log('✅ Usuário encontrado:', userRecord.email)
     } catch (error: any) {
       if (error.code === 'auth/user-not-found') {
-        console.error('❌ Usuário não encontrado:', params.id)
-        return NextResponse.json({ 
-          success: false, 
-          error: 'Usuário não encontrado' 
+        console.error('❌ Usuário não encontrado:', id)
+        return NextResponse.json({
+          success: false,
+          error: 'Usuário não encontrado'
         }, { status: 404 })
       }
       throw error
@@ -67,13 +68,13 @@ export async function PUT(
 
     // Atualizar a senha do usuário
     console.log('🔑 Atualizando senha do usuário...')
-    await auth.updateUser(params.id, {
+    await auth.updateUser(id, {
       password: newPassword
     })
 
     // Atualizar timestamp de última alteração de senha no Firestore
     console.log('💾 Atualizando timestamp no Firestore...')
-    const usuarioRef = db.collection('adminmaster').doc('master').collection('usuarios').doc(params.id)
+    const usuarioRef = db.collection('adminmaster').doc('master').collection('usuarios').doc(id)
     await usuarioRef.update({
       senhaAlteradaEm: admin.firestore.FieldValue.serverTimestamp(),
     })

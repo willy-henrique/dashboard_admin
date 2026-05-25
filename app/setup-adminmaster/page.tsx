@@ -72,7 +72,7 @@ export default function SetupAdminMasterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-orange-50 to-orange-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-linear-to-br from-muted via-orange-50 to-orange-100 dark:from-background dark:via-background dark:to-background flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         {/* Logo e Título */}
         <div className="text-center mb-8">
@@ -85,32 +85,32 @@ export default function SetupAdminMasterPage() {
               Setup AdminMaster
             </p>
           </div>
-          <p className="text-slate-600 dark:text-slate-300 font-medium">
+          <p className="text-muted-foreground font-medium">
             Configuração inicial do sistema de permissões
           </p>
         </div>
 
         {/* Card de Setup */}
-        <Card className="shadow-xl border-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm">
+        <Card className="shadow-card border-0 bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
-            <CardTitle className="flex items-center justify-center space-x-2 text-slate-900 dark:text-white">
+            <CardTitle className="flex items-center justify-center space-x-2 text-foreground">
               <Database className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               <span>Configuração do Sistema</span>
             </CardTitle>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            <p className="text-sm text-muted-foreground mt-2">
               Criação da estrutura AdminMaster no Firebase
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Configurações do AdminMaster */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Configurações do AdminMaster
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-700 dark:text-slate-300 font-medium">
+                  <Label htmlFor="email" className="text-foreground font-medium">
                     Email Master
                   </Label>
                   <Input
@@ -118,13 +118,13 @@ export default function SetupAdminMasterPage() {
                     type="email"
                     value={customEmail}
                     onChange={(e) => setCustomEmail(e.target.value)}
-                    className="border-slate-300 dark:border-slate-600"
+                    className="border-border"
                     placeholder="master@aquiresolve.com"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-700 dark:text-slate-300 font-medium">
+                  <Label htmlFor="password" className="text-foreground font-medium">
                     Senha Master
                   </Label>
                   <Input
@@ -132,14 +132,14 @@ export default function SetupAdminMasterPage() {
                     type="password"
                     value={customPassword}
                     onChange={(e) => setCustomPassword(e.target.value)}
-                    className="border-slate-300 dark:border-slate-600"
+                    className="border-border"
                     placeholder="admin123"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="nome" className="text-slate-700 dark:text-slate-300 font-medium">
+                <Label htmlFor="nome" className="text-foreground font-medium">
                   Nome do Administrador
                 </Label>
                 <Input
@@ -147,7 +147,7 @@ export default function SetupAdminMasterPage() {
                   type="text"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
-                  className="border-slate-300 dark:border-slate-600"
+                  className="border-border"
                   placeholder="Administrador Master"
                 />
               </div>
@@ -155,40 +155,40 @@ export default function SetupAdminMasterPage() {
 
             {/* Estrutura que será criada */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Estrutura que será criada
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
                   <Database className="h-5 w-5 text-blue-600" />
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">AdminMaster</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Documento principal</p>
+                    <p className="font-medium text-foreground">AdminMaster</p>
+                    <p className="text-sm text-muted-foreground">Documento principal</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
                   <Users className="h-5 w-5 text-green-600" />
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">Usuários</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">3 usuários de exemplo</p>
+                    <p className="font-medium text-foreground">Usuários</p>
+                    <p className="text-sm text-muted-foreground">3 usuários de exemplo</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
                   <Settings className="h-5 w-5 text-purple-600" />
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">Configurações</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Sistema e permissões</p>
+                    <p className="font-medium text-foreground">Configurações</p>
+                    <p className="text-sm text-muted-foreground">Sistema e permissões</p>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
                   <FileText className="h-5 w-5 text-orange-600" />
                   <div>
-                    <p className="font-medium text-slate-900 dark:text-white">Logs</p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Atividades do sistema</p>
+                    <p className="font-medium text-foreground">Logs</p>
+                    <p className="text-sm text-muted-foreground">Atividades do sistema</p>
                   </div>
                 </div>
               </div>
@@ -219,9 +219,9 @@ export default function SetupAdminMasterPage() {
               }`}>
                 <div className="flex items-start space-x-3">
                   {result.success ? (
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
                   ) : (
-                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                    <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1">
                     <p className={`font-medium ${
@@ -261,7 +261,7 @@ export default function SetupAdminMasterPage() {
             )}
 
             {/* Informações do Sistema */}
-            <div className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <div className="mt-6 text-center text-sm text-muted-foreground">
               <p className="font-medium">Sistema AdminMaster - AquiResolve</p>
               <p>Configuração inicial do sistema de permissões</p>
             </div>

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { MapPin, Calendar, User, Star, Clock, MessageCircle, Phone, Mail, AlertTriangle, CheckCircle, XCircle, UserPlus, Trash2 } from "lucide-react"
+import { ServiceOperationalPanel } from "@/components/orders/service-operational-panel"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -63,7 +64,7 @@ const statusConfig: Record<OrderStatus, { color: string; label: string }> = {
 }
 
 const priorityConfig: Record<OrderPriority, { color: string; label: string }> = {
-  low: { color: "bg-gray-100 text-gray-800", label: "Baixa" },
+  low: { color: "bg-muted text-muted-foreground", label: "Baixa" },
   medium: { color: "bg-blue-100 text-blue-800", label: "Media" },
   high: { color: "bg-orange-100 text-orange-800", label: "Alta" },
   urgent: { color: "bg-red-100 text-red-800", label: "Urgente" },
@@ -344,7 +345,7 @@ export function OrderDetailModal({
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">{order.providerName}</p>
-                    <p className="text-sm text-gray-600">ID: {order.providerId || "N/A"}</p>
+                    <p className="text-sm text-muted-foreground">ID: {order.providerId || "N/A"}</p>
                   </div>
                   {order.rating ? (
                     <div className="flex items-center gap-1">
@@ -368,23 +369,25 @@ export function OrderDetailModal({
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
                   <p className="text-sm font-medium">Criacao</p>
-                  <p className="text-sm text-gray-600">{formatDateValue(order.createdAt)}</p>
+                  <p className="text-sm text-muted-foreground">{formatDateValue(order.createdAt)}</p>
                 </div>
                 {order.assignedAt ? (
                   <div>
                     <p className="text-sm font-medium">Atribuicao</p>
-                    <p className="text-sm text-gray-600">{formatDateValue(order.assignedAt)}</p>
+                    <p className="text-sm text-muted-foreground">{formatDateValue(order.assignedAt)}</p>
                   </div>
                 ) : null}
                 {order.completedAt ? (
                   <div>
                     <p className="text-sm font-medium">Conclusao</p>
-                    <p className="text-sm text-gray-600">{formatDateValue(order.completedAt)}</p>
+                    <p className="text-sm text-muted-foreground">{formatDateValue(order.completedAt)}</p>
                   </div>
                 ) : null}
               </div>
             </CardContent>
           </Card>
+
+          <ServiceOperationalPanel order={order as unknown as Record<string, unknown>} enabled={isReadOnly} />
 
           <Card>
             <CardHeader>

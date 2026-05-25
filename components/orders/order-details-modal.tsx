@@ -26,7 +26,7 @@ import {
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { getDocument } from "firebase/firestore"
+import { getDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
 interface OrderDetailsModalProps {
@@ -59,7 +59,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
       setLoading(true)
       try {
         // Buscar primeiro na collection providers
-        const providerDoc = await getDocument(db, 'providers', order.providerId)
+        const providerDoc = await getDoc(doc(db!, 'providers', order.providerId))
         if (providerDoc.exists()) {
           const data = providerDoc.data()
           setProviderInfo({
@@ -68,8 +68,8 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
             email: data.email || 'Email não disponível',
             phone: data.phone || data.telefone || 'Telefone não disponível',
             cpf: data.cpf || 'CPF não disponível',
-            address: typeof data.address === 'string' ? data.address : 
-                     typeof data.address === 'object' && data.address ? 
+            address: typeof data.address === 'string' ? data.address :
+                     typeof data.address === 'object' && data.address ?
                      `${data.address.street || ''} ${data.address.number || ''}, ${data.address.city || ''}, ${data.address.state || ''}`.trim().replace(/,$/, '') :
                      'Endereço não disponível',
             acceptedAt: order.acceptedAt,
@@ -77,7 +77,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
           })
         } else {
           // Fallback para collection users
-          const userDoc = await getDocument(db, 'users', order.providerId)
+          const userDoc = await getDoc(doc(db!, 'users', order.providerId))
           if (userDoc.exists()) {
             const data = userDoc.data()
             setProviderInfo({
@@ -104,14 +104,13 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
     }
   }, [isOpen, order])
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A'
-    
+  const formatDate = (timestamp: any): { relative: string; absolute: string } => {
+    if (!timestamp) return { relative: 'N/A', absolute: 'N/A' }
     try {
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
       return {
         relative: formatDistanceToNow(date, { addSuffix: true, locale: ptBR }),
-        absolute: date.toLocaleString('pt-BR')
+        absolute: date.toLocaleString('pt-BR'),
       }
     } catch {
       return { relative: 'N/A', absolute: 'N/A' }
@@ -147,7 +146,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
       default:
         return { 
           label: 'Pendente', 
-          color: 'bg-gray-50 text-gray-700 border-gray-200',
+          color: 'bg-muted/50 text-foreground border-border',
           icon: <Clock className="h-4 w-4" />
         }
     }
@@ -213,7 +212,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
 
                   <div className="space-y-2">
                     <span className="font-medium">Descrição:</span>
-                    <p className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-lg">
+                    <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
                       {order?.description || 'Descrição não disponível'}
                     </p>
                   </div>
@@ -257,7 +256,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <User className="h-4 w-4 text-gray-500" />
+                    <User className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{order?.clientName}</p>
                       <p className="text-sm text-muted-foreground">Nome do cliente</p>
@@ -265,7 +264,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Mail className="h-4 w-4 text-gray-500" />
+                    <Mail className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{order?.clientEmail}</p>
                       <p className="text-sm text-muted-foreground">Email de contato</p>
@@ -273,7 +272,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{order?.address}</p>
                       {order?.complement && (
@@ -284,7 +283,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="font-medium">{formatDate(order?.createdAt).absolute}</p>
                       <p className="text-sm text-muted-foreground">
@@ -343,7 +342,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-3">
-                      <User className="h-4 w-4 text-gray-500" />
+                      <User className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{providerInfo.name}</p>
                         <p className="text-sm text-muted-foreground">Nome completo</p>
@@ -351,7 +350,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-gray-500" />
+                      <Mail className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{providerInfo.email}</p>
                         <p className="text-sm text-muted-foreground">Email de contato</p>
@@ -359,7 +358,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-gray-500" />
+                      <Phone className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{providerInfo.phone}</p>
                         <p className="text-sm text-muted-foreground">Telefone</p>
@@ -367,7 +366,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-gray-500" />
+                      <FileText className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{providerInfo.cpf}</p>
                         <p className="text-sm text-muted-foreground">CPF</p>
@@ -375,7 +374,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="font-medium">{providerInfo.address}</p>
                         <p className="text-sm text-muted-foreground">Endereço</p>
@@ -402,7 +401,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
 
                     {providerInfo.acceptedAt && (
                       <div className="flex items-center gap-3">
-                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
                           <p className="font-medium">{formatDate(providerInfo.acceptedAt).absolute}</p>
                           <p className="text-sm text-muted-foreground">
@@ -431,8 +430,8 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
             ) : (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <User className="h-12 w-12 text-muted-foreground/60 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     Nenhum prestador aceitou
                   </h3>
                   <p className="text-muted-foreground">
@@ -454,7 +453,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                     <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
                     <div className="flex-1">
                       <p className="font-medium">Pedido criado</p>
@@ -465,7 +464,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   </div>
 
                   {order?.distributionStartedAt && (
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                       <div className="h-2 w-2 bg-yellow-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="font-medium">Distribuição iniciada</p>
@@ -477,7 +476,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   )}
 
                   {providerInfo?.acceptedAt && (
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                       <div className="h-2 w-2 bg-green-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="font-medium">Prestador aceitou</p>
@@ -489,7 +488,7 @@ export function OrderDetailsModal({ order, isOpen, onClose }: OrderDetailsModalP
                   )}
 
                   {order?.cancelledAt && (
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                       <div className="h-2 w-2 bg-red-500 rounded-full"></div>
                       <div className="flex-1">
                         <p className="font-medium">Pedido cancelado</p>

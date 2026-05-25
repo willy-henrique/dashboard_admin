@@ -129,7 +129,7 @@ export class AdminMasterService {
     try {
       const adminMasterRef = doc(db, 'adminmaster', 'master')
       const adminMasterDoc = await getDoc(adminMasterRef)
-      
+
       if (!adminMasterDoc.exists()) {
         return null
       }
@@ -138,9 +138,15 @@ export class AdminMasterService {
         id: adminMasterDoc.id,
         ...adminMasterDoc.data()
       } as AdminMaster
-    } catch (error) {
+    } catch (error: unknown) {
+      const code = (error as { code?: string })?.code ?? ''
+      // adminmaster/master is intentionally blocked for client reads (Admin SDK only).
+      // Return null silently so callers fall through to the sub-user check.
+      if (String(code).includes('permission-denied')) {
+        return null
+      }
       console.error('Erro ao buscar AdminMaster:', error)
-      throw error
+      return null
     }
   }
 
@@ -232,9 +238,13 @@ export class AdminMasterService {
         nome: data.nome,
         permissoes: data.permissoes
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      const code = (error as { code?: string })?.code ?? ''
+      if (String(code).includes('permission-denied')) {
+        return null
+      }
       console.error('Erro ao buscar usuário por email:', error)
-      throw error
+      return null
     }
   }
 

@@ -59,7 +59,7 @@ const getStatusColor = (status: string) => {
     case "pendente":
       return "bg-yellow-100 text-yellow-800"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -68,8 +68,8 @@ export default function ProfissionaisPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Profissionais</h1>
-          <p className="text-gray-600">autem.com.br › configurações › profissionais</p>
+          <h1 className="text-2xl font-bold text-foreground">Profissionais</h1>
+          <p className="text-muted-foreground">autem.com.br › configurações › profissionais</p>
         </div>
 
         {/* Action Bar */}
@@ -80,7 +80,7 @@ export default function ProfissionaisPage() {
               Novo Profissional
             </Button>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
               <Input placeholder="Buscar profissionais..." className="pl-20 w-64" />
             </div>
           </div>

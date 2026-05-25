@@ -79,20 +79,20 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
       case "active":
         return "bg-green-100 text-green-800 border-green-200"
       case "closed":
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-muted text-muted-foreground border-border"
       case "archived":
         return "bg-blue-100 text-blue-800 border-blue-200"
       case "blocked":
         return "bg-red-100 text-red-800 border-red-200"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-muted text-muted-foreground border-border"
     }
   }
 
   const getPriorityColor = (value: LegacyChatConversation["priority"]) => {
     switch (value) {
       case "low":
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-muted text-muted-foreground border-border"
       case "medium":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
       case "high":
@@ -100,22 +100,22 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
       case "urgent":
         return "bg-red-100 text-red-800 border-red-200"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-muted text-muted-foreground border-border"
     }
   }
 
   return (
-    <Card className="bg-white">
+    <Card className="bg-card">
       <CardHeader>
-        <CardTitle className="flex items-center text-gray-900">
+        <CardTitle className="flex items-center text-foreground">
           <Shield className="mr-2 h-5 w-5 text-orange-500" />
           Monitoramento administrativo
         </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-5">
-        <div className="rounded-lg bg-gray-50 p-3">
-          <h4 className="mb-2 font-medium text-gray-900">Estado atual</h4>
+        <div className="rounded-lg bg-muted/50 p-3">
+          <h4 className="mb-2 font-medium text-foreground">Estado atual</h4>
           <div className="flex flex-wrap gap-2">
             <Badge className={getStatusColor(conversation.status)}>{conversation.status}</Badge>
             <Badge className={getPriorityColor(conversation.priority)}>{conversation.priority}</Badge>
@@ -124,7 +124,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-900">Alterar status</h4>
+          <h4 className="font-medium text-foreground">Alterar status</h4>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" onClick={() => handleStatusChange("active")} disabled={loading || conversation.status === "active"}>
               <CheckCircle className="mr-2 h-4 w-4" />
@@ -146,9 +146,9 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-900">Prioridade</h4>
+          <h4 className="font-medium text-foreground">Prioridade</h4>
           <Select value={priority} onValueChange={(value) => handlePriorityChange(value as LegacyChatConversation["priority"])}>
-            <SelectTrigger className="bg-white">
+            <SelectTrigger className="bg-card">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -161,27 +161,27 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-900">Responsavel</h4>
+          <h4 className="font-medium text-foreground">Responsavel</h4>
           <div className="flex gap-2">
-            <Input value={assignee} onChange={(event) => setAssignee(event.target.value)} placeholder="Nome do responsavel" className="bg-white" />
+            <Input value={assignee} onChange={(event) => setAssignee(event.target.value)} placeholder="Nome do responsavel" className="bg-card" />
             <Button type="button" variant="outline" onClick={handleAssignConversation} disabled={loading || !assignee.trim()}>
               <UserPlus className="mr-2 h-4 w-4" />
               Salvar
             </Button>
           </div>
-          <p className="text-xs text-gray-500">Atual: {conversation.assignedAdmin || "Nao atribuido"}</p>
+          <p className="text-xs text-muted-foreground">Atual: {conversation.assignedAdmin || "Nao atribuido"}</p>
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-900">Notas internas</h4>
+          <h4 className="font-medium text-foreground">Notas internas</h4>
           {conversation.notes ? (
-            <div className="max-h-32 overflow-y-auto rounded-md border bg-gray-50 p-3 text-sm whitespace-pre-wrap">
+            <div className="max-h-32 overflow-y-auto rounded-md border bg-muted/50 p-3 text-sm whitespace-pre-wrap">
               {conversation.notes}
             </div>
           ) : (
-            <div className="rounded-md border border-dashed p-3 text-sm text-gray-500">Nenhuma nota registrada para esta conversa.</div>
+            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">Nenhuma nota registrada para esta conversa.</div>
           )}
-          <Textarea placeholder="Adicionar nota administrativa" value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="bg-white" />
+          <Textarea placeholder="Adicionar nota administrativa" value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="bg-card" />
           <Button type="button" onClick={handleAddNote} disabled={loading || !note.trim()} className="w-full bg-orange-500 text-white hover:bg-orange-600">
             <Edit className="mr-2 h-4 w-4" />
             Registrar nota

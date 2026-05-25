@@ -161,7 +161,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
           <CardHeader>
             <CardTitle className="text-lg">Resumo da conversa selecionada</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm text-gray-700">
+          <CardContent className="space-y-3 text-sm text-foreground">
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">Pedido: {selectedConversation.orderProtocol || selectedConversation.orderId}</Badge>
               {selectedConversation.assignedAdmin ? <Badge variant="outline">Responsavel: {selectedConversation.assignedAdmin}</Badge> : null}

@@ -128,11 +128,11 @@ export const VerificationsPageContent = () => {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Lock className="h-6 w-6 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-foreground">
               Verificação de Documentos
             </h1>
           </div>
-          <p className="text-gray-600 mt-2">
+          <p className="text-muted-foreground mt-2">
             Área restrita para análise e aprovação de documentos de prestadores
           </p>
         </div>
@@ -158,12 +158,12 @@ export const VerificationsPageContent = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="border-0 shadow-lg bg-white">
+        <Card className="border-0 shadow-card bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold text-foreground">{stats.total}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                 <FileText className="h-6 w-6 text-blue-600" />
@@ -172,11 +172,11 @@ export const VerificationsPageContent = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-white">
+        <Card className="border-0 shadow-card bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Pendentes</p>
+                <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
                 <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
@@ -186,11 +186,11 @@ export const VerificationsPageContent = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-white">
+        <Card className="border-0 shadow-card bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Aprovados</p>
+                <p className="text-sm font-medium text-muted-foreground">Aprovados</p>
                 <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
@@ -200,11 +200,11 @@ export const VerificationsPageContent = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-lg bg-white">
+        <Card className="border-0 shadow-card bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">Rejeitados</p>
+                <p className="text-sm font-medium text-muted-foreground">Rejeitados</p>
                 <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-red-100 flex items-center justify-center">
@@ -216,9 +216,9 @@ export const VerificationsPageContent = () => {
       </div>
 
       {/* Filters */}
-      <Card className="border-0 shadow-lg bg-white">
+      <Card className="border-0 shadow-card bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-900">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Filter className="h-5 w-5" />
             Filtros e Busca
           </CardTitle>
@@ -229,7 +229,7 @@ export const VerificationsPageContent = () => {
             <div className="flex flex-col gap-4 md:flex-row">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                   <Input
                     placeholder="Buscar por nome, email, telefone..." 
                     value={search} 
@@ -242,7 +242,7 @@ export const VerificationsPageContent = () => {
 
             {/* Filtros de Status */}
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-2">Status</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
               <div className="flex flex-wrap gap-2">
                 <Button 
                   variant={statusFilter === "all" ? "default" : "outline"}
@@ -277,7 +277,7 @@ export const VerificationsPageContent = () => {
 
             {/* Filtros de Tipo de Documento */}
             <div>
-              <p className="text-sm font-medium text-gray-500 mb-2">Tipo de Documento</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">Tipo de Documento</p>
               <div className="flex flex-wrap gap-2">
                 <Button 
                   variant={documentTypeFilter === "all" ? "default" : "outline"}
@@ -321,9 +321,9 @@ export const VerificationsPageContent = () => {
       </Card>
 
       {/* Verifications List */}
-      <Card className="border-0 shadow-lg bg-white">
+      <Card className="border-0 shadow-card bg-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-900">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Shield className="h-5 w-5" />
             Verificações ({filteredVerifications.length})
           </CardTitle>
@@ -332,18 +332,18 @@ export const VerificationsPageContent = () => {
           {loading ? (
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+                <div key={i} className="h-32 bg-muted rounded-lg animate-skeleton" />
               ))}
             </div>
           ) : filteredVerifications.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                <FileText className="h-8 w-8 text-gray-400" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center mb-4">
+                <FileText className="h-8 w-8 text-muted-foreground/60" />
               </div>
-              <h3 className="text-lg font-medium mb-2 text-gray-900">
+              <h3 className="text-lg font-medium mb-2 text-foreground">
                 Nenhuma verificação encontrada
               </h3>
-              <p className="text-gray-500">
+              <p className="text-muted-foreground">
                 {search || statusFilter !== "all" || documentTypeFilter !== "all" 
                   ? 'Tente ajustar os filtros de busca.' 
                   : 'Não há verificações pendentes no momento.'}
@@ -352,7 +352,7 @@ export const VerificationsPageContent = () => {
           ) : (
             <div className="space-y-4">
               {filteredVerifications.map((verification) => (
-                <Card key={verification.id} className="border shadow-sm hover:shadow-md transition-shadow">
+                <Card key={verification.id} className="border border-border shadow-card hover:shadow-card-hover transition-shadow">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-3">
@@ -362,10 +362,10 @@ export const VerificationsPageContent = () => {
                           </span>
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg text-gray-900">
+                          <h3 className="font-semibold text-lg text-foreground">
                             {verification.providerName}
                           </h3>
-                          <div className="flex flex-col gap-1 text-sm text-gray-500 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                          <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
                             <div className="flex items-center gap-1">
                               <Mail className="h-4 w-4" />
                               {verification.providerEmail}
@@ -381,15 +381,15 @@ export const VerificationsPageContent = () => {
                       </div>
                       <div className="flex flex-col gap-2 text-sm sm:text-right">
                         <div>
-                          <p className="text-gray-500">Status</p>
+                          <p className="text-muted-foreground">Status</p>
                           {getStatusBadge(verification.status)}
                         </div>
                         <div>
-                          <p className="text-gray-500">Documentos</p>
+                          <p className="text-muted-foreground">Documentos</p>
                           <p>{countTotalDocuments(verification.documents)} documentos</p>
                         </div>
                         <div>
-                          <p className="text-gray-500">Enviado</p>
+                          <p className="text-muted-foreground">Enviado</p>
                           <p>
                             {formatDistanceToNow(verification.submittedAt, { 
                               addSuffix: true, 
@@ -456,7 +456,7 @@ export const VerificationsPageContent = () => {
                                 </DialogTitle>
                               </DialogHeader>
                               <div className="space-y-4">
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-muted-foreground">
                                   Informe o motivo da rejeição para <strong>{selectedVerification?.providerName}</strong>:
                                 </p>
                                 <Textarea
@@ -499,17 +499,17 @@ export const VerificationsPageContent = () => {
       {/* Verification Details Modal */}
       {showDetails && selectedVerification && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[9999]">
-          <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-white shadow-2xl">
-            <CardHeader className="bg-gray-50 border-b">
+          <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-card shadow-2xl">
+            <CardHeader className="bg-muted/50 border-b">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-gray-900">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Shield className="h-5 w-5" />
                   Documentos do Prestador - {selectedVerification.providerName}
                 </CardTitle>
                 <Button 
                   variant="ghost" 
                   onClick={() => setShowDetails(false)}
-                  className="hover:bg-gray-200"
+                  className="hover:bg-muted"
                 >
                   ✕
                 </Button>
@@ -517,25 +517,25 @@ export const VerificationsPageContent = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Provider Info */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <User className="h-5 w-5 text-gray-500" />
+                  <User className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Nome</p>
+                    <p className="text-sm font-medium text-muted-foreground">Nome</p>
                     <p className="font-semibold">{selectedVerification.providerName}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-gray-500" />
+                  <Mail className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-sm font-medium text-muted-foreground">Email</p>
                     <p className="font-semibold">{selectedVerification.providerEmail}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-gray-500" />
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Enviado</p>
+                    <p className="text-sm font-medium text-muted-foreground">Enviado</p>
                     <p className="font-semibold">
                       {formatDistanceToNow(selectedVerification.submittedAt, { 
                         addSuffix: true, 
@@ -594,7 +594,7 @@ export const VerificationsPageContent = () => {
                         </DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           Informe o motivo da rejeição para <strong>{selectedVerification.providerName}</strong>:
                         </p>
                         <Textarea

@@ -11,7 +11,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     agendado: {
       label: "Agendado",
       variant: "secondary" as const,
-      className: "bg-gray-100 text-gray-800",
+      className: "bg-muted text-muted-foreground",
     },
     aceito: {
       label: "Aceito",
@@ -26,7 +26,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
     nao_enviado: {
       label: "Não Enviado",
       variant: "secondary" as const,
-      className: "bg-gray-100 text-gray-800 border-dashed",
+      className: "bg-muted text-muted-foreground border-dashed",
     },
     em_andamento: {
       label: "Em Andamento",

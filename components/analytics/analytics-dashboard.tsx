@@ -54,9 +54,9 @@ export function AnalyticsDashboard() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <div className="text-center text-red-600">
+          <div className="text-center text-destructive">
             <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
-            <p>Erro ao carregar dados do analytics: {error}</p>
+            <p className="text-sm">Erro ao carregar dados do analytics: {error}</p>
           </div>
         </CardContent>
       </Card>
@@ -234,7 +234,7 @@ export function AnalyticsDashboard() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        label={(props: any) => `${props.name} ${((props.percent ?? 0) * 100).toFixed(0)}%`}
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="count"

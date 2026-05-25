@@ -98,12 +98,12 @@ export function SyncPanel() {
           )}
 
           {/* Informações */}
-          <div className="p-4 bg-gray-50 rounded-lg">
+          <div className="p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
-              <Cloud className="h-4 w-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Como funciona</span>
+              <Cloud className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Como funciona</span>
             </div>
-            <ul className="text-sm text-gray-600 space-y-1">
+            <ul className="text-sm text-muted-foreground space-y-1">
               <li>• Os dados do Pagar.me são sincronizados com o Firebase</li>
               <li>• Webhooks atualizam automaticamente em tempo real</li>
               <li>• Você pode forçar uma sincronização manual aqui</li>
@@ -129,20 +129,20 @@ export function SyncPanel() {
     {/* Modal de Sucesso - Popup Bonito */}
     {showSuccessModal && (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto border-0 overflow-hidden">
+        <div className="bg-card rounded-xl shadow-2xl max-w-md w-full mx-auto border-0 overflow-hidden">
           <div className="text-center space-y-6 p-6">
           {/* Ícone de sucesso animado */}
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+          <div className="mx-auto w-20 h-20 bg-linear-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
             <CheckCircle className="h-10 w-10 text-white animate-pulse" />
           </div>
           
           {/* Título */}
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+            <h3 className="text-2xl font-bold text-foreground flex items-center justify-center gap-2">
               <Sparkles className="h-6 w-6 text-yellow-500" />
               Sincronização Concluída!
             </h3>
-            <p className="text-gray-600">Os dados foram sincronizados com sucesso</p>
+            <p className="text-muted-foreground">Os dados foram sincronizados com sucesso</p>
           </div>
 
           {/* Estatísticas */}
@@ -175,7 +175,7 @@ export function SyncPanel() {
             {/* Botão de fechar */}
             <Button 
               onClick={() => setShowSuccessModal(false)}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+              className="w-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
             >
               <CheckCircle className="h-5 w-5 mr-2" />
               Perfeito!
@@ -188,17 +188,17 @@ export function SyncPanel() {
     {/* Modal de Erro */}
     {showErrorModal && (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto border-0 overflow-hidden">
+        <div className="bg-card rounded-xl shadow-2xl max-w-md w-full mx-auto border-0 overflow-hidden">
           <div className="text-center space-y-6 p-6">
           {/* Ícone de erro */}
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+          <div className="mx-auto w-20 h-20 bg-linear-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
             <AlertCircle className="h-10 w-10 text-white" />
           </div>
           
           {/* Título */}
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-gray-900">Ops! Algo deu errado</h3>
-            <p className="text-gray-600">Não foi possível sincronizar os dados</p>
+            <h3 className="text-2xl font-bold text-foreground">Ops! Algo deu errado</h3>
+            <p className="text-muted-foreground">Não foi possível sincronizar os dados</p>
           </div>
 
           {/* Mensagem de erro */}

@@ -47,12 +47,12 @@ export const DocumentLogin = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-4">
       {/* Botão de Voltar */}
       <Button
         variant="outline"
         onClick={handleBack}
-        className="absolute top-4 left-4 flex items-center gap-2 bg-white/80 hover:bg-white"
+        className="absolute top-4 left-4 flex items-center gap-2 bg-background/80 hover:bg-background"
       >
         <ArrowLeft className="h-4 w-4" />
         Voltar para Dashboard
@@ -63,10 +63,10 @@ export const DocumentLogin = () => {
           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
             <Shield className="h-8 w-8 text-blue-600" />
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-bold text-foreground">
             Área de Documentos
           </CardTitle>
-          <p className="text-gray-600 mt-2">
+          <p className="text-muted-foreground mt-2">
             Acesso restrito para verificação de documentos
           </p>
         </CardHeader>
@@ -75,11 +75,11 @@ export const DocumentLogin = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
@@ -94,11 +94,11 @@ export const DocumentLogin = () => {
 
             {/* Senha */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="password" className="text-sm font-medium text-foreground">
                 Senha
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -111,7 +111,7 @@ export const DocumentLogin = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -147,12 +147,12 @@ export const DocumentLogin = () => {
           </form>
 
           {/* Informações de Segurança */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
               <CheckCircle className="h-4 w-4 text-green-500" />
               <span className="font-medium">Informações de Segurança</span>
             </div>
-            <ul className="text-xs text-gray-500 space-y-1">
+            <ul className="text-xs text-muted-foreground space-y-1">
               <li>• Conexão criptografada com SSL</li>
               <li>• Acesso restrito e monitorado</li>
               <li>• Sessão com expiração automática</li>

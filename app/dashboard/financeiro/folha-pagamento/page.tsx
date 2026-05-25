@@ -11,8 +11,8 @@ export default function FolhaPagamentoPage() {
       <PageWithBack backButtonLabel="Voltar para Financeiro">
         <div className="space-y-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Folha de Pagamento</h1>
-            <p className="text-gray-600">
+            <h1 className="text-2xl font-bold text-foreground">Folha de Pagamento</h1>
+            <p className="text-muted-foreground">
               A tela foi mantida sem dados ficticios. Ela so sera habilitada quando existir fonte real de folha no backend.
             </p>
           </div>
@@ -22,7 +22,7 @@ export default function FolhaPagamentoPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total da Folha</p>
+                    <p className="text-sm font-medium text-muted-foreground">Total da Folha</p>
                     <p className="text-2xl font-bold">R$ 0,00</p>
                   </div>
                   <Users className="h-8 w-8 text-blue-600" />
@@ -34,7 +34,7 @@ export default function FolhaPagamentoPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Descontos</p>
+                    <p className="text-sm font-medium text-muted-foreground">Total Descontos</p>
                     <p className="text-2xl font-bold text-red-600">R$ 0,00</p>
                   </div>
                   <Users className="h-8 w-8 text-red-600" />
@@ -46,7 +46,7 @@ export default function FolhaPagamentoPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Funcionarios</p>
+                    <p className="text-sm font-medium text-muted-foreground">Funcionarios</p>
                     <p className="text-2xl font-bold">0</p>
                   </div>
                   <Users className="h-8 w-8 text-green-600" />

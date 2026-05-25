@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useChatConversations } from "@/hooks/use-chat"
@@ -17,6 +17,9 @@ interface ConversationsListProps {
   initialOrderId?: string | null
   onConversationsLoaded?: (conversations: LegacyChatConversation[]) => void
   compact?: boolean
+  /** Quando definido, ignora o fetch interno e usa estas conversas (ex.: dashboard operacional com filtros externos). */
+  conversationsOverride?: LegacyChatConversation[]
+  loadingOverride?: boolean
 }
 
 export function ConversationsList({
@@ -26,9 +29,31 @@ export function ConversationsList({
   initialServicoId,
   initialOrderId,
   onConversationsLoaded,
+  conversationsOverride,
+  loadingOverride,
 }: ConversationsListProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const { conversations, loading, error } = useChatConversations({ searchTerm })
+  const useExternal = conversationsOverride !== undefined
+  const internal = useChatConversations({ searchTerm }, { disabled: useExternal })
+  const source = useExternal ? conversationsOverride! : internal.conversations
+  const conversations = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return source
+    }
+    const s = searchTerm.trim().toLowerCase()
+    return source.filter(
+      (conversation) =>
+        conversation.clientName?.toLowerCase().includes(s) ||
+        conversation.clientEmail?.toLowerCase().includes(s) ||
+        conversation.orderId?.toLowerCase().includes(s) ||
+        String(conversation.orderProtocol || "").toLowerCase().includes(s) ||
+        conversation.providerName?.toLowerCase().includes(s) ||
+        conversation.assignedAdmin?.toLowerCase().includes(s)
+    )
+  }, [source, searchTerm])
+
+  const loading = useExternal ? Boolean(loadingOverride) : internal.loading
+  const error = useExternal ? null : internal.error
 
   useEffect(() => {
     onConversationsLoaded?.(conversations)
@@ -56,11 +81,11 @@ export function ConversationsList({
       case "active":
         return <MessageSquare className="h-4 w-4 text-green-500" />
       case "closed":
-        return <Clock className="h-4 w-4 text-gray-500" />
+        return <Clock className="h-4 w-4 text-muted-foreground" />
       case "blocked":
         return <AlertTriangle className="h-4 w-4 text-red-500" />
       default:
-        return <MessageSquare className="h-4 w-4 text-gray-400" />
+        return <MessageSquare className="h-4 w-4 text-muted-foreground/60" />
     }
   }
 
@@ -75,40 +100,40 @@ export function ConversationsList({
       case "low":
         return "bg-green-100 text-green-800"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
     }
   }
 
   const getStatusColor = (status: LegacyChatConversation["status"]) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800"
+        return "bg-emerald-100 text-emerald-800"
       case "closed":
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
       case "archived":
         return "bg-blue-100 text-blue-800"
       case "blocked":
         return "bg-red-100 text-red-800"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-muted text-muted-foreground"
     }
   }
 
   if (loading) {
     return (
       <div className="flex h-full flex-col">
-        <div className="border-b border-gray-200 bg-white p-4">
-          <h3 className="font-semibold text-gray-800">Carregando...</h3>
+        <div className="border-b border-border bg-card p-4">
+          <h3 className="font-semibold text-foreground">Carregando...</h3>
         </div>
         <div className="flex-1 space-y-4 p-4">
           {[...Array(5)].map((_, index) => (
-            <div key={index} className="rounded-lg border p-4 animate-pulse">
+            <div key={index} className="rounded-lg border border-border p-4 animate-skeleton">
               <div className="mb-2 flex items-center justify-between">
-                <div className="h-4 w-1/3 rounded bg-gray-200"></div>
-                <div className="h-4 w-16 rounded bg-gray-200"></div>
+                <div className="h-4 w-1/3 rounded bg-muted"></div>
+                <div className="h-4 w-16 rounded bg-muted"></div>
               </div>
-              <div className="mb-2 h-3 w-2/3 rounded bg-gray-200"></div>
-              <div className="h-3 w-1/2 rounded bg-gray-200"></div>
+              <div className="mb-2 h-3 w-2/3 rounded bg-muted"></div>
+              <div className="h-3 w-1/2 rounded bg-muted"></div>
             </div>
           ))}
         </div>
@@ -119,12 +144,12 @@ export function ConversationsList({
   if (error) {
     return (
       <div className="flex h-full flex-col">
-        <div className="border-b border-gray-200 bg-white p-4">
-          <h3 className="font-semibold text-gray-800">Erro</h3>
+        <div className="border-b border-border bg-card p-4">
+          <h3 className="font-semibold text-foreground">Erro</h3>
         </div>
         <div className="flex-1 p-6 text-center">
-          <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-          <p className="text-red-600">Erro ao carregar conversas: {error}</p>
+          <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-destructive" />
+          <p className="text-sm text-destructive">Erro ao carregar conversas: {error}</p>
         </div>
       </div>
     )
@@ -132,12 +157,12 @@ export function ConversationsList({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-gray-200 bg-white p-4">
+      <div className="border-b border-border bg-card p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-gray-800">Conversas ({conversations.length})</h3>
+          <h3 className="font-semibold text-foreground">Conversas ({conversations.length})</h3>
         </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             placeholder="Buscar por cliente, pedido ou responsavel"
             value={searchTerm}
@@ -149,32 +174,32 @@ export function ConversationsList({
 
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-            <p>Nenhuma conversa encontrada</p>
+          <div className="p-6 text-center text-muted-foreground">
+            <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
+            <p className="text-sm">Nenhuma conversa encontrada</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-border">
             {conversations.map((conversation) => (
               <div
                 key={conversation.id}
-                className={`cursor-pointer p-4 transition-all duration-200 hover:bg-gray-50 ${
-                  selectedConversationId === conversation.id ? "border-r-4 border-r-orange-500 bg-orange-50" : ""
+                className={`cursor-pointer p-4 transition-all duration-200 hover:bg-muted/50 ${
+                  selectedConversationId === conversation.id ? "border-r-4 border-r-primary bg-primary/5" : ""
                 }`}
                 onClick={() => onSelectConversation(conversation)}
               >
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     {getStatusIcon(conversation.status)}
-                    <h4 className="flex-1 truncate text-sm font-medium text-gray-900">{conversation.clientName}</h4>
+                    <h4 className="flex-1 truncate text-sm font-medium text-foreground">{conversation.clientName}</h4>
                     {conversation.unreadCount.admin > 0 ? (
-                      <div className="flex-shrink-0 rounded-full bg-orange-500 px-2 py-1 text-xs text-white">
+                      <div className="shrink-0 rounded-full bg-primary px-2 py-1 text-xs text-primary-foreground">
                         {conversation.unreadCount.admin}
                       </div>
                     ) : null}
                   </div>
 
-                  <p className="truncate text-xs text-gray-500">
+                  <p className="truncate text-xs text-muted-foreground">
                     {conversation.orderId !== "suporte-geral"
                       ? `Pedido: ${conversation.orderProtocol || conversation.orderId}`
                       : "Suporte geral"}
@@ -195,14 +220,14 @@ export function ConversationsList({
                     ) : null}
                   </div>
 
-                  <div className="flex items-center justify-between gap-3 text-xs text-gray-500">
+                  <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
                     <div className="flex min-w-0 items-center space-x-1">
-                      <Mail className="h-3 w-3 flex-shrink-0" />
+                      <Mail className="h-3 w-3 shrink-0" />
                       <span className="truncate">{conversation.clientEmail || "Sem email"}</span>
                     </div>
 
                     {conversation.lastMessage ? (
-                      <div className="flex flex-shrink-0 items-center space-x-1">
+                      <div className="flex shrink-0 items-center space-x-1">
                         <Clock className="h-3 w-3" />
                         <span className="whitespace-nowrap">
                           {formatDistanceToNow(conversation.lastMessage.timestamp, {

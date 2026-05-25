@@ -1,133 +1,82 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { AlertCircle, ClipboardList, Clock, Star, TrendingUp, UserPlus, Users } from "lucide-react"
+import { cn } from "@/lib/utils"
+import {
+  AlertCircle, ClipboardList, Clock, Star,
+  TrendingUp, UserPlus, Users, CheckCircle,
+} from "lucide-react"
 import { FirestoreAnalyticsService } from "@/lib/services/firestore-analytics-simple"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
-interface MetricData {
+interface Metric {
   title: string
   value: string
-  icon: typeof ClipboardList
   description: string
-  color: string
+  icon: typeof ClipboardList
+  variant: "orange" | "blue" | "emerald" | "violet" | "red" | "slate" | "amber" | "teal"
+}
+
+const variantStyles = {
+  orange:  { icon: "text-orange-600",  bg: "bg-orange-50  dark:bg-orange-950/40" },
+  blue:    { icon: "text-blue-600",    bg: "bg-blue-50    dark:bg-blue-950/40"   },
+  emerald: { icon: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/40"},
+  violet:  { icon: "text-violet-600",  bg: "bg-violet-50  dark:bg-violet-950/40" },
+  red:     { icon: "text-red-600",     bg: "bg-red-50     dark:bg-red-950/40"    },
+  slate:   { icon: "text-muted-foreground",   bg: "bg-muted"  },
+  amber:   { icon: "text-amber-600",   bg: "bg-amber-50   dark:bg-amber-950/40"  },
+  teal:    { icon: "text-teal-600",    bg: "bg-teal-50    dark:bg-teal-950/40"   },
 }
 
 export function DashboardMetrics() {
-  const [firestoreData, setFirestoreData] = useState<any>(null)
+  const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchData = useCallback(async () => {
+  const fetch = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      const data = await FirestoreAnalyticsService.getDashboardMetrics()
-      setFirestoreData(data)
-    } catch (err) {
-      console.error('Erro ao buscar dados do Firestore:', err)
-      setError('Erro ao carregar dados')
-      setFirestoreData(null)
+      setData(await FirestoreAnalyticsService.getDashboardMetrics())
+    } catch {
+      setError("Não foi possível carregar as métricas")
     } finally {
       setLoading(false)
     }
   }, [])
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  useEffect(() => { fetch() }, [fetch])
 
-  const metrics: MetricData[] = useMemo(() => {
-    if (!firestoreData) {
-      return []
-    }
-
+  const metrics: Metric[] = useMemo(() => {
+    if (!data) return []
+    const o = data.orders ?? {}
+    const u = data.users ?? {}
+    const p = data.providers ?? {}
     return [
-      {
-        title: "Total de Pedidos",
-        value: (firestoreData.orders?.totalOrders || 0).toLocaleString('pt-BR'),
-        icon: ClipboardList,
-        description: "Todos os pedidos encontrados na colecao orders",
-        color: "orange",
-      },
-      {
-        title: "Pedidos em Aberto",
-        value: (firestoreData.orders?.activeOrders || 0).toLocaleString('pt-BR'),
-        icon: Clock,
-        description: "Pedidos ativos no momento",
-        color: "blue",
-      },
-      {
-        title: "Usuarios Ativos",
-        value: (firestoreData.users?.activeUsers || 0).toLocaleString('pt-BR'),
-        icon: Users,
-        description: "Cadastros marcados como ativos",
-        color: "emerald",
-      },
-      {
-        title: "Novos Usuarios",
-        value: (firestoreData.users?.newUsersLast30Days || 0).toLocaleString('pt-BR'),
-        icon: UserPlus,
-        description: "Criados nos ultimos 30 dias",
-        color: "violet",
-      },
-      {
-        title: "Pedidos Urgentes",
-        value: (firestoreData.orders?.emergencyOrders || 0).toLocaleString('pt-BR'),
-        icon: AlertCircle,
-        description: "Marcados como emergencia",
-        color: "red",
-      },
-      {
-        title: "Pedidos Cancelados",
-        value: (firestoreData.orders?.cancelledOrders || 0).toLocaleString('pt-BR'),
-        icon: Clock,
-        description: "Cancelados no historico atual",
-        color: "slate",
-      },
-      {
-        title: "Prestadores Aprovados",
-        value: (firestoreData.providers?.approvedVerifications || 0).toLocaleString('pt-BR'),
-        icon: Star,
-        description: "Verificacoes aprovadas",
-        color: "amber",
-      },
-      {
-        title: "Taxa de Aprovacao",
-        value: `${Math.round(firestoreData.providers?.approvalRate || 0)}%`,
-        icon: TrendingUp,
-        description: "Aprovacoes sobre o total de verificacoes",
-        color: "teal",
-      },
+      { title: "Total de Pedidos",      value: (o.totalOrders          ?? 0).toLocaleString("pt-BR"), icon: ClipboardList, description: "Pedidos na coleção orders",        variant: "orange"  },
+      { title: "Pedidos em Aberto",     value: (o.activeOrders         ?? 0).toLocaleString("pt-BR"), icon: Clock,         description: "Pedidos ativos no momento",       variant: "blue"    },
+      { title: "Usuários Ativos",       value: (u.activeUsers          ?? 0).toLocaleString("pt-BR"), icon: Users,         description: "Cadastros marcados como ativos",  variant: "emerald" },
+      { title: "Novos Usuários",        value: (u.newUsersLast30Days   ?? 0).toLocaleString("pt-BR"), icon: UserPlus,      description: "Criados nos últimos 30 dias",     variant: "violet"  },
+      { title: "Pedidos Urgentes",      value: (o.emergencyOrders      ?? 0).toLocaleString("pt-BR"), icon: AlertCircle,   description: "Marcados como emergência",        variant: "red"     },
+      { title: "Pedidos Cancelados",    value: (o.cancelledOrders      ?? 0).toLocaleString("pt-BR"), icon: Clock,         description: "Cancelados no histórico atual",   variant: "slate"   },
+      { title: "Prestadores Aprovados", value: (p.approvedVerifications ?? 0).toLocaleString("pt-BR"), icon: CheckCircle,   description: "Verificações aprovadas",         variant: "amber"   },
+      { title: "Taxa de Aprovação",     value: `${Math.round(p.approvalRate ?? 0)}%`,                  icon: TrendingUp,    description: "Sobre o total de verificações",  variant: "teal"    },
     ]
-  }, [firestoreData])
-
-  const colorClasses: Record<string, { bg: string; icon: string }> = {
-    orange: { bg: "bg-orange-50", icon: "text-orange-500" },
-    blue: { bg: "bg-blue-50", icon: "text-blue-500" },
-    emerald: { bg: "bg-emerald-50", icon: "text-emerald-500" },
-    violet: { bg: "bg-violet-50", icon: "text-violet-500" },
-    red: { bg: "bg-red-50", icon: "text-red-500" },
-    slate: { bg: "bg-slate-50", icon: "text-slate-500" },
-    amber: { bg: "bg-amber-50", icon: "text-amber-500" },
-    teal: { bg: "bg-teal-50", icon: "text-teal-500" },
-  }
+  }, [data])
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <Card key={index} className="bg-white border-slate-200 shadow-sm">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Card key={i} className="shadow-card">
             <CardContent className="p-5">
-              <div className="flex items-start justify-between">
-                <div className="space-y-3 flex-1">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-8 w-20" />
-                  <Skeleton className="h-3 w-40" />
-                </div>
-                <Skeleton className="h-10 w-10 rounded-xl" />
+              <div className="flex items-start justify-between mb-4">
+                <Skeleton className="h-4 w-28 animate-skeleton" />
+                <Skeleton className="h-9 w-9 rounded-lg animate-skeleton" />
               </div>
+              <Skeleton className="h-8 w-16 mb-2 animate-skeleton" />
+              <Skeleton className="h-3 w-32 animate-skeleton" />
             </CardContent>
           </Card>
         ))}
@@ -135,41 +84,41 @@ export function DashboardMetrics() {
     )
   }
 
-  if (error || !firestoreData) {
+  if (error || !data) {
     return (
-      <Card className="bg-white border-slate-200 shadow-sm">
-        <CardContent className="p-8">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="h-6 w-6 text-red-500" />
-            </div>
-            <p className="text-slate-600">Erro ao carregar metricas reais</p>
-            <p className="text-sm text-slate-400 mt-1">{error}</p>
+      <Card className="shadow-card">
+        <CardContent className="p-10 text-center">
+          <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-3">
+            <AlertCircle className="h-5 w-5 text-destructive" />
           </div>
+          <p className="text-sm font-medium text-foreground">Erro ao carregar métricas</p>
+          <p className="text-xs text-muted-foreground mt-1">{error}</p>
         </CardContent>
       </Card>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {metrics.map((metric) => {
-        const colors = colorClasses[metric.color] || colorClasses.orange
-        const Icon = metric.icon
-
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {metrics.map((m) => {
+        const s = variantStyles[m.variant]
+        const Icon = m.icon
         return (
-          <Card key={metric.title} className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-all">
+          <Card
+            key={m.title}
+            className="shadow-card hover:shadow-card-hover transition-shadow duration-200 group"
+          >
             <CardContent className="p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-slate-500">{metric.title}</p>
-                  <p className="text-2xl font-bold text-slate-800">{metric.value}</p>
-                  <p className="text-xs text-slate-400">{metric.description}</p>
-                </div>
-                <div className={`p-2.5 rounded-xl ${colors.bg}`}>
-                  <Icon className={`h-5 w-5 ${colors.icon}`} />
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-xs font-medium text-muted-foreground leading-snug pr-2">
+                  {m.title}
+                </p>
+                <div className={cn("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", s.bg)}>
+                  <Icon className={cn("h-4 w-4", s.icon)} aria-hidden />
                 </div>
               </div>
+              <p className="text-2xl font-bold text-foreground tabular-nums">{m.value}</p>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-snug">{m.description}</p>
             </CardContent>
           </Card>
         )

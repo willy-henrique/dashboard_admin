@@ -116,14 +116,14 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
               <User className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Nome Completo</p>
-                <p className="text-sm font-semibold text-gray-900">{verification.providerName}</p>
+                <p className="text-sm font-semibold text-foreground">{verification.providerName}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Email</p>
-                <p className="text-sm font-semibold text-gray-900">{verification.providerEmail}</p>
+                <p className="text-sm font-semibold text-foreground">{verification.providerEmail}</p>
               </div>
             </div>
             {verification.providerPhone && (
@@ -131,7 +131,7 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
                 <Phone className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Telefone</p>
-                  <p className="text-sm font-semibold text-gray-900">{verification.providerPhone}</p>
+                  <p className="text-sm font-semibold text-foreground">{verification.providerPhone}</p>
                 </div>
               </div>
             )}
@@ -139,7 +139,7 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
               <Calendar className="h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="text-sm font-medium">Data de Cadastro</p>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   {format(verification.submittedAt, "dd/MM/yyyy", { locale: ptBR })}
                 </p>
               </div>
@@ -148,20 +148,20 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
               <p className="text-sm font-medium text-muted-foreground">Serviços que atende</p>
               {verification.providerServiceCategories && verification.providerServiceCategories.length > 0 ? (
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {verification.providerServiceCategories.map((cat) => (
+                  {verification.providerServiceCategories.map((cat: string) => (
                     <Badge key={cat} variant="outline" className="font-medium">
                       {cat}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500 mt-1">Não informado</p>
+                <p className="text-sm text-muted-foreground mt-1">Não informado</p>
               )}
             </div>
             {(verification.providerLatitude !== undefined && verification.providerLongitude !== undefined) && (
               <div className="md:col-span-2 lg:col-span-3">
                 <p className="text-sm font-medium text-muted-foreground">Localização cadastrada</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
+                <p className="text-sm font-semibold text-foreground mt-1">
                   {Number(verification.providerLatitude).toFixed(6)}, {Number(verification.providerLongitude).toFixed(6)}
                 </p>
               </div>
@@ -171,7 +171,7 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
       </Card>
 
       {/* Credenciais e Documentos Pessoais - DESTAQUE */}
-      <Card className="border-2 border-blue-200 shadow-md bg-gradient-to-br from-blue-50 to-indigo-50">
+      <Card className="border-2 border-blue-200 shadow-card bg-blue-50/50 dark:bg-blue-950/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg text-blue-800">
             <Shield className="h-5 w-5 text-blue-600" />
@@ -181,59 +181,59 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {verification.providerCpf && (
-              <div className="bg-white rounded-lg p-4 shadow-sm border border-blue-200">
+              <div className="bg-card rounded-lg p-4 shadow-card border border-blue-200">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                     <FileText className="h-6 w-6 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">CPF</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase">CPF</p>
                     <p className="text-lg font-bold text-blue-900">{verification.providerCpf}</p>
                   </div>
                 </div>
               </div>
             )}
             {verification.providerRg && (
-              <div className="bg-white rounded-lg p-4 shadow-sm border border-purple-200">
+              <div className="bg-card rounded-lg p-4 shadow-card border border-purple-200">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
                     <FileText className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">RG</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase">RG</p>
                     <p className="text-lg font-bold text-purple-900">{verification.providerRg}</p>
                   </div>
                 </div>
               </div>
             )}
             {verification.providerBirthDate && (
-              <div className="bg-white rounded-lg p-4 shadow-sm border border-green-200">
+              <div className="bg-card rounded-lg p-4 shadow-card border border-green-200">
                 <div className="flex items-center gap-3">
                   <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
                     <Calendar className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">Data de Nascimento</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase">Data de Nascimento</p>
                     <p className="text-lg font-bold text-green-900">{verification.providerBirthDate}</p>
                   </div>
                 </div>
               </div>
             )}
             {verification.providerAddress && (
-              <div className="bg-white rounded-lg p-4 shadow-sm border border-orange-200 md:col-span-2">
+              <div className="bg-card rounded-lg p-4 shadow-card border border-orange-200 md:col-span-2">
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                  <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
                     <MapPin className="h-6 w-6 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-gray-500 uppercase">Endereço Completo</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase">Endereço Completo</p>
                     <p className="text-base font-semibold text-orange-900">{verification.providerAddress}</p>
                   </div>
                 </div>
               </div>
             )}
             {!verification.providerCpf && !verification.providerRg && !verification.providerBirthDate && !verification.providerAddress && (
-              <div className="col-span-full text-center py-6 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
+              <div className="col-span-full text-center py-6 text-muted-foreground bg-card rounded-lg border border-dashed border-border">
                 <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
                 <p className="font-semibold">Atenção: Credenciais não cadastradas</p>
                 <p className="text-sm mt-1">O prestador não forneceu CPF, RG ou outros dados pessoais no cadastro.</p>
@@ -298,7 +298,7 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
               <ul className="space-y-2 text-sm">
                 {SERVICE_TERMS.map((term, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                     <span>{term}</span>
                   </li>
                 ))}
@@ -308,7 +308,7 @@ export const ServiceAcceptanceDocs = ({ verification, onAccept, onReject }: Serv
             <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg">
               <Checkbox
                 checked={acceptedTerms}
-                onCheckedChange={setAcceptedTerms}
+                onCheckedChange={(v) => setAcceptedTerms(v === true)}
               />
               <span className="text-sm">
                 Eu li e aceito os termos de prestação de serviço e confirmo que todas as informações fornecidas são verdadeiras.

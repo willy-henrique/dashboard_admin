@@ -99,14 +99,13 @@ export function ProviderMap() {
       {/* Mapa Simulado */}
       <div
         ref={mapRef}
-        className="w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 relative overflow-hidden"
-        style={{ backgroundColor: 'var(--muted)' }}
+        className="w-full h-full bg-muted relative overflow-hidden"
       >
         {/* Grid do mapa */}
         <div className="absolute inset-0 opacity-20">
           <div className="grid grid-cols-20 grid-rows-20 h-full">
             {Array.from({ length: 400 }).map((_, i) => (
-              <div key={i} className="border border-gray-300"></div>
+              <div key={i} className="border border-border"></div>
             ))}
           </div>
         </div>
@@ -129,7 +128,7 @@ export function ProviderMap() {
               >
                 <User className="w-3 h-3 text-white" />
               </div>
-              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center">
+              <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-card rounded-full border-2 border-border flex items-center justify-center">
                 <div
                   className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: getStatusColor(provider.status) }}
@@ -140,8 +139,8 @@ export function ProviderMap() {
         ))}
 
         {/* Legenda */}
-        <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 border" style={{ borderColor: 'var(--border)' }}>
-          <div className="text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Status dos Prestadores</div>
+        <div className="absolute bottom-4 left-4 bg-card rounded-lg shadow-card p-3 border border-border">
+          <div className="text-sm font-medium mb-2 text-foreground">Status dos Prestadores</div>
           <div className="space-y-1">
             {['disponivel', 'ocupado', 'online', 'offline'].map((status) => (
               <div key={status} className="flex items-center space-x-2">
@@ -149,7 +148,7 @@ export function ProviderMap() {
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: getStatusColor(status) }}
                 ></div>
-                <span className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+                <span className="text-xs text-muted-foreground">
                   {getStatusText(status)}
                 </span>
               </div>
@@ -160,7 +159,7 @@ export function ProviderMap() {
 
       {/* Painel de detalhes do prestador */}
       {selectedProvider && (
-        <div className="absolute top-4 right-4 w-80 bg-white rounded-lg shadow-lg border" style={{ borderColor: 'var(--border)' }}>
+        <div className="absolute top-4 right-4 w-80 bg-card rounded-lg shadow-card border border-border">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">{selectedProvider.name}</CardTitle>
@@ -168,7 +167,7 @@ export function ProviderMap() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSelectedProvider(null)}
-                style={{ color: 'var(--muted-foreground)' }}
+                className="text-muted-foreground"
               >
                 ×
               </Button>
@@ -187,20 +186,20 @@ export function ProviderMap() {
             {/* Informações de contato */}
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Phone className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                <span className="text-sm" style={{ color: 'var(--foreground)' }}>
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">
                   {selectedProvider.phone}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-                <Mail className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                <span className="text-sm" style={{ color: 'var(--foreground)' }}>
+                <Mail className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">
                   {selectedProvider.email}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
-                <Star className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                <span className="text-sm" style={{ color: 'var(--foreground)' }}>
+                <Star className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-foreground">
                   {selectedProvider.rating} ⭐
                 </span>
               </div>
@@ -209,19 +208,19 @@ export function ProviderMap() {
             {/* Status do dispositivo */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Bateria</span>
+                <span className="text-sm text-muted-foreground">Bateria</span>
                 <div className="flex items-center space-x-1">
-                  <Battery className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-sm" style={{ color: 'var(--foreground)' }}>
+                  <Battery className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-foreground">
                     {Math.round(selectedProvider.batteryLevel)}%
                   </span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>Sinal</span>
+                <span className="text-sm text-muted-foreground">Sinal</span>
                 <div className="flex items-center space-x-1">
-                  <Wifi className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-sm" style={{ color: 'var(--foreground)' }}>
+                  <Wifi className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-foreground">
                     {selectedProvider.signalStrength}/5
                   </span>
                 </div>
@@ -232,12 +231,12 @@ export function ProviderMap() {
             {selectedProvider.vehicle && (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <Car className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  <Car className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
                     Veículo
                   </span>
                 </div>
-                <div className="text-sm space-y-1" style={{ color: 'var(--muted-foreground)' }}>
+                <div className="text-sm space-y-1 text-muted-foreground">
                   <div>{selectedProvider.vehicle.model}</div>
                   <div>Placa: {selectedProvider.vehicle.plate}</div>
                   <div>Cor: {selectedProvider.vehicle.color}</div>
@@ -247,14 +246,14 @@ export function ProviderMap() {
 
             {/* Serviço atual */}
             {selectedProvider.currentService && (
-              <div className="space-y-2 p-3 rounded-lg" style={{ backgroundColor: 'var(--muted)' }}>
+              <div className="space-y-2 p-3 rounded-lg bg-muted">
                 <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4" style={{ color: 'var(--muted-foreground)' }} />
-                  <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">
                     Serviço Atual
                   </span>
                 </div>
-                <div className="text-sm space-y-1" style={{ color: 'var(--muted-foreground)' }}>
+                <div className="text-sm space-y-1 text-muted-foreground">
                   <div>{selectedProvider.currentService.title}</div>
                   <div>Cliente: {selectedProvider.currentService.clientName}</div>
                   <div>Tempo estimado: {selectedProvider.currentService.estimatedTime} min</div>
@@ -263,7 +262,7 @@ export function ProviderMap() {
             )}
 
             {/* Última atualização */}
-            <div className="text-xs" style={{ color: 'var(--muted-foreground)' }}>
+            <div className="text-xs text-muted-foreground">
               Última atualização: {selectedProvider.lastUpdate.toLocaleTimeString()}
             </div>
 

@@ -7,16 +7,21 @@ import { SyncPanel } from "@/components/financial/sync-panel"
 
 export default function ConfiguracoesPage() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            Configurações do Sistema
-          </h1>
-          <p className="text-gray-600">
-            Gerencie configurações e sincronização de dados
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Settings className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Configurações do Sistema
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Gerencie configurações e sincronização de dados
+            </p>
+          </div>
         </div>
       </div>
 
@@ -25,15 +30,15 @@ export default function ConfiguracoesPage() {
 
       {/* Cards de Navegação */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card className="shadow-card hover:shadow-card-hover transition-shadow cursor-pointer">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Settings className="h-5 w-5" />
               Configurações Gerais
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Configurações principais do sistema e parâmetros gerais
             </p>
             <div className="mt-4">
@@ -44,15 +49,15 @@ export default function ConfiguracoesPage() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card className="shadow-card hover:shadow-card-hover transition-shadow cursor-pointer">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <UserCheck className="h-5 w-5" />
               Equipes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Gestão de equipes e responsabilidades
             </p>
             <div className="mt-4">
@@ -67,7 +72,7 @@ export default function ConfiguracoesPage() {
       {/* Status do Sistema */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-gray-900">Status do Sistema</CardTitle>
+          <CardTitle className="text-foreground">Status do Sistema</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

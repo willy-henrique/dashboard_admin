@@ -57,7 +57,7 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
     switch (priority) {
       case "low":
         return (
-          <Badge variant="outline" className="text-gray-600">
+          <Badge variant="outline" className="text-muted-foreground">
             Baixa
           </Badge>
         )
@@ -108,17 +108,17 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500">Categoria</label>
+                  <label className="text-xs sm:text-sm font-medium text-muted-foreground">Categoria</label>
                   <p className="text-sm sm:text-base">{order.serviceCategory}</p>
                 </div>
                 <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500">Prioridade</label>
+                  <label className="text-xs sm:text-sm font-medium text-muted-foreground">Prioridade</label>
                   <div className="mt-1">{getPriorityBadge(order.priority)}</div>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-500">Descrição</label>
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">Descrição</label>
                 <p className="text-sm sm:text-base mt-1">{order.description}</p>
               </div>
 
@@ -126,15 +126,15 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
 
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2">
-                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                   <span className="text-xs sm:text-sm truncate">{order.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                   <span className="text-xs sm:text-sm">R$ {order.budget.toFixed(2)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                   <span className="text-xs sm:text-sm">
                     Criado em {new Date(order.createdAt).toLocaleDateString("pt-BR")} às{" "}
                     {new Date(order.createdAt).toLocaleTimeString("pt-BR")}
@@ -152,7 +152,7 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                   <span className="font-medium text-sm sm:text-base truncate">{order.clientName}</span>
                 </div>
               </CardContent>
@@ -166,20 +166,20 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
                 {order.providerName ? (
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                      <User className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
                       <span className="font-medium text-sm sm:text-base truncate">{order.providerName}</span>
                     </div>
                     {order.assignedAt && (
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-gray-600">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">
                           Atribuído em {new Date(order.assignedAt).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-xs sm:text-sm">Nenhum prestador atribuído</p>
+                  <p className="text-muted-foreground text-xs sm:text-sm">Nenhum prestador atribuído</p>
                 )}
               </CardContent>
             </Card>
@@ -196,7 +196,7 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
                   <div>
                     <p className="text-sm font-medium">Pedido criado</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {new Date(order.createdAt).toLocaleDateString("pt-BR")} às{" "}
                       {new Date(order.createdAt).toLocaleTimeString("pt-BR")}
                     </p>
@@ -208,7 +208,7 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
                     <div className="w-2 h-2 bg-green-600 rounded-full mt-2"></div>
                     <div>
                       <p className="text-sm font-medium">Prestador atribuído</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {new Date(order.assignedAt).toLocaleDateString("pt-BR")} às{" "}
                         {new Date(order.assignedAt).toLocaleTimeString("pt-BR")}
                       </p>
@@ -221,7 +221,7 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
                     <div className="w-2 h-2 bg-purple-600 rounded-full mt-2"></div>
                     <div>
                       <p className="text-sm font-medium">Pedido concluído</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {new Date(order.completedAt).toLocaleDateString("pt-BR")} às{" "}
                         {new Date(order.completedAt).toLocaleTimeString("pt-BR")}
                       </p>
@@ -246,7 +246,7 @@ export function OrderModal({ order, isOpen, onClose, onStatusChange }: OrderModa
             <CardContent>
               <div className="flex flex-col space-y-4">
                 <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500">Alterar Status</label>
+                  <label className="text-xs sm:text-sm font-medium text-muted-foreground">Alterar Status</label>
                   <Select value={order.status} onValueChange={handleStatusChange}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />

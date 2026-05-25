@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,12 +25,15 @@ import {
   Star,
   Clock
 } from "lucide-react"
-import { User as UserType } from "@/types"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { User as UserType } from "@/types"
+// dados vindos do Firestore podem ter campos adicionais ao tipo base
+type UserRecord = Record<string, any>
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
 interface UserModalProps {
-  user: UserType | null
+  user: UserRecord | null
   isOpen: boolean
   onClose: () => void
   onSave: (userData: Partial<UserType>) => void
@@ -40,18 +44,20 @@ const roleConfig = {
   admin: { color: "bg-red-100 text-red-800", label: "Administrador" },
   operador: { color: "bg-blue-100 text-blue-800", label: "Operador" },
   prestador: { color: "bg-green-100 text-green-800", label: "Prestador" },
-  cliente: { color: "bg-gray-100 text-gray-800", label: "Cliente" },
+  cliente: { color: "bg-muted text-muted-foreground", label: "Cliente" },
   provider: { color: "bg-green-100 text-green-800", label: "Prestador" },
-  client: { color: "bg-gray-100 text-gray-800", label: "Cliente" }
+  client: { color: "bg-muted text-muted-foreground", label: "Cliente" }
 }
 
 const statusConfig = {
   ativo: { color: "bg-green-100 text-green-800", label: "Ativo" },
-  inativo: { color: "bg-gray-100 text-gray-800", label: "Inativo" },
+  inativo: { color: "bg-muted text-muted-foreground", label: "Inativo" },
   bloqueado: { color: "bg-red-100 text-red-800", label: "Bloqueado" }
 }
 
 export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProps) {
+  const { toast } = useToast()
+  const rawUser = user as unknown as Record<string, unknown> | null
   const toText = (value: unknown, fallback = "") => {
     if (typeof value === "string") return value
     if (typeof value === "number") return String(value)
@@ -78,15 +84,25 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
     return value === "provider" ? "provider" : "client"
   }
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    nome: string
+    email: string
+    telefone: string
+    cpf: string
+    endereco: string
+    role: UserType["role"]
+    userType: "client" | "provider"
+    status: UserType["status"]
+    rating: number
+  }>({
     nome: '',
     email: '',
     telefone: '',
     cpf: '',
     endereco: '',
-    role: 'cliente' as const,
-    userType: 'client' as const,
-    status: 'ativo' as const,
+    role: 'cliente',
+    userType: 'client',
+    status: 'ativo',
     rating: 0
   })
 
@@ -110,9 +126,9 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
         telefone: '',
         cpf: '',
         endereco: '',
-        role: 'cliente',
-        userType: 'client',
-        status: 'ativo',
+        role: 'cliente' as UserType["role"],
+        userType: 'client' as "client" | "provider",
+        status: 'ativo' as UserType["status"],
         rating: 0
       })
     }
@@ -120,6 +136,14 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (mode === "create" && !String(formData.telefone || "").trim()) {
+      toast({
+        title: "Telefone obrigatório",
+        description: "Informe um telefone para contato operacional e suporte.",
+        variant: "destructive",
+      })
+      return
+    }
     onSave(formData)
   }
 
@@ -141,21 +165,21 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-white dark:bg-slate-900">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-card">
         <DialogHeader className="pb-6">
           <DialogTitle className="flex items-center space-x-3 text-2xl font-bold">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
               {mode === 'create' && <User className="h-5 w-5 text-white" />}
               {mode === 'edit' && <UserCheck className="h-5 w-5 text-white" />}
               {mode === 'view' && <Shield className="h-5 w-5 text-white" />}
             </div>
-            <span className="text-gray-900 dark:text-white">
+            <span className="text-foreground">
               {mode === 'create' && 'Novo Usuário'}
               {mode === 'edit' && 'Editar Usuário'}
               {mode === 'view' && 'Detalhes do Usuário'}
             </span>
           </DialogTitle>
-          <DialogDescription className="text-lg text-gray-600 dark:text-gray-300">
+          <DialogDescription className="text-lg text-muted-foreground">
             {mode === 'create' && 'Preencha os dados para criar um novo usuário'}
             {mode === 'edit' && 'Atualize as informações do usuário'}
             {mode === 'view' && 'Visualize as informações completas do usuário'}
@@ -164,9 +188,9 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Informações Básicas */}
-          <Card className="bg-gray-50 dark:bg-slate-800 border-0 shadow-lg">
+          <Card className="bg-muted/50 border-0 shadow-lg">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                 <User className="h-5 w-5 text-orange-600" />
                 Informações Básicas
               </CardTitle>
@@ -174,7 +198,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="nome" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="nome" className="text-sm font-semibold text-foreground">
                     Nome Completo *
                   </Label>
                   <Input
@@ -188,7 +212,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="email" className="text-sm font-semibold text-foreground">
                     Email *
                   </Label>
                   <Input
@@ -206,20 +230,21 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="telefone" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Telefone
+                  <Label htmlFor="telefone" className="text-sm font-semibold text-foreground">
+                    Telefone{mode === "create" ? " *" : ""}
                   </Label>
                   <Input
                     id="telefone"
                     value={formData.telefone}
                     onChange={(e) => handleInputChange('telefone', e.target.value)}
                     placeholder="(11) 99999-9999"
+                    required={mode === "create"}
                     readOnly={isReadOnly}
                     className="h-11 text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cpf" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="cpf" className="text-sm font-semibold text-foreground">
                     CPF
                   </Label>
                   <Input
@@ -234,7 +259,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endereco" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <Label htmlFor="endereco" className="text-sm font-semibold text-foreground">
                   Endereço
                 </Label>
                 <Textarea
@@ -249,10 +274,46 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
             </CardContent>
           </Card>
 
+          {user && mode !== "create" ? (
+            <Card className="border-0 bg-muted/50 shadow-card">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
+                  <MapPin className="h-5 w-5 text-emerald-600" />
+                  Perfil operacional
+                </CardTitle>
+                <CardDescription>Campos adicionais quando existirem no documento Firestore.</CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-4 text-sm md:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Cidade</p>
+                  <p className="text-foreground">{toText(rawUser?.city ?? rawUser?.cidade, "—")}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Estado</p>
+                  <p className="text-foreground">{toText(rawUser?.state ?? rawUser?.estado, "—")}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Tipo de usuário</p>
+                  <p className="text-foreground">{toText(rawUser?.userType ?? rawUser?.tipo, "—")}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground">Aprovação / verificação</p>
+                  <p className="text-foreground">
+                    {toText(rawUser?.approvalStatus ?? rawUser?.verificationStatus ?? rawUser?.verificado, "—")}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <p className="text-xs font-semibold text-muted-foreground">Notas internas</p>
+                  <p className="whitespace-pre-wrap text-foreground">{toText(rawUser?.internalNotes, "—")}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
           {/* Configurações de Acesso */}
-          <Card className="bg-gray-50 dark:bg-slate-800 border-0 shadow-lg">
+          <Card className="bg-muted/50 border-0 shadow-lg">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Shield className="h-5 w-5 text-blue-600" />
                 Configurações de Acesso
               </CardTitle>
@@ -260,7 +321,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="role" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="role" className="text-sm font-semibold text-foreground">
                     Função *
                   </Label>
                   <Select
@@ -281,7 +342,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="status" className="text-sm font-semibold text-foreground">
                     Status *
                   </Label>
                   <Select
@@ -305,7 +366,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
               {formData.role === 'prestador' && (
                 <div className="space-y-2">
-                  <Label htmlFor="rating" className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="rating" className="text-sm font-semibold text-foreground">
                     Avaliação
                   </Label>
                   <div className="flex items-center gap-2">
@@ -328,7 +389,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
                           className={`h-5 w-5 ${
                             star <= formData.rating
                               ? 'text-yellow-400 fill-current'
-                              : 'text-gray-300'
+                              : 'text-muted-foreground/40'
                           }`}
                         />
                       ))}
@@ -341,33 +402,33 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
           {/* Informações do Sistema (apenas visualização) */}
           {mode === 'view' && user && (
-            <Card className="bg-gray-50 dark:bg-slate-800 border-0 shadow-lg">
+            <Card className="bg-muted/50 border-0 shadow-lg">
               <CardHeader className="pb-4">
-                <CardTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Calendar className="h-5 w-5 text-green-600" />
                   Informações do Sistema
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center space-x-3 p-4 bg-white dark:bg-slate-700 rounded-lg">
+                  <div className="flex items-center space-x-3 p-4 bg-card rounded-lg">
                     <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
                       <Calendar className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Data de Criação</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm font-semibold text-foreground">Data de Criação</p>
+                      <p className="text-sm text-muted-foreground">
                         {format(user.createdAt, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-3 p-4 bg-white dark:bg-slate-700 rounded-lg">
+                  <div className="flex items-center space-x-3 p-4 bg-card rounded-lg">
                     <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                       <Clock className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Último Login</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm font-semibold text-foreground">Último Login</p>
+                      <p className="text-sm text-muted-foreground">
                         {user.lastLogin 
                           ? format(user.lastLogin, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
                           : 'Nunca'
@@ -379,13 +440,13 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
 
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Badge className={`${roleConfig[user.role].color} px-3 py-1`}>
-                      {roleConfig[user.role].label}
+                    <Badge className={`${(roleConfig[user.role as keyof typeof roleConfig] ?? roleConfig.cliente).color} px-3 py-1`}>
+                      {(roleConfig[user.role as keyof typeof roleConfig] ?? roleConfig.cliente).label}
                     </Badge>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Badge className={`${statusConfig[user.status].color} px-3 py-1`}>
-                      {statusConfig[user.status].label}
+                    <Badge className={`${(statusConfig[user.status as keyof typeof statusConfig] ?? statusConfig.ativo).color} px-3 py-1`}>
+                      {(statusConfig[user.status as keyof typeof statusConfig] ?? statusConfig.ativo).label}
                     </Badge>
                   </div>
                 </div>
@@ -393,7 +454,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
             </Card>
           )}
 
-          <DialogFooter className="pt-6 border-t border-gray-200 dark:border-gray-700">
+          <DialogFooter className="pt-6 border-t border-border">
             <div className="flex flex-col sm:flex-row gap-3 w-full">
               <Button 
                 type="button" 
@@ -407,7 +468,7 @@ export function UserModal({ user, isOpen, onClose, onSave, mode }: UserModalProp
               {mode !== 'view' && (
                 <Button 
                   type="submit" 
-                  className="flex-1 sm:flex-none bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-11"
+                  className="flex-1 sm:flex-none bg-linear-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-11"
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {mode === 'create' ? 'Criar Usuário' : 'Salvar Alterações'}

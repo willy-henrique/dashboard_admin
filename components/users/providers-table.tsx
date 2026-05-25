@@ -117,7 +117,7 @@ export function ProvidersTable() {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Ativo</Badge>
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800">Inativo</Badge>
+        return <Badge className="bg-muted text-muted-foreground">Inativo</Badge>
       case "pending":
         return <Badge className="bg-orange-100 text-orange-800">Pendente</Badge>
       case "blocked":
@@ -167,7 +167,7 @@ export function ProvidersTable() {
         <CardContent>
           <div className="mb-6 flex flex-col gap-4 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome, email, telefone ou CPF"
                 value={searchTerm}
@@ -205,7 +205,7 @@ export function ProvidersTable() {
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-              <span className="ml-3 text-gray-500">Carregando prestadores...</span>
+              <span className="ml-3 text-muted-foreground">Carregando prestadores...</span>
             </div>
           ) : null}
 
@@ -220,8 +220,8 @@ export function ProvidersTable() {
 
           {!loading && !error && filteredProviders.length === 0 ? (
             <div className="py-12 text-center">
-              <p className="font-medium text-gray-500">Nenhum prestador encontrado</p>
-              <p className="mt-1 text-sm text-gray-400">Ajuste os filtros para ampliar a busca.</p>
+              <p className="font-medium text-muted-foreground">Nenhum prestador encontrado</p>
+              <p className="mt-1 text-sm text-muted-foreground">Ajuste os filtros para ampliar a busca.</p>
             </div>
           ) : null}
 
@@ -249,13 +249,13 @@ export function ProvidersTable() {
                             {provider.name}
                             {provider.isVerified ? <Shield className="h-4 w-4 text-blue-600" /> : null}
                           </div>
-                          <div className="text-sm text-gray-500">{provider.cpf || "Sem CPF"}</div>
+                          <div className="text-sm text-muted-foreground">{provider.cpf || "Sem CPF"}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
                           <div className="text-sm">{provider.email || "Sem email"}</div>
-                          <div className="text-sm text-gray-500">{provider.phone || "Sem telefone"}</div>
+                          <div className="text-sm text-muted-foreground">{provider.phone || "Sem telefone"}</div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -267,7 +267,7 @@ export function ProvidersTable() {
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-sm text-gray-500">Sem categorias</span>
+                            <span className="text-sm text-muted-foreground">Sem categorias</span>
                           )}
                         </div>
                       </TableCell>

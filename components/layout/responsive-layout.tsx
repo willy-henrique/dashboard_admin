@@ -14,37 +14,26 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 1024)
-    }
-
-    checkScreenSize()
-    window.addEventListener('resize', checkScreenSize)
-
-    return () => window.removeEventListener('resize', checkScreenSize)
+    const check = () => setIsMobile(window.innerWidth < 1024)
+    check()
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
   }, [])
 
   useEffect(() => {
-    if (!isMobile) {
-      setSidebarOpen(false)
-    }
+    if (!isMobile) setSidebarOpen(false)
   }, [isMobile])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-background">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-      
-      {/* Main Content Area */}
-      <div className="lg:ml-64">
-        {/* Header */}
+
+      <div className="lg:ml-64 flex flex-col min-h-screen">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        
-        {/* Main Content */}
-        <main className="min-h-screen">
-          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            {/* Breadcrumbs */}
-            <div className="mb-4 sm:mb-6">
+
+        <main className="flex-1">
+          <div className="px-4 sm:px-6 lg:px-8 py-6">
+            <div className="mb-5">
               <Breadcrumbs />
             </div>
             {children}
@@ -52,11 +41,11 @@ export function ResponsiveLayout({ children }: ResponsiveLayoutProps) {
         </main>
       </div>
 
-      {/* Mobile Overlay */}
       {sidebarOpen && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-sm"
           onClick={() => setSidebarOpen(false)}
+          aria-hidden
         />
       )}
     </div>

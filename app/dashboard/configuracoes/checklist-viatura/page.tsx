@@ -46,7 +46,7 @@ export default function ChecklistViaturaPage() {
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            <AlertTriangle className="h-6 w-6 text-blue-600 mt-1 flex-shrink-0" />
+            <AlertTriangle className="h-6 w-6 text-blue-600 mt-1 shrink-0" />
             <div className="space-y-2">
               <h3 className="font-semibold text-blue-900">
                 Funcionalidade em modo BETA.
@@ -283,8 +283,8 @@ export default function ChecklistViaturaPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-600">2</span>
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-muted-foreground">2</span>
                 </div>
                 <div>
                   <p className="font-medium" style={{ color: 'var(--foreground)' }}>
@@ -297,8 +297,8 @@ export default function ChecklistViaturaPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-600">3</span>
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-muted-foreground">3</span>
                 </div>
                 <div>
                   <p className="font-medium" style={{ color: 'var(--foreground)' }}>
@@ -311,8 +311,8 @@ export default function ChecklistViaturaPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-bold text-gray-600">4</span>
+                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-muted-foreground">4</span>
                 </div>
                 <div>
                   <p className="font-medium" style={{ color: 'var(--foreground)' }}>

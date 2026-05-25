@@ -12,8 +12,8 @@ export default function OrcamentoPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Orçamento de Serviços</h1>
-          <p className="text-gray-600">autem.com.br › serviços › orçamento</p>
+          <h1 className="text-2xl font-bold text-foreground">Orçamento de Serviços</h1>
+          <p className="text-muted-foreground">autem.com.br › serviços › orçamento</p>
         </div>
 
         {/* Action Bar */}
@@ -32,7 +32,7 @@ export default function OrcamentoPage() {
               📥
             </Button>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 h-4 w-4" />
               <Input placeholder="PROCURAR" className="pl-20 w-32" />
             </div>
           </div>
@@ -46,13 +46,13 @@ export default function OrcamentoPage() {
         <Card>
           <CardContent className="p-12">
             <div className="text-center">
-              <div className="text-gray-400 mb-4">
-                <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+              <div className="text-muted-foreground/60 mb-4">
+                <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
                   <span className="text-2xl">📋</span>
                 </div>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum registro encontrado...</h3>
-              <p className="text-gray-500 mb-6">Não há orçamentos cadastrados no sistema ainda.</p>
+              <h3 className="text-lg font-medium text-foreground mb-2">Nenhum registro encontrado...</h3>
+              <p className="text-muted-foreground mb-6">Não há orçamentos cadastrados no sistema ainda.</p>
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Criar Primeiro Orçamento
@@ -85,7 +85,7 @@ export default function OrcamentoPage() {
               </TableHeader>
               <TableBody>
                 <TableRow>
-                  <TableCell colSpan={14} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
                     Nenhum registro encontrado...
                   </TableCell>
                 </TableRow>
@@ -96,7 +96,7 @@ export default function OrcamentoPage() {
 
         {/* Pagination */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">Mostrando 0 até 0 de 0 resultado(s)</p>
+          <p className="text-sm text-muted-foreground">Mostrando 0 até 0 de 0 resultado(s)</p>
         </div>
       </div>
     </AppShell>

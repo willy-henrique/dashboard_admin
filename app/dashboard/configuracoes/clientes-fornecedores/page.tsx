@@ -130,7 +130,7 @@ const getTipoColor = (tipo: string) => {
     case "Fornecedor":
       return "bg-green-100 text-green-800"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -139,9 +139,9 @@ const getStatusColor = (status: string) => {
     case "ativo":
       return "bg-green-100 text-green-800"
     case "inativo":
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
     default:
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground"
   }
 }
 
@@ -421,7 +421,7 @@ export default function ClientesFornecedoresPage() {
           <CardContent>
             <div className="space-y-2">
               {Array.from(new Set(clientes.map(c => c.estado))).map((estado) => (
-                <div key={estado} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div key={estado} className="flex items-center justify-between p-2 bg-muted/50 rounded">
                   <span style={{ color: 'var(--foreground)' }}>{estado}</span>
                   <Badge variant="secondary">
                     {clientes.filter(c => c.estado === estado).length}

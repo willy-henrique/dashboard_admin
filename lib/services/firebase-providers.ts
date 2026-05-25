@@ -22,6 +22,12 @@ export interface FirebaseProvider {
     lat: number
     lng: number
   }
+  /** CEP do endereço cadastrado — usado para geocodificação quando GPS não disponível */
+  cep?: string
+  /** Cidade do endereço cadastrado */
+  cidade?: string
+  /** Logradouro do endereço cadastrado */
+  logradouro?: string
   ultimaAtualizacao: any
   servicoAtual?: string | null
   especialidades: string[]
@@ -112,9 +118,27 @@ function normalizeProvider(raw: Record<string, unknown>, id: string): FirebasePr
       ? statusRaw
       : 'offline'
 
+  // localizacao aninhada (campo direto do app mobile)
   const loc = raw.localizacao as Record<string, unknown> | undefined
-  const latitude = numberOrZero(loc?.lat ?? raw.latitude ?? raw.lat)
-  const longitude = numberOrZero(loc?.lng ?? raw.longitude ?? raw.lng)
+
+  // address é um objeto estruturado: { street, number, city, state, cep, complement, coordinates }
+  const addressObj = raw.address as Record<string, unknown> | undefined
+  const addressCoords = addressObj?.coordinates as Record<string, unknown> | null | undefined
+
+  // Prioridade: localizacao.lat → address.coordinates.lat → raw.latitude → raw.lat
+  const latitude = numberOrZero(
+    loc?.lat ??
+    (addressCoords && addressCoords.lat != null ? addressCoords.lat : undefined) ??
+    raw.latitude ??
+    raw.lat
+  )
+  const longitude = numberOrZero(
+    loc?.lng ??
+    (addressCoords && addressCoords.lng != null ? addressCoords.lng : undefined) ??
+    raw.longitude ??
+    raw.lng
+  )
+
   const ativoValue = raw.ativo ?? raw.isActive ?? raw.active
   const ativo = typeof ativoValue === 'boolean' ? ativoValue : status !== 'offline'
 
@@ -126,10 +150,11 @@ function normalizeProvider(raw: Record<string, unknown>, id: string): FirebasePr
     email: stringOrEmpty(raw.email),
     status,
     verificationStatus: stringOrEmpty(raw.verificationStatus ?? raw.statusVerificacao ?? raw.verification_status),
-    localizacao: {
-      lat: latitude,
-      lng: longitude,
-    },
+    localizacao: { lat: latitude, lng: longitude },
+    // Extrair campos de endereço para uso em geocodificação
+    cep: stringOrEmpty(addressObj?.cep ?? raw.cep) || undefined,
+    cidade: stringOrEmpty(addressObj?.city ?? raw.cidade ?? raw.city) || undefined,
+    logradouro: stringOrEmpty(addressObj?.street ?? raw.logradouro ?? raw.street) || undefined,
     ultimaAtualizacao: raw.ultimaAtualizacao ?? raw.updatedAt ?? raw.lastSeenAt ?? raw.lastUpdate ?? null,
     servicoAtual: stringOrEmpty(raw.servicoAtual ?? raw.currentService) || null,
     especialidades: extractServiceCategories(raw),

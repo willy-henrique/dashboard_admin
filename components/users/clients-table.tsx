@@ -89,7 +89,7 @@ export function ClientsTable() {
       case "active":
         return <Badge className="bg-green-100 text-green-800">Ativo</Badge>
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-800">Inativo</Badge>
+        return <Badge className="bg-muted text-muted-foreground">Inativo</Badge>
       case "blocked":
         return <Badge className="bg-red-100 text-red-800">Bloqueado</Badge>
       default:
@@ -115,7 +115,7 @@ export function ClientsTable() {
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/60" />
               <Input
                 placeholder="Buscar por nome, email ou CPF..."
                 value={searchTerm}
@@ -144,7 +144,7 @@ export function ClientsTable() {
           {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
-              <span className="ml-3 text-gray-500">Carregando clientes...</span>
+              <span className="ml-3 text-muted-foreground">Carregando clientes...</span>
             </div>
           )}
 
@@ -161,8 +161,8 @@ export function ClientsTable() {
           {/* Empty state */}
           {!loading && !error && filteredClients.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500 font-medium">Nenhum cliente encontrado</p>
-              <p className="text-sm text-gray-400 mt-1">Ajuste os filtros ou aguarde novos cadastros</p>
+              <p className="text-muted-foreground font-medium">Nenhum cliente encontrado</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Ajuste os filtros ou aguarde novos cadastros</p>
             </div>
           )}
 
@@ -187,13 +187,13 @@ export function ClientsTable() {
                       <TableCell>
                         <div>
                           <div className="font-medium">{client.name}</div>
-                          <div className="text-sm text-gray-500">{client.cpf}</div>
+                          <div className="text-sm text-muted-foreground">{client.cpf}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div>
                           <div className="text-sm">{client.email}</div>
-                          <div className="text-sm text-gray-500">{client.phone}</div>
+                          <div className="text-sm text-muted-foreground">{client.phone}</div>
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(client.status)}</TableCell>

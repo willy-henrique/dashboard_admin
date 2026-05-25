@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export interface PagarmeAnalyticsData {
   totalRevenue: number
@@ -39,53 +39,53 @@ export function usePagarmeAnalytics() {
     warning: null,
   })
 
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        setData((previous) => ({
-          ...previous,
-          loading: true,
-          error: null,
-          warning: null,
-        }))
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      setData((previous) => ({
+        ...previous,
+        loading: true,
+        error: null,
+        warning: null,
+      }))
 
-        const response = await fetch('/api/pagarme/analytics', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
+      const response = await fetch('/api/pagarme/analytics', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
-        if (!response.ok) {
-          throw new Error('Erro ao buscar dados do Pagar.me')
-        }
-
-        const analytics = await response.json()
-
-        setData({
-          totalRevenue: analytics.totalRevenue || 0,
-          totalTransactions: analytics.totalTransactions || 0,
-          successRate: analytics.successRate || 0,
-          conversionRate: analytics.conversionRate || 0,
-          paymentMethods: analytics.paymentMethods || emptyPaymentMethods,
-          recentCharges: analytics.recentCharges || [],
-          loading: false,
-          error: null,
-          warning: analytics.warning || null,
-        })
-      } catch (error) {
-        console.error('Erro ao buscar analytics:', error)
-        setData((previous) => ({
-          ...previous,
-          loading: false,
-          error: 'Erro ao carregar dados financeiros',
-          warning: null,
-        }))
+      if (!response.ok) {
+        throw new Error('Erro ao buscar dados do Pagar.me')
       }
-    }
 
-    fetchAnalytics()
+      const analytics = await response.json()
+
+      setData({
+        totalRevenue: analytics.totalRevenue || 0,
+        totalTransactions: analytics.totalTransactions || 0,
+        successRate: analytics.successRate || 0,
+        conversionRate: analytics.conversionRate || 0,
+        paymentMethods: analytics.paymentMethods || emptyPaymentMethods,
+        recentCharges: analytics.recentCharges || [],
+        loading: false,
+        error: null,
+        warning: analytics.warning || null,
+      })
+    } catch (error) {
+      console.error('Erro ao buscar analytics:', error)
+      setData((previous) => ({
+        ...previous,
+        loading: false,
+        error: 'Erro ao carregar dados financeiros',
+        warning: null,
+      }))
+    }
   }, [])
 
-  return data
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
+
+  return { ...data, refetch: fetchAnalytics }
 }

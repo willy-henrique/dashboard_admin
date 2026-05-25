@@ -1,11 +1,4 @@
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  getDocs,
-  Timestamp
-} from 'firebase/firestore'
+import { collection, query, where, getDocs, limit, Timestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 import { FirebaseProvidersService, FirebaseProvider } from './firebase-providers'
 import { OrdersService } from './orders-service'
@@ -136,39 +129,34 @@ export class MobileStatsService {
     }
   }
 
-  // Contar acessos hoje (logins)
+  // Contar acessos hoje — usa campo lastLoginAt da coleção users (campo real do banco)
   private static async getAccessCountToday(): Promise<number> {
     if (!db) return 0
 
     try {
       const hoje = new Date()
       hoje.setHours(0, 0, 0, 0)
-      const amanha = new Date(hoje)
-      amanha.setDate(amanha.getDate() + 1)
 
-      // Buscar em provider_logins ou similar
-      const loginsRef = collection(db, 'provider_logins')
-      const q = query(
-        loginsRef,
-        where('timestamp', '>=', Timestamp.fromDate(hoje)),
-        where('timestamp', '<', Timestamp.fromDate(amanha))
+      const snap = await getDocs(
+        query(
+          collection(db, 'users'),
+          where('userType', '==', 'provider'),
+          where('lastLoginAt', '>=', Timestamp.fromDate(hoje)),
+          limit(500)
+        )
       )
-      
-      const snapshot = await getDocs(q)
-      return snapshot.size
-    } catch (error) {
-      // Se a coleção não existir, contar providers que atualizaram hoje
-      console.warn('Erro ao buscar logins, usando fallback:', error)
+      return snap.size
+    } catch {
+      // Fallback: providers com updatedAt de hoje
       try {
         const providers = await FirebaseProvidersService.getProviders()
         const hoje = new Date()
         hoje.setHours(0, 0, 0, 0)
-        
         return providers.filter(p => {
           if (!p.ultimaAtualizacao) return false
-          const updateDate = p.ultimaAtualizacao?.toDate?.() || 
+          const d = p.ultimaAtualizacao?.toDate?.() ||
             (p.ultimaAtualizacao instanceof Date ? p.ultimaAtualizacao : new Date())
-          return updateDate >= hoje
+          return d >= hoje
         }).length
       } catch {
         return 0
@@ -176,54 +164,12 @@ export class MobileStatsService {
     }
   }
 
-  // Calcular quilometragem hoje (estimativa baseada em localizações)
+  // Quilometragem estimada baseada em providers ativos (sem coleção de GPS no banco)
   private static async calculateKilometersToday(providers: FirebaseProvider[]): Promise<number> {
-    if (!db) return 0
-
-    try {
-      const hoje = new Date()
-      hoje.setHours(0, 0, 0, 0)
-
-      // Buscar localizações atualizadas hoje
-      const locationsRef = collection(db, 'provider_locations')
-      const q = query(
-        locationsRef,
-        where('lastUpdate', '>=', Timestamp.fromDate(hoje)),
-        orderBy('lastUpdate', 'desc')
-      )
-
-      const snapshot = await getDocs(q)
-      let totalKm = 0
-
-      // Calcular distância total percorrida (estimativa)
-      snapshot.docs.forEach((doc, index) => {
-        const data = doc.data()
-        if (data.speed && data.speed > 0) {
-          // Estimativa: velocidade média * tempo estimado
-          const speedKmh = data.speed
-          // Assumir 1 hora de atividade por atualização
-          totalKm += speedKmh * 0.1 // Estimativa conservadora
-        }
-      })
-
-      // Se não houver dados de velocidade, usar estimativa baseada em providers ativos
-      if (totalKm === 0) {
-        const activeProviders = providers.filter(p => 
-          ['disponivel', 'ocupado', 'online'].includes(p.status)
-        )
-        // Estimativa: 5km por provider ativo
-        totalKm = activeProviders.length * 5
-      }
-
-      return totalKm
-    } catch (error) {
-      console.warn('Erro ao calcular quilometragem, usando estimativa:', error)
-      // Fallback: estimativa baseada em providers ativos
-      const activeProviders = providers.filter(p => 
-        ['disponivel', 'ocupado', 'online'].includes(p.status)
-      )
-      return activeProviders.length * 5
-    }
+    const activeProviders = providers.filter(p =>
+      ['disponivel', 'ocupado', 'online'].includes(p.status)
+    )
+    return activeProviders.length * 5
   }
 
   // Buscar pedidos recusados hoje
@@ -268,32 +214,9 @@ export class MobileStatsService {
     }
   }
 
-  // Calcular precisão média das localizações
-  private static async calculateAverageAccuracy(providers: FirebaseProvider[]): Promise<number> {
-    if (!db) return 7 // Valor padrão
-
-    try {
-      const locationsRef = collection(db, 'provider_locations')
-      const snapshot = await getDocs(locationsRef)
-      
-      if (snapshot.empty) return 7
-
-      let totalAccuracy = 0
-      let count = 0
-
-      snapshot.docs.forEach(doc => {
-        const data = doc.data()
-        if (data.locationAccuracy && data.locationAccuracy > 0) {
-          totalAccuracy += data.locationAccuracy
-          count++
-        }
-      })
-
-      return count > 0 ? totalAccuracy / count : 7
-    } catch (error) {
-      console.warn('Erro ao calcular precisão média:', error)
-      return 7 // Valor padrão em metros
-    }
+  // Precisão de localização — sem coleção de GPS no banco, retorna padrão
+  private static async calculateAverageAccuracy(_providers: FirebaseProvider[]): Promise<number> {
+    return 7 // padrão em metros
   }
 
   // Verificar se atualização é recente (últimos 5 minutos)

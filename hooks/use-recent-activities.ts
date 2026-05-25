@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { useAuth } from '@/components/auth-provider'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 
@@ -23,74 +24,101 @@ export interface RecentActivity {
   }
 }
 
+const toTimestamp = (v: any): Timestamp => {
+  if (v instanceof Timestamp) return v
+  if (v?.toDate) return v as Timestamp
+  return Timestamp.now()
+}
+
+const timeAgo = (ts: Timestamp) =>
+  formatDistanceToNow(ts.toDate(), { addSuffix: true, locale: ptBR })
+
+// Deriva atividades recentes diretamente dos pedidos existentes no banco
 export const useRecentActivities = () => {
   const [activities, setActivities] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
+    if (authLoading) return
+    if (!user) {
+      setActivities([])
+      setLoading(false)
+      return
+    }
     if (!db) {
-      console.warn('Firestore não inicializado')
       setLoading(false)
       return
     }
 
-    const activitiesRef = collection(db, 'activities')
-    const q = query(
-      activitiesRef,
-      orderBy('timestamp', 'desc'),
+    // Escuta os 20 pedidos mais recentes em tempo real
+    const ordersQ = query(
+      collection(db, 'orders'),
+      orderBy('createdAt', 'desc'),
       limit(20)
     )
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const activitiesData: RecentActivity[] = snapshot.docs.map(doc => {
-          const data = doc.data()
+    const unsub = onSnapshot(
+      ordersQ,
+      (snap) => {
+        const derived: RecentActivity[] = snap.docs.map((doc) => {
+          const d = doc.data()
+          const ts = toTimestamp(d.createdAt)
+          const status: string = d.status || 'pending'
+          const client: string = d.clientName || d.cliente?.nome || 'Cliente'
+          const service: string = d.serviceType || d.tipoServico || 'serviço'
+
+          let type: RecentActivity['type'] = 'new_order'
+          let title = `Novo pedido — ${service}`
+          let description = `${client} abriu um pedido de ${service}`
+
+          if (status === 'completed') {
+            type = 'order_completed'
+            title = `Pedido concluído — ${service}`
+            description = `${client} concluiu o serviço de ${service}`
+          } else if (status === 'cancelled') {
+            type = 'order_cancelled'
+            title = `Pedido cancelado — ${service}`
+            description = `Pedido de ${service} para ${client} foi cancelado`
+          } else if (status === 'in_progress') {
+            type = 'new_order'
+            title = `Em andamento — ${service}`
+            description = `${client} está sendo atendido em ${service}`
+          }
+
           return {
             id: doc.id,
-            ...data,
-            time: formatDistanceToNow(data.timestamp?.toDate() || new Date(), {
-              addSuffix: true,
-              locale: ptBR
-            })
-          } as RecentActivity
+            type,
+            title,
+            description,
+            timestamp: ts,
+            time: timeAgo(ts),
+            metadata: { orderId: doc.id, clientId: d.clientId },
+          }
         })
-        
-        setActivities(activitiesData)
+
+        setActivities(derived)
         setLoading(false)
         setError(null)
       },
-      (error) => {
-        console.error('Erro ao buscar atividades:', error)
+      (err: unknown) => {
+        const code = (err as { code?: string })?.code
+        if (code === 'permission-denied') {
+          setActivities([])
+          setLoading(false)
+          return
+        }
         setError('Erro ao carregar atividades')
         setLoading(false)
       }
     )
 
-    return () => unsubscribe()
-  }, [])
+    return () => unsub()
+  }, [user, authLoading])
 
-  const addActivity = async (activity: Omit<RecentActivity, 'id' | 'time'>) => {
-    if (!db) return
+  // Mantém compatibilidade com código que chama addActivity (no-op: atividades são derivadas)
+  const addActivity = async (_activity: Omit<RecentActivity, 'id' | 'time'>) => {}
 
-    try {
-      const activitiesRef = collection(db, 'activities')
-      await import('firebase/firestore').then(({ addDoc, Timestamp }) => {
-        addDoc(activitiesRef, {
-          ...activity,
-          timestamp: Timestamp.now()
-        })
-      })
-    } catch (error) {
-      console.error('Erro ao adicionar atividade:', error)
-    }
-  }
-
-  return {
-    activities,
-    loading,
-    error,
-    addActivity
-  }
+  return { activities, loading, error, addActivity }
 }

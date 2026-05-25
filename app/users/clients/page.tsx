@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { AppShell } from "@/components/layout/app-shell"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { UsersTable } from "@/components/users/users-table"
@@ -10,18 +10,16 @@ import { UserModal } from "@/components/users/user-modal"
 import { useUsers, useAllClients } from "@/hooks/use-users"
 import { useUsersDebug } from "@/hooks/use-users-debug"
 import { Badge } from "@/components/ui/badge"
-import { 
-  User, 
-  UserCheck, 
-  UserX, 
-  Search, 
-  Filter, 
-  Download, 
+import {
+  User,
+  UserCheck,
+  UserX,
+  Search,
+  Download,
   Plus,
   RefreshCw,
   Users as UsersIcon,
   TrendingUp,
-  Clock
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { PageWithBack } from "@/components/layout/page-with-back"
@@ -31,7 +29,6 @@ export default function ClientsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [showDebug, setShowDebug] = useState(false)
   const { toast } = useToast()
 
   // Hook de debug para ver todos os usuários
@@ -218,197 +215,101 @@ export default function ClientsPage() {
     <AppShell>
       <PageWithBack backButtonLabel="Voltar para Dashboard">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 px-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-4xl font-bold flex items-center gap-3" style={{ color: 'var(--foreground)' }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--primary)' }}>
-                <UsersIcon className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                <UsersIcon className="h-5 w-5 text-primary" />
               </div>
-              Pessoas cadastradas
-            </h1>
-            <p className="mt-2 text-lg" style={{ color: 'var(--muted-foreground)' }}>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Pessoas cadastradas</h1>
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground ml-12">
               Pesquise e gerencie todas as pessoas cadastradas no sistema
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => { refetch(); refetchDebug(); refetchClients(); }}
-              className="w-full sm:w-auto"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <RefreshCw className="h-4 w-4 mr-1.5" />
               Atualizar
             </Button>
-            <Button 
+            <Button
               variant="outline"
-              onClick={() => setShowDebug(!showDebug)}
-              className="w-full sm:w-auto"
+              size="sm"
             >
-              <Filter className="h-4 w-4 mr-2" />
-              Debug
-            </Button>
-            <Button 
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4 mr-1.5" />
               Exportar
             </Button>
-            <Button 
+            <Button
+              size="sm"
               onClick={() => { setSelectedUserId(null); setModalOpen(true) }}
-              style={{ 
-                background: 'var(--primary)', 
-                color: 'var(--primary-foreground)',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-              }}
-              className="hover:opacity-90 transition-all duration-200"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground shadow-primary"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-1.5" />
               Novo Cliente
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4">
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { label: "Total de Clientes", value: users.length,   icon: User,      iconBg: "bg-blue-50 dark:bg-blue-950/40",    iconCl: "text-blue-600"    },
+            { label: "Clientes Ativos",   value: activeUsers,    icon: UserCheck, iconBg: "bg-emerald-50 dark:bg-emerald-950/40", iconCl: "text-emerald-600" },
+            { label: "Bloqueados",        value: blockedUsers,   icon: UserX,     iconBg: "bg-red-50 dark:bg-red-950/40",      iconCl: "text-red-600"     },
+            { label: "Novos (30 dias)",   value: recentUsers,    icon: TrendingUp,iconBg: "bg-violet-50 dark:bg-violet-950/40",iconCl: "text-violet-600"  },
+          ].map(({ label, value, icon: Icon, iconBg, iconCl }) => (
+            <Card key={label} className="shadow-card hover:shadow-card-hover transition-shadow">
+              <CardContent className="p-5 flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Total de Clientes</p>
-                  <p className="text-3xl font-bold" style={{ color: 'var(--foreground)' }}>{users.length}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                  <p className="text-2xl font-bold text-foreground tabular-nums mt-1">{value}</p>
                 </div>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-1)' }}>
-                  <User className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
+                <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+                  <Icon className={`h-4 w-4 ${iconCl}`} />
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Clientes Ativos</p>
-                  <p className="text-3xl font-bold" style={{ color: 'var(--chart-2)' }}>{activeUsers}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-2)' }}>
-                  <UserCheck className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Bloqueados</p>
-                  <p className="text-3xl font-bold" style={{ color: 'var(--destructive)' }}>{blockedUsers}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--destructive)' }}>
-                  <UserX className="h-6 w-6" style={{ color: 'var(--destructive-foreground)' }} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300" style={{ backgroundColor: 'var(--card)' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--muted-foreground)' }}>Novos (30 dias)</p>
-                  <p className="text-3xl font-bold" style={{ color: 'var(--chart-3)' }}>{recentUsers}</p>
-                </div>
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" style={{ background: 'var(--chart-3)' }}>
-                  <TrendingUp className="h-6 w-6" style={{ color: 'var(--primary-foreground)' }} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Filters */}
-        <Card className="border-0 shadow-lg mx-4" style={{ backgroundColor: 'var(--card)' }}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-              <Filter className="h-5 w-5" />
-              Filtros e Busca
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: 'var(--muted-foreground)' }} />
-                  <Input
-                    placeholder="Buscar pessoas cadastradas (nome, email, CPF...)"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-20 h-11 text-base"
-                  />
-                </div>
+        <Card className="shadow-card">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Buscar por nome, email, CPF..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-9 text-sm"
+                />
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={statusFilter === "all" ? "default" : "outline"}
-                  onClick={() => setStatusFilter("all")}
-                  className="h-11"
-                >
-                  Todos
-                </Button>
-                <Button
-                  variant={statusFilter === "active" ? "default" : "outline"}
-                  onClick={() => setStatusFilter("active")}
-                  className="h-11"
-                >
-                  Ativos
-                </Button>
-                <Button
-                  variant={statusFilter === "inactive" ? "default" : "outline"}
-                  onClick={() => setStatusFilter("inactive")}
-                  className="h-11"
-                >
-                  Bloqueados
-                </Button>
+              <div className="flex gap-1.5">
+                {[
+                  { value: "all",      label: "Todos"      },
+                  { value: "active",   label: "Ativos"     },
+                  { value: "inactive", label: "Bloqueados" },
+                ].map(({ value, label }) => (
+                  <Button
+                    key={value}
+                    variant={statusFilter === value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter(value)}
+                    className="h-9"
+                  >
+                    {label}
+                  </Button>
+                ))}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Debug Panel */}
-        {showDebug && (
-          <Card className="border-0 shadow-lg" style={{ backgroundColor: 'var(--card)' }}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-                <Filter className="h-5 w-5" />
-                Debug - Dados do Firestore
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-semibold text-blue-800">Total de Usuários</h4>
-                    <p className="text-2xl font-bold text-blue-600">{allUsers.length}</p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-semibold text-green-800">Clientes Encontrados</h4>
-                    <p className="text-2xl font-bold text-green-600">{clientUsers.length}</p>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <h4 className="font-semibold text-purple-800">Via Filtro</h4>
-                    <p className="text-2xl font-bold text-purple-600">{users.length}</p>
-                  </div>
-                </div>
-                <div className="text-sm text-gray-600">
-                  <p><strong>Filtro aplicado:</strong> userType: &apos;client&apos;</p>
-                  <p><strong>Status:</strong> {loading ? 'Carregando...' : 'Concluído'}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Users Table */}
         <UsersTable 

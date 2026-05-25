@@ -122,12 +122,12 @@ export function OrdersDashboard(_props: OrdersDashboardProps) {
 
   if (error || !firestoreData) {
     return (
-      <Card>
+      <Card className="shadow-card">
         <CardContent className="p-6">
-          <div className="text-center text-red-600">
+          <div className="text-center text-destructive">
             <XCircle className="h-8 w-8 mx-auto mb-2" />
-            <p>Erro ao carregar dados reais de pedidos</p>
-            <p className="text-sm text-red-500 mt-1">{error}</p>
+            <p className="font-medium">Erro ao carregar dados reais de pedidos</p>
+            <p className="text-sm mt-1 text-destructive/70">{error}</p>
           </div>
         </CardContent>
       </Card>
@@ -136,50 +136,23 @@ export function OrdersDashboard(_props: OrdersDashboardProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-l-4 border-l-orange-500 bg-gradient-to-br from-orange-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total de Pedidos</CardTitle>
-            <ShoppingCart className="h-5 w-5 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-gray-900 mb-2">{stats.total}</div>
-            <p className="text-sm text-gray-600">Historico completo da colecao orders</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-yellow-500 bg-gradient-to-br from-yellow-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pedidos em Aberto</CardTitle>
-            <Clock className="h-5 w-5 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-yellow-600 mb-2">{stats.active}</div>
-            <p className="text-sm text-gray-600">Pedidos ativos e nao cancelados</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-500 bg-gradient-to-br from-green-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Concluidos</CardTitle>
-            <CheckCircle className="h-5 w-5 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-green-600 mb-2">{stats.completed}</div>
-            <p className="text-sm text-gray-600">Registros com status concluido</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-red-500 bg-gradient-to-br from-red-50 to-white">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Pedidos Cancelados</CardTitle>
-            <XCircle className="h-5 w-5 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-4xl font-bold text-red-600 mb-2">{stats.cancelled}</div>
-            <p className="text-sm text-gray-600">Cancelados no historico atual</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: "Total de Pedidos",    value: stats.total,     valueClass: "text-foreground",  icon: ShoppingCart, iconCl: "text-primary",     borderCl: "border-l-primary"    },
+          { label: "Pedidos em Aberto",   value: stats.active,    valueClass: "text-amber-600",   icon: Clock,        iconCl: "text-amber-600",   borderCl: "border-l-amber-500"  },
+          { label: "Pedidos Concluidos",  value: stats.completed, valueClass: "text-emerald-600", icon: CheckCircle,  iconCl: "text-emerald-600", borderCl: "border-l-emerald-500"},
+          { label: "Pedidos Cancelados",  value: stats.cancelled, valueClass: "text-destructive", icon: XCircle,      iconCl: "text-destructive", borderCl: "border-l-destructive"},
+        ].map(({ label, value, valueClass, icon: Icon, iconCl, borderCl }) => (
+          <Card key={label} className={`shadow-card border-l-4 ${borderCl}`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">{label}</CardTitle>
+              <Icon className={`h-4 w-4 ${iconCl}`} />
+            </CardHeader>
+            <CardContent>
+              <div className={`text-3xl font-bold tabular-nums mb-1 ${valueClass}`}>{value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -195,10 +168,10 @@ export function OrdersDashboard(_props: OrdersDashboardProps) {
               return (
                 <div key={row.label} className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">{row.label}</span>
-                    <span className="text-sm text-gray-500">{row.value}</span>
+                    <span className="text-sm font-medium text-foreground">{row.label}</span>
+                    <span className="text-xs text-muted-foreground">{row.value}</span>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div className={`${row.color} h-2 rounded-full`} style={{ width: `${width}%` }} />
                   </div>
                 </div>
@@ -215,29 +188,29 @@ export function OrdersDashboard(_props: OrdersDashboardProps) {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Hoje</p>
-                <p className="text-xs text-gray-500">Pedidos criados hoje</p>
+                <p className="text-sm font-medium text-foreground">Hoje</p>
+                <p className="text-xs text-muted-foreground">Pedidos criados hoje</p>
               </div>
               <Badge variant="outline">{stats.today}</Badge>
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Ultimos 7 dias</p>
-                <p className="text-xs text-gray-500">Pedidos criados na semana</p>
+                <p className="text-sm font-medium text-foreground">Ultimos 7 dias</p>
+                <p className="text-xs text-muted-foreground">Pedidos criados na semana</p>
               </div>
               <Badge variant="outline">{stats.last7Days}</Badge>
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Ultimos 30 dias</p>
-                <p className="text-xs text-gray-500">Pedidos criados no mes</p>
+                <p className="text-sm font-medium text-foreground">Ultimos 30 dias</p>
+                <p className="text-xs text-muted-foreground">Pedidos criados no mes</p>
               </div>
               <Badge variant="outline">{stats.last30Days}</Badge>
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <p className="text-sm font-medium text-gray-700">Pedidos urgentes</p>
-                <p className="text-xs text-gray-500">Marcados como emergencia</p>
+                <p className="text-sm font-medium text-foreground">Pedidos urgentes</p>
+                <p className="text-xs text-muted-foreground">Marcados como emergencia</p>
               </div>
               <Badge variant="outline">{stats.urgent}</Badge>
             </div>
@@ -245,32 +218,28 @@ export function OrdersDashboard(_props: OrdersDashboardProps) {
         </Card>
       </div>
 
-      <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+      <Card className="shadow-card border-primary/20">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-orange-800">
-            <TrendingUp className="h-5 w-5" />
+          <CardTitle className="flex items-center space-x-2 text-foreground">
+            <TrendingUp className="h-5 w-5 text-primary" />
             <span>Indicadores Reais</span>
           </CardTitle>
-          <CardDescription className="text-orange-700">
+          <CardDescription>
             Taxas calculadas apenas com os dados disponiveis no Firestore
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-lg border border-orange-200 bg-white p-6 text-center">
-            <div className="text-4xl font-bold text-green-600 mb-2">{completionRate.toFixed(1)}%</div>
-            <p className="text-sm font-medium text-gray-700">Taxa de Conclusao</p>
-            <p className="text-xs text-gray-500">Pedidos concluidos sobre o total</p>
-          </div>
-          <div className="rounded-lg border border-orange-200 bg-white p-6 text-center">
-            <div className="text-4xl font-bold text-red-600 mb-2">{cancellationRate.toFixed(1)}%</div>
-            <p className="text-sm font-medium text-gray-700">Taxa de Cancelamento</p>
-            <p className="text-xs text-gray-500">Pedidos cancelados sobre o total</p>
-          </div>
-          <div className="rounded-lg border border-orange-200 bg-white p-6 text-center">
-            <div className="text-4xl font-bold text-orange-600 mb-2">{stats.last30Days}</div>
-            <p className="text-sm font-medium text-gray-700">Pedidos nos Ultimos 30 Dias</p>
-            <p className="text-xs text-gray-500">Volume recente sem extrapolacao artificial</p>
-          </div>
+        <CardContent className="grid gap-3 grid-cols-3">
+          {[
+            { label: "Taxa de Conclusao",          value: `${completionRate.toFixed(1)}%`,    valueClass: "text-emerald-600", sub: "Pedidos concluidos sobre o total"     },
+            { label: "Taxa de Cancelamento",        value: `${cancellationRate.toFixed(1)}%`,  valueClass: "text-destructive", sub: "Pedidos cancelados sobre o total"     },
+            { label: "Pedidos nos Ultimos 30 Dias", value: stats.last30Days,                   valueClass: "text-primary",     sub: "Volume recente"                       },
+          ].map(({ label, value, valueClass, sub }) => (
+            <div key={label} className="rounded-lg border border-border bg-card p-4 sm:p-6 text-center">
+              <div className={`text-3xl font-bold tabular-nums mb-2 ${valueClass}`}>{value}</div>
+              <p className="text-sm font-medium text-foreground">{label}</p>
+              <p className="text-xs text-muted-foreground mt-1">{sub}</p>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </div>

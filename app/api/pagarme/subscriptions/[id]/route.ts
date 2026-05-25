@@ -7,10 +7,11 @@ import { pagarmeService } from '@/lib/services/pagarme-service'
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const response = await pagarmeService.getSubscription(params.id)
+    const response = await pagarmeService.getSubscription(id)
 
     if (response.errors) {
       return NextResponse.json(
@@ -44,11 +45,12 @@ export async function GET(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
     const body = await request.json()
-    const response = await pagarmeService.updateSubscription(params.id, body)
+    const response = await pagarmeService.updateSubscription(id, body)
 
     if (response.errors) {
       return NextResponse.json(
@@ -83,10 +85,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const response = await pagarmeService.cancelSubscription(params.id)
+    const response = await pagarmeService.cancelSubscription(id)
 
     if (response.errors) {
       return NextResponse.json(

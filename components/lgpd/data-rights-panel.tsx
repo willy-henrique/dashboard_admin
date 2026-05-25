@@ -189,7 +189,7 @@ export function DataRightsPanel({ userId, userEmail }: DataRightsPanelProps) {
                 <Eye className="h-4 w-4" />
                 <span className="font-semibold">Acessar Meus Dados</span>
               </div>
-              <span className="text-xs text-gray-600 text-left">
+              <span className="text-xs text-muted-foreground text-left">
                 Visualizar todos os dados pessoais que temos sobre você
               </span>
             </Button>
@@ -204,7 +204,7 @@ export function DataRightsPanel({ userId, userEmail }: DataRightsPanelProps) {
                 <Download className="h-4 w-4" />
                 <span className="font-semibold">Exportar Meus Dados</span>
               </div>
-              <span className="text-xs text-gray-600 text-left">
+              <span className="text-xs text-muted-foreground text-left">
                 Baixar seus dados em formato estruturado (portabilidade)
               </span>
             </Button>
@@ -219,7 +219,7 @@ export function DataRightsPanel({ userId, userEmail }: DataRightsPanelProps) {
                 <Trash2 className="h-4 w-4" />
                 <span className="font-semibold">Excluir Meus Dados</span>
               </div>
-              <span className="text-xs text-gray-600 text-left">
+              <span className="text-xs text-muted-foreground text-left">
                 Solicitar anonimização/exclusão de seus dados pessoais
               </span>
             </Button>
@@ -232,7 +232,7 @@ export function DataRightsPanel({ userId, userEmail }: DataRightsPanelProps) {
                 <FileText className="h-4 w-4" />
                 <span className="font-semibold">Política de Privacidade</span>
               </div>
-              <span className="text-xs text-gray-600 text-left">
+              <span className="text-xs text-muted-foreground text-left">
                 Ler nossa política completa de privacidade
               </span>
             </Button>
@@ -254,7 +254,7 @@ export function DataRightsPanel({ userId, userEmail }: DataRightsPanelProps) {
                         </span>
                         {getStatusBadge(request.status)}
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {new Date(request.requestedAt).toLocaleDateString(
                           "pt-BR"
                         )}
@@ -278,7 +278,7 @@ export function DataRightsPanel({ userId, userEmail }: DataRightsPanelProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-auto">
-            <pre className="bg-gray-50 p-4 rounded-lg text-xs">
+            <pre className="bg-muted/50 p-4 rounded-lg text-xs">
               {JSON.stringify(userData, null, 2)}
             </pre>
           </div>

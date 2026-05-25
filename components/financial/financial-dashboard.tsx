@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { DollarSign, TrendingUp, CreditCard, Percent, ArrowUpRight, ArrowDownRight, Loader2, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -51,12 +52,12 @@ export function FinancialDashboard() {
           {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
-                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                <div className="h-4 w-24 bg-muted animate-skeleton rounded" />
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="h-8 w-20 bg-gray-200 animate-pulse rounded mb-2" />
-                <div className="h-3 w-16 bg-gray-200 animate-pulse rounded" />
+                <div className="h-8 w-20 bg-muted animate-skeleton rounded mb-2" />
+                <div className="h-3 w-16 bg-muted animate-skeleton rounded" />
               </CardContent>
             </Card>
           ))}
@@ -68,7 +69,7 @@ export function FinancialDashboard() {
   if (analyticsError) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600 mb-4">Erro ao carregar dados financeiros: {analyticsError}</p>
+        <p className="text-destructive text-sm mb-4">Erro ao carregar dados financeiros: {analyticsError}</p>
         <Button onClick={() => refetch()} variant="outline">
           <RefreshCw className="h-4 w-4 mr-2" />
           Tentar Novamente
@@ -88,7 +89,7 @@ export function FinancialDashboard() {
   const availableBalance = balance?.available_amount || 0
   const waitingFunds = balance?.waiting_funds_amount || 0
 
-  const financialMetrics = [
+  const financialMetrics: Array<{ title: string; value: string; change: string; changeType: "positive" | "neutral" | "negative"; icon: React.ComponentType<{ className?: string }>; description: string }> = [
     {
       title: "Receita Total",
       value: PagarmeService.formatCurrency(PagarmeService.fromCents(totalAmount)),
@@ -152,8 +153,8 @@ export function FinancialDashboard() {
       {/* Header com botão de atualizar */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">Métricas Financeiras</h2>
-          <p className="text-sm text-gray-500">Dados do Pagar.me em tempo real</p>
+          <h2 className="text-lg font-semibold text-foreground">Métricas Financeiras</h2>
+          <p className="text-sm text-muted-foreground">Dados do Pagar.me em tempo real</p>
         </div>
         <Button onClick={() => refetch()} variant="outline" size="sm">
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -166,11 +167,11 @@ export function FinancialDashboard() {
         {financialMetrics.map((metric) => (
           <Card key={metric.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">{metric.title}</CardTitle>
-              <metric.icon className="h-4 w-4 text-gray-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">{metric.title}</CardTitle>
+              <metric.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+              <div className="text-2xl font-bold text-foreground tabular-nums">{metric.value}</div>
               <div className="flex items-center space-x-2 text-xs">
                 <span
                   className={`font-medium flex items-center gap-1 ${
@@ -178,14 +179,14 @@ export function FinancialDashboard() {
                       ? "text-green-600" 
                       : metric.changeType === "negative"
                       ? "text-red-600"
-                      : "text-gray-600"
+                      : "text-muted-foreground"
                   }`}
                 >
                   {metric.changeType === "positive" && <ArrowUpRight className="h-3 w-3" />}
                   {metric.changeType === "negative" && <ArrowDownRight className="h-3 w-3" />}
                   {metric.change}
                 </span>
-                <span className="text-gray-500">{metric.description}</span>
+                <span className="text-muted-foreground">{metric.description}</span>
               </div>
             </CardContent>
           </Card>
@@ -254,26 +255,26 @@ export function FinancialDashboard() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Pagos</span>
+                <span className="text-sm font-medium text-foreground">Pagos</span>
                 <span className="text-sm font-bold text-green-600">
                   {analytics?.status_breakdown?.paid || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Pendentes</span>
+                <span className="text-sm font-medium text-foreground">Pendentes</span>
                 <span className="text-sm font-bold text-orange-600">
                   {analytics?.status_breakdown?.pending || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Falhados</span>
+                <span className="text-sm font-medium text-foreground">Falhados</span>
                 <span className="text-sm font-bold text-red-600">
                   {analytics?.status_breakdown?.failed || 0}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Cancelados</span>
-                <span className="text-sm font-bold text-gray-600">
+                <span className="text-sm font-medium text-foreground">Cancelados</span>
+                <span className="text-sm font-bold text-muted-foreground">
                   {analytics?.status_breakdown?.canceled || 0}
                 </span>
               </div>

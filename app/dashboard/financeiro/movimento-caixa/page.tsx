@@ -9,8 +9,8 @@ export default function MovimentoCaixaPage() {
     <AppShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Movimento de Caixa</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-foreground">Movimento de Caixa</h1>
+          <p className="text-muted-foreground">
             Esta area nao exibe mais movimentacoes locais de exemplo.
           </p>
         </div>
@@ -25,7 +25,7 @@ export default function MovimentoCaixaPage() {
               A colecao `transactions` esta vazia ou ainda nao foi ligada a esta tela.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-sm text-slate-600">
+          <CardContent className="text-sm text-muted-foreground">
             As entradas, saidas, totais e acoes de cadastro foram removidos porque eram puramente ficticios.
           </CardContent>
         </Card>
