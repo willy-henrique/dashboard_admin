@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useChatActions } from "@/hooks/use-chat"
 import { LegacyChatConversation } from "@/lib/services/chat-service"
-import { Shield, Archive, Ban, CheckCircle, Clock, Edit, UserPlus, AlertTriangle } from "lucide-react"
+import { Shield, Archive, Ban, CheckCircle, Clock, Edit, UserPlus, AlertTriangle, Sparkles } from "lucide-react"
 
 interface AdminActionsPanelProps {
   conversation: LegacyChatConversation
@@ -105,17 +105,20 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
   }
 
   return (
-    <Card className="bg-card">
-      <CardHeader>
-        <CardTitle className="flex items-center text-foreground">
-          <Shield className="mr-2 h-5 w-5 text-orange-500" />
-          Monitoramento administrativo
+    <Card className="h-full overflow-hidden border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,250,251,0.96))] shadow-sm">
+      <CardHeader className="border-b bg-muted/20">
+        <CardTitle className="flex items-center justify-between gap-3 text-foreground">
+          <span className="flex items-center">
+            <Shield className="mr-2 h-5 w-5 text-orange-500" />
+            Monitoramento administrativo
+          </span>
+          <Sparkles className="h-4 w-4 text-orange-400" />
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-5">
-        <div className="rounded-lg bg-muted/50 p-3">
-          <h4 className="mb-2 font-medium text-foreground">Estado atual</h4>
+      <CardContent className="space-y-5 pt-5">
+        <div className="rounded-xl border bg-muted/40 p-4">
+          <h4 className="mb-3 text-sm font-semibold text-foreground">Estado atual</h4>
           <div className="flex flex-wrap gap-2">
             <Badge className={getStatusColor(conversation.status)}>{conversation.status}</Badge>
             <Badge className={getPriorityColor(conversation.priority)}>{conversation.priority}</Badge>
@@ -124,7 +127,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-foreground">Alterar status</h4>
+          <h4 className="text-sm font-semibold text-foreground">Alterar status</h4>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" onClick={() => handleStatusChange("active")} disabled={loading || conversation.status === "active"}>
               <CheckCircle className="mr-2 h-4 w-4" />
@@ -146,7 +149,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-foreground">Prioridade</h4>
+          <h4 className="text-sm font-semibold text-foreground">Prioridade</h4>
           <Select value={priority} onValueChange={(value) => handlePriorityChange(value as LegacyChatConversation["priority"])}>
             <SelectTrigger className="bg-card">
               <SelectValue />
@@ -161,7 +164,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-foreground">Responsavel</h4>
+          <h4 className="text-sm font-semibold text-foreground">Responsável</h4>
           <div className="flex gap-2">
             <Input value={assignee} onChange={(event) => setAssignee(event.target.value)} placeholder="Nome do responsavel" className="bg-card" />
             <Button type="button" variant="outline" onClick={handleAssignConversation} disabled={loading || !assignee.trim()}>
@@ -173,13 +176,13 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         <div className="space-y-2">
-          <h4 className="font-medium text-foreground">Notas internas</h4>
+          <h4 className="text-sm font-semibold text-foreground">Notas internas</h4>
           {conversation.notes ? (
-            <div className="max-h-32 overflow-y-auto rounded-md border bg-muted/50 p-3 text-sm whitespace-pre-wrap">
+            <div className="max-h-32 overflow-y-auto rounded-xl border bg-muted/40 p-3 text-sm whitespace-pre-wrap">
               {conversation.notes}
             </div>
           ) : (
-            <div className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">Nenhuma nota registrada para esta conversa.</div>
+            <div className="rounded-xl border border-dashed p-3 text-sm text-muted-foreground">Nenhuma nota registrada para esta conversa.</div>
           )}
           <Textarea placeholder="Adicionar nota administrativa" value={note} onChange={(event) => setNote(event.target.value)} rows={3} className="bg-card" />
           <Button type="button" onClick={handleAddNote} disabled={loading || !note.trim()} className="w-full bg-orange-500 text-white hover:bg-orange-600">
@@ -189,7 +192,7 @@ export function AdminActionsPanel({ conversation, onUpdate }: AdminActionsPanelP
         </div>
 
         {conversation.priority === "urgent" ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+          <div className="rounded-xl border border-red-200 bg-red-50 p-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
               <span className="font-medium text-red-800">Conversa urgente</span>

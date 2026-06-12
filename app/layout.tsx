@@ -10,7 +10,7 @@ import { MasterAuthProvider } from "@/hooks/use-master-auth"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { PerformanceOptimizer } from "@/components/performance-optimizer"
-import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
+// GoogleMapsLoader é carregado só nas páginas com mapa (ex.: dashboard), não globalmente.
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -49,7 +49,6 @@ export default function RootLayout({
               <MasterAuthProvider>
                 <PermissionsProvider>
                   <PerformanceOptimizer>
-                    <GoogleMapsLoader />
                     <div className="min-h-screen bg-background overflow-x-hidden max-w-full">
                       {children}
                       <Toaster />

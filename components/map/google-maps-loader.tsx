@@ -8,12 +8,15 @@ declare global {
     initGoogleMaps: () => void
     __googleMapsBlocked?: boolean
     __googleMapsLoadError?: string | null
+    __googleMapsScriptLoadingPromise?: Promise<void>
   }
 }
 
 interface GoogleMapsLoaderProps {
   apiKey?: string
 }
+
+const GOOGLE_MAPS_SCRIPT_ID = "google-maps-javascript-api"
 
 export function GoogleMapsLoader({ apiKey }: GoogleMapsLoaderProps) {
   useEffect(() => {
@@ -53,35 +56,47 @@ export function GoogleMapsLoader({ apiKey }: GoogleMapsLoaderProps) {
       return () => window.removeEventListener('error', handleMapsError)
     }
 
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
-    if (existingScript) {
-      return () => window.removeEventListener('error', handleMapsError)
-    }
+    const existingScript = document.getElementById(GOOGLE_MAPS_SCRIPT_ID) as HTMLScriptElement | null
 
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&loading=async`
-    script.async = true
-    script.defer = true
+    if (!window.__googleMapsScriptLoadingPromise) {
+      if (existingScript) {
+        window.__googleMapsScriptLoadingPromise = new Promise<void>((resolve, reject) => {
+          if (window.google?.maps) {
+            resolve()
+            return
+          }
 
-    script.onload = () => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Google Maps carregado com sucesso')
+          existingScript.addEventListener('load', () => resolve(), { once: true })
+          existingScript.addEventListener('error', () => reject(new Error('Erro ao carregar script do Google Maps')), { once: true })
+        })
+      } else {
+        const script = document.createElement('script')
+        script.id = GOOGLE_MAPS_SCRIPT_ID
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&v=weekly`
+        script.async = true
+        script.defer = true
+
+        window.__googleMapsScriptLoadingPromise = new Promise<void>((resolve, reject) => {
+          script.addEventListener('load', () => {
+            if (process.env.NODE_ENV !== 'production') {
+              console.log('Google Maps carregado com sucesso')
+            }
+            resolve()
+          }, { once: true })
+
+          script.addEventListener('error', () => {
+            window.__googleMapsBlocked = true
+            window.__googleMapsLoadError = 'Erro ao carregar script do Google Maps'
+            console.error('Erro ao carregar Google Maps. Verifique a chave e as restricoes de API.')
+            reject(new Error('Erro ao carregar script do Google Maps'))
+          }, { once: true })
+        })
+
+        document.head.appendChild(script)
       }
     }
-
-    script.onerror = () => {
-      window.__googleMapsBlocked = true
-      window.__googleMapsLoadError = 'Erro ao carregar script do Google Maps'
-      console.error('Erro ao carregar Google Maps. Verifique a chave e as restricoes de API.')
-    }
-
-    document.head.appendChild(script)
 
     return () => {
-      const scriptToRemove = document.querySelector('script[src*="maps.googleapis.com"]')
-      if (scriptToRemove) {
-        document.head.removeChild(scriptToRemove)
-      }
       window.removeEventListener('error', handleMapsError)
     }
   }, [apiKey])

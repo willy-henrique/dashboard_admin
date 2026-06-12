@@ -144,27 +144,35 @@ function GoogleMapView({
   useEffect(() => {
     if (!mapRef.current || ready) return
 
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    // Aguarda o script do Google Maps. Com loading=async é preciso importLibrary.
     const tryInit = () => {
-      if (typeof window !== "undefined" && window.google?.maps) {
-        try {
-          const map = new window.google.maps.Map(mapRef.current!, {
-            center: { lat: -20.3155, lng: -40.3128 },
-            zoom: 12,
-            styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }],
-          })
-          mapInstance.current = map
-          setReady(true)
-        } catch {
-          setReady(false)
-        }
+      if (cancelled) return
+      const g = typeof window !== "undefined" ? (window.google as any) : undefined
+      // Espera o construtor real (Map), não só o objeto google.maps.
+      if (typeof g?.maps?.Map !== "function" || !mapRef.current) {
+        timer = setTimeout(tryInit, 400) // poll até a API estar disponível
+        return
+      }
+      try {
+        const map = new g.maps.Map(mapRef.current, {
+          center: { lat: -20.3155, lng: -40.3128 },
+          zoom: 12,
+          styles: [{ featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] }],
+        })
+        mapInstance.current = map
+        setReady(true)
+      } catch {
+        timer = setTimeout(tryInit, 400)
       }
     }
 
-    if (typeof window !== "undefined" && window.google?.maps) {
-      tryInit()
-    } else {
-      const t = setTimeout(tryInit, 1500)
-      return () => clearTimeout(t)
+    tryInit()
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
     }
   }, [ready])
 
@@ -191,9 +199,19 @@ function GoogleMapView({
     })
   }, [ready, providers, onSelect])
 
-  if (!ready) return null
-
-  return <div ref={mapRef} className="w-full h-full" />
+  // O div precisa estar SEMPRE no DOM para o ref existir e o mapa inicializar.
+  // (Antes havia `if (!ready) return null`, criando um deadlock: sem div, sem ref,
+  //  o mapa nunca era criado e `ready` nunca virava true.)
+  return (
+    <div className="relative h-full w-full">
+      {!ready && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/30 text-sm text-muted-foreground">
+          Carregando mapa…
+        </div>
+      )}
+      <div ref={mapRef} className="h-full w-full" />
+    </div>
+  )
 }
 
 // Visual fallback map (no Google Maps needed)
@@ -307,16 +325,23 @@ export function ProvidersMap() {
     refreshInterval: 30000,
   })
 
-  // Detect Google Maps availability once on mount
+  // Detecta o Google Maps por polling (o construtor pode demorar a aparecer).
   useEffect(() => {
+    let cancelled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
     const check = () => {
-      if (typeof window !== "undefined" && window.google?.maps) {
+      if (cancelled) return
+      if (typeof window !== "undefined" && typeof (window.google as any)?.maps?.Map === "function") {
         setUseGoogleMaps(true)
+        return
       }
+      timer = setTimeout(check, 400)
     }
     check()
-    const t = setTimeout(check, 2000)
-    return () => clearTimeout(t)
+    return () => {
+      cancelled = true
+      if (timer) clearTimeout(timer)
+    }
   }, [])
 
   const handleSelect = useCallback((p: Provider) => {

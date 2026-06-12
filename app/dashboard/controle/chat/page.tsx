@@ -2,13 +2,17 @@
 
 import { ChatDashboard } from "@/components/chat/chat-dashboard"
 import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
+import { Suspense, useEffect } from "react"
 
 function ChatPageContent() {
   const searchParams = useSearchParams()
   const protocolo = searchParams.get('protocolo')
   const servicoId = searchParams.get('servico')
   const orderId = searchParams.get('orderId')
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" })
+  }, [])
 
   return (
     <ChatDashboard 
@@ -22,7 +26,7 @@ function ChatPageContent() {
 export default function ChatMonitoringPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+      <div className="mx-auto w-full max-w-[1600px] px-2 py-4 sm:px-4 sm:py-6">
         <Suspense fallback={
           <div className="flex items-center justify-center h-64">
             <div className="text-center">

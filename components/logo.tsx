@@ -1,35 +1,50 @@
 "use client"
 
+import { useState } from "react"
+
 interface LogoProps {
   className?: string
   showText?: boolean
 }
 
+/** Caminho da logo. Salve a imagem da marca em public/ com este nome. */
+const LOGO_SRC = "/logo-aquiresolve.png"
+
 export function Logo({ className = "h-8", showText = true }: LogoProps) {
+  const [imgError, setImgError] = useState(false)
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {/* Ícone A com swoosh */}
-      <div className="relative">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Letra A estilizada */}
-          <path 
-            d="M12 32 L20 12 L28 32 M15 25 L25 25" 
-            stroke="#1e3a8a" 
-            strokeWidth="3" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
+      <div className="relative flex h-full items-center">
+        {!imgError ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={LOGO_SRC}
+            alt="AquiResolve"
+            className="h-full w-auto object-contain"
+            onError={() => setImgError(true)}
           />
-          {/* Swoosh laranja */}
-          <path 
-            d="M28 32 Q30 30 33 32" 
-            stroke="#f97316" 
-            strokeWidth="2.5" 
-            strokeLinecap="round"
-          />
-        </svg>
+        ) : (
+          // Marca AquiResolve recriada em SVG (dois ganchos entrelaçados laranja/azul).
+          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-auto" aria-label="AquiResolve">
+            <defs>
+              <linearGradient id="arOrange" x1="20" y1="20" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#f7941d" />
+                <stop offset="1" stopColor="#ef6a1a" />
+              </linearGradient>
+              <linearGradient id="arBlue" x1="90" y1="90" x2="30" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#16356b" />
+                <stop offset="1" stopColor="#21477f" />
+              </linearGradient>
+            </defs>
+            {/* Gancho laranja (superior-esquerdo) */}
+            <path d="M82 38 A30 30 0 1 0 78 86" stroke="url(#arOrange)" strokeWidth="17" strokeLinecap="round" />
+            {/* Gancho azul (inferior-direito), entrelaçado */}
+            <path d="M38 82 A30 30 0 1 0 42 34" stroke="url(#arBlue)" strokeWidth="17" strokeLinecap="round" />
+          </svg>
+        )}
       </div>
-      
-      {/* Texto */}
+
       {showText && (
         <div className="flex items-baseline gap-0.5">
           <span className="text-xl font-bold text-blue-900">Aqui</span>

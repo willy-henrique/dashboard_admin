@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "@/components/ui/separator"
 import { subscribeServiceChecklists } from "@/lib/services/firebase-checklists"
+import { deriveStatusFechamento, STATUS_FECHAMENTO_CONFIG } from "@/lib/orders/checklist-closure"
 import type {
   ServiceChecklist,
   FotoFase,
@@ -201,22 +202,36 @@ export function ServiceChecklistPanel({ orderId }: Props) {
                       {STATUS_CONFIG[selected.status].label}
                     </span>
                   </Badge>
-                  {selected.problemaResolvido !== undefined && (
-                    <Badge
-                      className={
-                        selected.problemaResolvido
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }
-                    >
-                      {selected.problemaResolvido ? "Problema resolvido" : "Problema não resolvido"}
-                    </Badge>
-                  )}
-                  {selected.haverRetorno && (
-                    <Badge className="bg-amber-100 text-amber-700">Haverá retorno</Badge>
-                  )}
+                  {(() => {
+                    const sf = deriveStatusFechamento(selected)
+                    return sf ? (
+                      <Badge className={STATUS_FECHAMENTO_CONFIG[sf].badge}>
+                        {STATUS_FECHAMENTO_CONFIG[sf].label}
+                      </Badge>
+                    ) : null
+                  })()}
                 </div>
               </div>
+
+              {selected.servicosRealizados && selected.servicosRealizados.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-medium text-muted-foreground mb-1.5">Serviços realizados</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {selected.servicosRealizados.map((s) => (
+                      <Badge key={s} variant="outline" className="text-xs">
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selected.avariasPreExistentes && (
+                <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+                  <p className="text-xs font-medium text-amber-700">Avarias pré-existentes (proteção jurídica)</p>
+                  <p className="text-sm text-amber-800 mt-0.5">{selected.avariasPreExistentes}</p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-xs text-muted-foreground">
                 <div>
@@ -248,8 +263,23 @@ export function ServiceChecklistPanel({ orderId }: Props) {
 
               {selected.observacoesTecnicas && (
                 <div className="mt-3 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
-                  <p className="text-xs font-medium text-blue-700">Observações técnicas</p>
+                  <p className="text-xs font-medium text-blue-700">Observações do desfecho</p>
                   <p className="text-sm text-blue-800 mt-0.5">{selected.observacoesTecnicas}</p>
+                </div>
+              )}
+
+              {selected.termoAceite?.aceito && (
+                <div className="mt-3 rounded-lg bg-green-50 border border-green-200 px-3 py-2 flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-xs font-medium text-green-700">Termo de aceite assinado</p>
+                    <p className="text-xs text-green-800 mt-0.5 italic">“{selected.termoAceite.texto}”</p>
+                    {selected.termoAceite.aceitoPor && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Por: {selected.termoAceite.aceitoPor} · {fmt(selected.termoAceite.aceitoEm)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </CardContent>

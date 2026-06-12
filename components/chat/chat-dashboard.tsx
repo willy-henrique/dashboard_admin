@@ -3,8 +3,9 @@
 import { useCallback, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { LegacyChatConversation } from "@/lib/services/chat-service"
-import { AlertTriangle, Clock, MessageCircle, Users } from "lucide-react"
+import { AlertTriangle, Clock, MessageCircle, RefreshCw, Sparkles, Users } from "lucide-react"
 import { useChatStats } from "@/hooks/use-chat"
 import { ChatStatsCards } from "./chat-stats-cards"
 import { ConversationsList } from "./conversations-list"
@@ -60,13 +61,67 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Monitoramento de Chat</h1>
-        <p className="text-muted-foreground">Acompanhe as conversas reais de pedidos, suporte e atendimentos monitorados.</p>
+      <Card className="overflow-hidden border-border/60 bg-[radial-gradient(circle_at_top_left,_rgba(249,115,22,0.14),_transparent_30%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(255,247,237,0.94))]">
+        <CardContent className="flex flex-col gap-6 p-5 sm:p-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/85 px-3 py-1 text-xs font-medium text-orange-800 shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" />
+              Central de monitoramento
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">Monitoramento de Chat</h1>
+              <p className="max-w-4xl text-sm leading-6 text-muted-foreground sm:text-base">
+                Acompanhe conversas ativas, priorize urgências e execute ações administrativas sem perder o contexto do pedido.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline" className="bg-white/70">{activeConversations} ativas</Badge>
+              <Badge variant="outline" className="bg-white/70">{unreadMessages} não lidas</Badge>
+              <Badge variant="outline" className="bg-white/70">{urgentConversations} urgentes</Badge>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[430px]">
+            <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-red-700">Urgência</p>
+                  <p className="mt-2 text-3xl font-bold text-red-600">{urgentConversations}</p>
+                  <p className="mt-1 text-sm text-red-700">conversas exigindo reação imediata</p>
+                </div>
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-blue-700">Fila ativa</p>
+                  <p className="mt-2 text-3xl font-bold text-blue-600">{activeConversations}</p>
+                  <p className="mt-1 text-sm text-blue-700">threads abertos no monitor</p>
+                </div>
+                <Users className="h-5 w-5 text-blue-500" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => setRefreshKey((value) => value + 1)} className="gap-2">
+          <RefreshCw className="h-4 w-4" />
+          Atualizar visão
+        </Button>
+        {selectedConversation ? (
+          <Badge variant="secondary" className="px-3 py-1">
+            Selecionada: {selectedConversation.clientName}
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="px-3 py-1">Nenhuma conversa selecionada</Badge>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-red-200 bg-red-50/60">
+        <Card className="border-red-200 bg-red-50/60 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -81,7 +136,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200 bg-orange-50/60">
+        <Card className="border-orange-200 bg-orange-50/60 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -96,7 +151,7 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/60">
+        <Card className="border-blue-200 bg-blue-50/60 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -114,15 +169,18 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
 
       <ChatStatsCards key={`stats-${refreshKey}`} />
 
-      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)_320px]">
-        <Card className="overflow-hidden">
+      <div className="grid gap-6 2xl:grid-cols-[360px_minmax(0,1fr)_340px]">
+        <Card className="overflow-hidden border-border/70 shadow-sm">
           <CardHeader className="border-b">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Users className="h-5 w-5" />
-              Conversas
+            <CardTitle className="flex items-center justify-between gap-2 text-lg">
+              <span className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Conversas
+              </span>
+              <Badge variant="outline">{`${activeConversations} ativas`}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[720px] p-0">
+          <CardContent className="h-[460px] min-h-[360px] p-0 md:h-[520px] 2xl:h-[calc(100vh-22rem)] 2xl:min-h-[620px]">
             <ConversationsList
               key={`conversations-${refreshKey}`}
               onSelectConversation={handleSelectConversation}
@@ -135,29 +193,35 @@ export function ChatDashboard({ initialProtocolo, initialServicoId, initialOrder
           </CardContent>
         </Card>
 
-        <div className="h-[720px] min-w-0">
+        <div className="min-w-0 h-[620px] md:h-[720px] 2xl:h-[calc(100vh-22rem)] 2xl:min-h-[620px]">
           <ChatMessages conversation={selectedConversation} />
         </div>
 
         {selectedConversation ? (
-          <AdminActionsPanel conversation={selectedConversation} onUpdate={() => setRefreshKey((value) => value + 1)} />
+          <div className="2xl:h-[calc(100vh-22rem)] 2xl:min-h-[620px]">
+            <AdminActionsPanel conversation={selectedConversation} onUpdate={() => setRefreshKey((value) => value + 1)} />
+          </div>
         ) : (
-          <Card>
+          <Card className="border-dashed border-border/80 shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <MessageCircle className="h-5 w-5" />
                 Painel administrativo
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Selecione uma conversa para ajustar status, prioridade, responsavel e notas internas.
+            <CardContent className="flex min-h-[320px] flex-col items-center justify-center text-center text-sm text-muted-foreground">
+              <MessageCircle className="mb-4 h-10 w-10 text-muted-foreground/35" />
+              <p className="font-medium text-foreground">Selecione uma conversa para operar</p>
+              <p className="mt-1 max-w-xs">
+                Status, prioridade, responsável e notas internas aparecem aqui quando um atendimento for escolhido.
+              </p>
             </CardContent>
           </Card>
         )}
       </div>
 
       {selectedConversation?.notes ? (
-        <Card>
+        <Card className="border-border/70 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Resumo da conversa selecionada</CardTitle>
           </CardHeader>

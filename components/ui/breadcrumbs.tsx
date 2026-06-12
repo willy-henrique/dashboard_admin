@@ -37,6 +37,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
       // Mapear segmentos para labels mais amigáveis
       const labelMap: Record<string, string> = {
         'servicos': 'Serviços',
+        'catalogo-app': 'Catálogo do App',
         'controle': 'Controle',
         'estoque': 'Estoque',
         'frota': 'Frota',

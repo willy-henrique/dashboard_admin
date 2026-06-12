@@ -263,6 +263,46 @@ export class FirebaseProvidersService {
     }
   }
 
+  static async updateProviderServiceCategories(providerId: string, categories: string[]): Promise<void> {
+    if (!db) {
+      throw new Error('Firebase nao inicializado')
+    }
+
+    const normalized = Array.from(
+      new Set(
+        categories
+          .map((item) => item.trim())
+          .filter(Boolean)
+      )
+    )
+
+    const selectionMap = normalized.reduce<Record<string, boolean>>((acc, category) => {
+      acc[category] = true
+      return acc
+    }, {})
+
+    try {
+      const providerRef = doc(db, this.collectionName, providerId)
+      await updateDoc(providerRef, {
+        especialidades: normalized,
+        serviceCategories: normalized,
+        categories: normalized,
+        servicos: normalized,
+        services: normalized,
+        servicosAtendidos: normalized,
+        servicosSelecionados: selectionMap,
+        nichesSelecionados: selectionMap,
+        categoriaPrincipal: normalized[0] ?? null,
+        serviceType: normalized[0] ?? null,
+        updatedAt: serverTimestamp(),
+        ultimaAtualizacao: serverTimestamp(),
+      })
+    } catch (error) {
+      console.error('Erro ao atualizar categorias de servico do prestador:', error)
+      throw error
+    }
+  }
+
   static listenToActiveProviders(callback: (providers: FirebaseProvider[]) => void): () => void {
     if (!db) {
       console.warn('Firebase nao inicializado')

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LayoutGrid, BarChart3, MapPin, RefreshCw, TrendingUp, FileText, Settings, Loader2 } from "lucide-react"
+import { GoogleMapsLoader } from "@/components/map/google-maps-loader"
 import { DashboardMetrics } from "@/components/dashboard/dashboard-metrics"
 import { RecentActivity } from "@/components/dashboard/recent-activity"
 import { ServicesAnalytics } from "@/components/dashboard/services-analytics"
@@ -151,6 +152,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="h-[400px] sm:h-[440px]">
+                  <GoogleMapsLoader />
                   <ProvidersMap />
                 </div>
               </CardContent>

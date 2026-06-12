@@ -24,15 +24,7 @@ export function AppShell({ children, hideSidebar = false }: AppShellProps) {
           </div>
         </main>
       </div>
-
-      {/* Mobile overlay */}
-      {sidebarOpen && !hideSidebar && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 lg:hidden backdrop-blur-sm"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden
-        />
-      )}
+      {/* O overlay do mobile é o nativo do Sheet (sidebar) — não duplicar aqui. */}
     </div>
   )
 }

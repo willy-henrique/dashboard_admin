@@ -119,6 +119,23 @@ export interface ServiceValidation {
   status: "pending" | "confirmed" | "expired" | "blocked"
 }
 
+// ─── Fechamento da OS (contrato Aqui Resolve) ─────────────────────────────────
+
+/** Desfecho do atendimento — exatamente 3 estados possíveis. */
+export type StatusFechamento =
+  | "concluido_sucesso"
+  | "retorno_pendente"
+  | "nao_concluido_sem_retorno"
+
+/** Termo de aceite jurídico assinado no encerramento. */
+export interface TermoAceite {
+  aceito: boolean
+  /** Texto exato exibido e aceito no momento da assinatura (auditoria). */
+  texto: string
+  aceitoEm?: Timestamp
+  aceitoPor?: string
+}
+
 // ─── Checklist de serviço (preenchido pelo prestador) ─────────────────────────
 
 export type ServiceChecklistStatus =
@@ -145,9 +162,17 @@ export interface ServiceChecklist {
   fotos: FotoServico[]
   assinaturaCliente?: AssinaturaDigital
   assinaturaPrestador?: AssinaturaDigital
-  /** Problema foi resolvido? */
+  /** Serviços realizados (seleção múltipla). Ex.: ["Elétrico", "Encanador"]. */
+  servicosRealizados?: string[]
+  /** Avarias pré-existentes em texto livre (proteção jurídica do prestador). */
+  avariasPreExistentes?: string
+  /** Status de fechamento (3 estados) — fonte da verdade do desfecho. */
+  statusFechamento?: StatusFechamento
+  /** Termo de aceite jurídico aceito no encerramento. */
+  termoAceite?: TermoAceite
+  /** @deprecated Use statusFechamento. Mantido p/ compatibilidade com dados antigos. */
   problemaResolvido?: boolean
-  /** Haverá retorno para complemento? */
+  /** @deprecated Use statusFechamento. Mantido p/ compatibilidade com dados antigos. */
   haverRetorno?: boolean
   motivoNaoConclusao?: string
   observacoesTecnicas?: string

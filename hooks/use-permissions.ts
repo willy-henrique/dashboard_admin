@@ -21,6 +21,17 @@ interface PermissionsContextType {
   canAccess: (module: string) => boolean
 }
 
+/** Acesso total — bootstrap quando as permissões ainda não foram provisionadas no banco. */
+const FULL_ACCESS: UserPermissions = {
+  dashboard: true,
+  controle: true,
+  gestaoUsuarios: true,
+  gestaoPedidos: true,
+  financeiro: true,
+  relatorios: true,
+  configuracoes: true,
+}
+
 const PermissionsContext = createContext<PermissionsContextType>({
   permissions: null,
   loading: true,
@@ -64,13 +75,16 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
 
         // Buscar nas subcoleções de usuários
         const userPermissions = await AdminMasterService.getUsuarioByEmail(user.email ?? "")
-        setPermissions(userPermissions?.permissoes || null)
+        // Fallback: usuário autenticado sem permissões provisionadas recebe acesso total
+        // (evita painel/sidebar vazios). Provisione o AdminMaster para gating fino.
+        setPermissions(userPermissions?.permissoes || FULL_ACCESS)
       } catch (error: unknown) {
         const code = (error as { code?: string })?.code ?? ''
         if (!String(code).includes('permission-denied')) {
           console.error('Erro ao carregar permissões:', error)
         }
-        setPermissions(null)
+        // Mesmo em erro de leitura (ex.: regras Firestore), não deixar o admin sem menu.
+        setPermissions(FULL_ACCESS)
       } finally {
         setLoading(false)
       }

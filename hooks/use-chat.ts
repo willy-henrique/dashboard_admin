@@ -553,19 +553,24 @@ export function useChatActions() {
       }
 
       try {
-        // operationalAlerts não existe como coleção — alertas são derivados dos pedidos pelo hook use-operational-alerts
-        const ref = await addDoc(collection(db, "adminActions"), {
-          type: "operational_alert",
+        const ref = await addDoc(collection(db, "operationalAlerts"), {
           ...input,
           status: "open",
           createdAt: Timestamp.now(),
+        })
+        await logAdminAction({
+          chatId: `orders_${input.orderId}`,
+          adminId: input.createdBy || "admin",
+          adminName: "Administrador",
+          action: "note_add",
+          details: `[alerta:${input.kind}/${input.severity}] ${input.title}`,
         })
         return ref.id
       } catch {
         return null
       }
     },
-    []
+    [logAdminAction]
   )
 
   const acknowledgeOperationalAlert = useCallback(async (alertId: string, adminId: string) => {
@@ -579,11 +584,18 @@ export function useChatActions() {
         acknowledgedAt: Timestamp.now(),
         acknowledgedBy: adminId,
       })
+      await logAdminAction({
+        chatId: alertId,
+        adminId,
+        adminName: "Administrador",
+        action: "note_add",
+        details: "Alerta operacional reconhecido",
+      })
       return true
     } catch {
       return false
     }
-  }, [])
+  }, [logAdminAction])
 
   const deleteMessage = useCallback(async (message: Pick<ChatMessage, "id" | "chatId" | "content">, adminId: string, adminName: string) => {
     if (!db) return false

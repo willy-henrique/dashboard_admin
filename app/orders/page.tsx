@@ -2,7 +2,10 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react"
 import { ShoppingCart } from "lucide-react"
+import { doc, getDoc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
 import { useOrderDocumentRealtime } from "@/hooks/use-order-document-realtime"
+import { enrichOrderForAdmin } from "@/lib/orders/normalize-order"
 import { AppShell } from "@/components/layout/app-shell"
 import { OrdersDashboard } from "@/components/orders/orders-dashboard"
 import { OrdersTable } from "@/components/orders/orders-table"
@@ -10,10 +13,24 @@ import { OrderDetailModal } from "@/components/orders/order-detail-modal"
 import { useAnalytics } from "@/hooks/use-analytics"
 import { PageWithBack } from "@/components/layout/page-with-back"
 
+/** Telefone do cliente não existe no pedido — buscar na coleção `users` por clientId. */
+async function fetchClientPhone(clientId?: string): Promise<string> {
+  if (!clientId || !db) return ""
+  try {
+    const snap = await getDoc(doc(db, "users", clientId))
+    if (!snap.exists()) return ""
+    const d = snap.data() as Record<string, unknown>
+    return String(d.phone ?? d.telefone ?? d.phoneNumber ?? "")
+  } catch {
+    return ""
+  }
+}
+
 function OrdersPageContent() {
   const { trackPageView, trackUserAction } = useAnalytics()
   const [selectedOrder, setSelectedOrder] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [clientPhone, setClientPhone] = useState("")
 
   const liveOrderId = isModalOpen && selectedOrder?.id ? String(selectedOrder.id) : null
   const { order: liveOrder } = useOrderDocumentRealtime(liveOrderId, Boolean(liveOrderId))
@@ -22,11 +39,11 @@ function OrdersPageContent() {
     if (!selectedOrder) {
       return null
     }
-    if (!liveOrder) {
-      return selectedOrder
-    }
-    return { ...selectedOrder, ...liveOrder }
-  }, [liveOrder, selectedOrder])
+    // Traduz o schema real → apelidos esperados pelos componentes (valor, endereço,
+    // prestador, status operacional...) já com o telefone do cliente resolvido.
+    const raw = liveOrder ? { ...selectedOrder, ...liveOrder } : selectedOrder
+    return enrichOrderForAdmin(raw, { clientPhone })
+  }, [liveOrder, selectedOrder, clientPhone])
 
   useEffect(() => {
     trackPageView("Gestao de Pedidos")
@@ -39,7 +56,11 @@ function OrdersPageContent() {
 
     trackUserAction("visualizar_pedido", "pedidos", { orderId: String(order.id) })
     setSelectedOrder(order)
+    setClientPhone("")
     setIsModalOpen(true)
+    // Resolve o telefone do cliente (coleção users) em paralelo.
+    const clientId = order.clientId ?? order.clientUid ?? order.userId
+    fetchClientPhone(clientId ? String(clientId) : undefined).then(setClientPhone)
   }
 
   return (
@@ -62,7 +83,7 @@ function OrdersPageContent() {
         </div>
 
         <OrderDetailModal
-          order={isModalOpen ? mergedOrder : null}
+          order={isModalOpen ? (mergedOrder as any) : null}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           mode="view"

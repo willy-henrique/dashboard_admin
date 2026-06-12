@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -122,7 +122,7 @@ function formatRelativeDate(value: any) {
 }
 
 function getOrderAmount(order: any): number | null {
-  const candidates = [order.budget, order.valor, order.amount, order.total]
+  const candidates = [order.estimatedPrice, order.budget, order.price, order.valor, order.amount, order.total]
   const amount = candidates.find((c) => typeof c === "number" && Number.isFinite(c))
   return typeof amount === "number" ? amount : null
 }
@@ -164,8 +164,9 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
     enabled: !loading && !error,
   })
 
-  // Reset page when filters change
-  useMemo(() => setPage(1), [activeFilters])
+  useEffect(() => {
+    setPage(1)
+  }, [activeFilters])
 
   const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE))
   const paginated  = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -219,15 +220,15 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
       <Card className="shadow-card">
         {/* Filters */}
         <CardHeader className="border-b border-border">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div className="min-w-0">
               <CardTitle className="text-base font-semibold">Todos os pedidos</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {orders.length} pedido{orders.length !== 1 ? "s" : ""} encontrado{orders.length !== 1 ? "s" : ""}
               </p>
             </div>
 
-            <div className="grid gap-2 lg:grid-cols-[minmax(240px,1fr)_180px_180px]">
+            <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[minmax(260px,1fr)_180px_180px] xl:items-center">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                 <Input
@@ -250,7 +251,7 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
               </Select>
 
               <Select value={emergencyFilter} onValueChange={(v) => setEmergencyFilter(v as EmergencyFilter)}>
-                <SelectTrigger className="h-9 text-sm">
+                <SelectTrigger className="h-9 text-sm md:col-span-2 xl:col-span-1">
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -275,7 +276,7 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
           ) : (
             <>
               {/* Desktop Table */}
-              <div className="hidden lg:block overflow-x-auto">
+              <div className="hidden xl:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -356,7 +357,7 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
               </div>
 
               {/* Mobile Cards */}
-              <div className="space-y-3 p-4 lg:hidden">
+              <div className="space-y-3 p-4 xl:hidden">
                 {paginated.map((order: any) => {
                   const amount = getOrderAmount(order)
                   return (
@@ -364,7 +365,7 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
                       key={order.id}
                       className="rounded-lg border border-border bg-card p-4 space-y-3"
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
                           <p className="font-mono text-xs text-muted-foreground">#{String(order.id).slice(-8)}</p>
                           <p className="text-sm font-medium text-foreground truncate mt-0.5">
@@ -372,22 +373,22 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
                           </p>
                           <p className="text-xs text-muted-foreground truncate">{order.clientEmail || "—"}</p>
                         </div>
-                        <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:max-w-[220px] sm:justify-end">
                           {getStatusBadge(order)}
                           <OperationalStatusMini order={order as Record<string, unknown>} />
                         </div>
                       </div>
 
                       <div className="space-y-1.5 border-t border-border pt-2.5">
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground break-words">
                           <span className="font-medium text-foreground">Serviço: </span>
                           {getServiceLabel(order)}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground break-words">
                           <span className="font-medium text-foreground">Local: </span>
                           {getAddressLabel(order)}
                         </p>
-                        <div className="flex items-center justify-between pt-1">
+                        <div className="flex flex-col gap-1 pt-1 sm:flex-row sm:items-center sm:justify-between">
                           <p className="text-xs text-muted-foreground">{formatRelativeDate(order.createdAt)}</p>
                           <span className={cn(
                             "text-sm font-bold tabular-nums",
@@ -411,11 +412,11 @@ export function OrdersTable({ filters, onView }: OrdersTableProps) {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between px-6 py-3 border-t border-border">
+                <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                   <p className="text-xs text-muted-foreground">
                     {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, orders.length)} de {orders.length}
                   </p>
-                  <div className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-1">
                     <Button
                       variant="outline"
                       size="sm"

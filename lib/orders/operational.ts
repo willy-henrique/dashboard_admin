@@ -185,15 +185,22 @@ export function resolveOperationalStatus(order: Record<string, unknown>): Servic
   if (order.cancelledAt || legacy === "cancelled" || legacy === "canceled") {
     return "cancelado"
   }
-  if (legacy === "completed") {
+  if (legacy === "completed" || legacy === "finished") {
     return "finalizado"
   }
-  if (legacy === "assigned") {
+  if (legacy === "assigned" || legacy === "accepted") {
     return "aceite_pelo_tecnico"
   }
-  if (legacy === "in_progress") {
+  if (legacy === "on_the_way") {
+    return "em_deslocamento"
+  }
+  if (legacy === "arrived") {
+    return "chegou_no_local"
+  }
+  if (legacy === "in_progress" || legacy === "started") {
     return "em_atendimento"
   }
+  // pending, awaiting_payment, paid, scheduled, searching_provider… → ainda não despachado
   return "pendente"
 }
 

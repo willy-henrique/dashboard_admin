@@ -33,7 +33,7 @@ interface ChatMessagesProps {
 }
 
 export function ChatMessages({ conversation }: ChatMessagesProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const { user } = useAuth()
   const { toast } = useToast()
   const isOrdersChat = Boolean(conversation?.id.startsWith("orders_"))
@@ -52,8 +52,23 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   const { deleteMessage, sendOrderThreadMessage, createOperationalAlert } = useChatActions()
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    if (!messagesContainerRef.current) {
+      return
+    }
+
+    messagesContainerRef.current.scrollTo({ top: 0, behavior: "auto" })
+  }, [conversation?.id, threadTab])
+
+  const scrollToLatest = () => {
+    if (!messagesContainerRef.current) {
+      return
+    }
+
+    messagesContainerRef.current.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    })
+  }
 
   const getSenderIcon = (senderType: ChatMessage["senderType"]) => {
     switch (senderType) {
@@ -217,8 +232,8 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
   return (
     <Card className="flex h-full flex-col">
       <CardHeader className="border-b bg-muted/30">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
             <CardTitle className="text-lg text-foreground">{conversation.clientName}</CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center font-medium text-amber-900">
@@ -249,9 +264,13 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">{messages.length} mensagem{messages.length !== 1 ? "ens" : ""}</Badge>
             <Badge variant="secondary">{conversation.priority}</Badge>
             <Badge variant={conversation.status === "active" ? "default" : "secondary"}>{conversation.status}</Badge>
+            <Button type="button" variant="outline" size="sm" onClick={scrollToLatest}>
+              Últimas
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -277,7 +296,7 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
       ) : null}
 
       <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden p-0">
-        <div className="flex-1 space-y-4 overflow-y-auto p-4">
+        <div ref={messagesContainerRef} className="flex-1 space-y-4 overflow-y-auto p-4">
         {messages.length > 0 ? (
           <div className="space-y-3">
             {messages.map((message) => {
@@ -372,7 +391,6 @@ export function ChatMessages({ conversation }: ChatMessagesProps) {
           </div>
         )}
 
-        <div ref={messagesEndRef} />
         </div>
 
         {isOrdersChat && user ? (

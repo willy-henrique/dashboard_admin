@@ -184,7 +184,7 @@ export function ConversationsList({
               <div
                 key={conversation.id}
                 className={`cursor-pointer p-4 transition-all duration-200 hover:bg-muted/50 ${
-                  selectedConversationId === conversation.id ? "border-r-4 border-r-primary bg-primary/5" : ""
+                  selectedConversationId === conversation.id ? "border-l-4 border-l-primary bg-primary/5 pl-3" : ""
                 }`}
                 onClick={() => onSelectConversation(conversation)}
               >

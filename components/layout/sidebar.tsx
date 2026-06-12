@@ -23,7 +23,6 @@ import {
   MessageSquare,
   TrendingUp,
   LogOut,
-  X,
   ChevronRight,
   ClipboardList,
   MousePointer,
@@ -42,9 +41,12 @@ const navigation = [
   },
   {
     name: "Serviços",
-    href: "/dashboard/servicos",
     icon: ClipboardList,
     permission: "dashboard",
+    children: [
+      { name: "Visão Geral", href: "/dashboard/servicos", icon: ClipboardList },
+      { name: "Catálogo do App", href: "/dashboard/servicos/catalogo-app", icon: Layers },
+    ],
   },
   {
     name: "Controle",
@@ -148,7 +150,7 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Logo */}
+      {/* Logo — o fechar (X) no mobile é o nativo do Sheet, não duplicar aqui */}
       <div className="flex h-16 items-center px-5 shrink-0">
         <button
           onClick={() => { router.push("/dashboard"); setOpen(false) }}
@@ -157,15 +159,6 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
         >
           <Logo className="h-8" showText />
         </button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setOpen(false)}
-          className="lg:hidden ml-auto h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-          aria-label="Fechar menu"
-        >
-          <X className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Nav */}

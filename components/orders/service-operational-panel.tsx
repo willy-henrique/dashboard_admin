@@ -249,7 +249,7 @@ export function ServiceOperationalPanel({ order, enabled = true }: ServiceOperat
                     <Badge variant="outline">Presença não informada</Badge>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">ID: {assigned.id}</p>
+                <p className="break-all text-sm text-muted-foreground">ID: {assigned.id}</p>
                 {assigned.team ? <p className="text-sm">Equipe: {assigned.team}</p> : null}
                 <p className="text-sm text-muted-foreground">Aceite: {formatDatePt(assigned.acceptedAt)}</p>
               </div>
@@ -308,7 +308,7 @@ export function ServiceOperationalPanel({ order, enabled = true }: ServiceOperat
                 <li key={i} className="rounded border px-3 py-2">
                   <span className="font-medium">{String(h.technicianName || "")}</span> ({String(h.technicianId || "")})
                   {h.team ? <span className="text-muted-foreground"> · {String(h.team)}</span> : null}
-                  <div className="text-xs text-muted-foreground">
+                  <div className="break-words text-xs text-muted-foreground">
                     {formatDatePt(h.assignedAt)} → {formatDatePt(h.unassignedAt)}
                     {h.reason ? ` · ${String(h.reason)}` : null}
                   </div>
@@ -415,7 +415,7 @@ export function ServiceOperationalPanel({ order, enabled = true }: ServiceOperat
                   <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-orange-500" />
                   <p className="text-sm font-medium">{item.label}</p>
                   <p className="text-xs text-muted-foreground">{item.at ? format(item.at, "dd/MM/yyyy HH:mm", { locale: ptBR }) : "—"}</p>
-                  <p className="text-sm text-muted-foreground">{item.detail}</p>
+                  <p className="break-words text-sm text-muted-foreground">{item.detail}</p>
                 </li>
               ))}
             </ul>

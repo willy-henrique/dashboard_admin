@@ -147,6 +147,28 @@ export function ProvidersTable() {
     setIsModalOpen(true)
   }
 
+  const handleProviderCategoriesUpdated = (categories: string[]) => {
+    if (!selectedProvider) {
+      return
+    }
+
+    setSelectedProvider({
+      ...selectedProvider,
+      serviceCategories: categories,
+    })
+
+    setProviders((current) =>
+      current.map((provider) =>
+        provider.id === selectedProvider.id
+          ? {
+              ...provider,
+              serviceCategories: categories,
+            }
+          : provider
+      )
+    )
+  }
+
   return (
     <>
       <Card>
@@ -322,6 +344,8 @@ export function ProvidersTable() {
       <ProviderModal
         provider={selectedProvider}
         isOpen={isModalOpen}
+        onUpdated={fetchProviders}
+        onCategoriesUpdated={handleProviderCategoriesUpdated}
         onClose={() => {
           setIsModalOpen(false)
           setSelectedProvider(null)
